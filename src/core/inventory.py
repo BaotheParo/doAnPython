@@ -3,26 +3,26 @@ class Inventory:
         # Khởi tạo kho đồ rỗng dưới dạng từ điển: {tên vật phẩm: số lượng}
         self.items = {
             # Hạt giống
-            "carrot_seed": 2,  # Mặc định cho 2 hạt cà rốt để test
+            "carrot_seed": 2,
             "cabbage_seed": 0,
             "tomato_seed": 0,
             "potato_seed": 0,
-            "energy_herb_seed": 0,  # Hạt giống thảo mộc tăng năng lượng
-            "rare_herb_seed": 0,    # Hạt giống thảo mộc hiếm
+            "energy_herb_seed": 0,
+            "rare_herb_seed": 0,
             # Nông sản
             "carrot": 0,
             "cabbage": 0,
             "tomato": 0,
             "potato": 0,
-            "energy_herb": 0,  # Thảo mộc tăng năng lượng
-            "rare_herb": 0,    # Thảo mộc hiếm
+            "energy_herb": 0,
+            "rare_herb": 0,
             # Ngư sản
-            "tilapia": 0,      # Cá rô phi
-            "carp": 0,         # Cá chép
-            "catfish": 0,      # Cá trê
-            "eel": 0,          # Cá chình
-            "ghost_fish": 0,   # Cá ma
-            "frog": 0          # Ếch
+            "tilapia": 0,
+            "carp": 0,
+            "catfish": 0,
+            "eel": 0,
+            "ghost_fish": 0,
+            "frog": 0
         }
 
     def add_item(self, item_name, quantity):
