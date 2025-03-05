@@ -1,5 +1,6 @@
 import pygame
 import sys
+import json
 sys.path.append("D:\\ĐHSG\\Python\\Project\\doAnPython\\src\\core")
 from inventory import Inventory
 
@@ -15,14 +16,54 @@ pygame.display.set_caption("Nông trại")
 farm_bg = pygame.image.load("D:\\ĐHSG\\Python\\Project\\doAnPython\\assets\\images\\backgrounds\\khuvuon.png")
 farm_bg = pygame.transform.scale(farm_bg, (WIDTH, HEIGHT))
 
-# Load hình ảnh hạt giống
-seed_images = {
-    "carrot_seed": pygame.transform.scale(pygame.image.load("D:\\ĐHSG\\Python\\Project\\doAnPython\\assets\\images\\icons\\seed.png"), (40, 40)),
-    "cabbage_seed": pygame.transform.scale(pygame.image.load("D:\\ĐHSG\\Python\\Project\\doAnPython\\assets\\images\\icons\\seed.png"), (40, 40)),
-    "tomato_seed": pygame.transform.scale(pygame.image.load("D:\\ĐHSG\\Python\\Project\\doAnPython\\assets\\images\\icons\\seed.png"), (40, 40)),
-    "potato_seed": pygame.transform.scale(pygame.image.load("D:\\ĐHSG\\Python\\Project\\doAnPython\\assets\\images\\icons\\seed.png"), (40, 40)),
-    "energy_herb_seed": pygame.transform.scale(pygame.image.load("D:\\ĐHSG\\Python\\Project\\doAnPython\\assets\\images\\icons\\seed.png"), (40, 40)),
-    "rare_herb_seed": pygame.transform.scale(pygame.image.load("D:\\ĐHSG\\Python\\Project\\doAnPython\\assets\\images\\icons\\seed.png"), (40, 40)),
+# Load hình ảnh hạt giống và cây theo giai đoạn
+plant_images = {
+    "carrot_seed": {
+        0: pygame.transform.scale(pygame.image.load("D:\\ĐHSG\\Python\\Project\\doAnPython\\assets\\images\\icons\\seed.png"), (40, 40)),
+        1: pygame.transform.scale(pygame.image.load("D:\\ĐHSG\\Python\\Project\\doAnPython\\assets\\images\\icons\\seed.png"), (40, 40)),
+        2: pygame.transform.scale(pygame.image.load("D:\\ĐHSG\\Python\\Project\\doAnPython\\assets\\images\\icons\\seed.png"), (40, 40)),
+        3: pygame.transform.scale(pygame.image.load("D:\\ĐHSG\\Python\\Project\\doAnPython\\assets\\images\\icons\\seed.png"), (40, 40)),
+    },
+    # "cabbage_seed": {
+    #     0: pygame.transform.scale(pygame.image.load("D:\\ĐHSG\\Python\\Project\\doAnPython\\assets\\images\\icons\\seed.png"), (40, 40)),
+    #     1: pygame.transform.scale(pygame.image.load("D:\\ĐHSG\\Python\\Project\\doAnPython\\assets\\images\\plants\\cabbage1.png"), (40, 40)),
+    #     2: pygame.transform.scale(pygame.image.load("D:\\ĐHSG\\Python\\Project\\doAnPython\\assets\\images\\plants\\cabbage2.png"), (40, 40)),
+    #     3: pygame.transform.scale(pygame.image.load("D:\\ĐHSG\\Python\\Project\\doAnPython\\assets\\images\\plants\\cabbage3.png"), (40, 40)),
+    # },
+    # "tomato_seed": {
+    #     0: pygame.transform.scale(pygame.image.load("D:\\ĐHSG\\Python\\Project\\doAnPython\\assets\\images\\icons\\seed.png"), (40, 40)),
+    #     1: pygame.transform.scale(pygame.image.load("D:\\ĐHSG\\Python\\Project\\doAnPython\\assets\\images\\plants\\tomato1.png"), (40, 40)),
+    #     2: pygame.transform.scale(pygame.image.load("D:\\ĐHSG\\Python\\Project\\doAnPython\\assets\\images\\plants\\tomato2.png"), (40, 40)),
+    #     3: pygame.transform.scale(pygame.image.load("D:\\ĐHSG\\Python\\Project\\doAnPython\\assets\\images\\plants\\tomato3.png"), (40, 40)),
+    # },
+    # "potato_seed": {
+    #     0: pygame.transform.scale(pygame.image.load("D:\\ĐHSG\\Python\\Project\\doAnPython\\assets\\images\\icons\\seed.png"), (40, 40)),
+    #     1: pygame.transform.scale(pygame.image.load("D:\\ĐHSG\\Python\\Project\\doAnPython\\assets\\images\\plants\\potato1.png"), (40, 40)),
+    #     2: pygame.transform.scale(pygame.image.load("D:\\ĐHSG\\Python\\Project\\doAnPython\\assets\\images\\plants\\potato2.png"), (40, 40)),
+    #     3: pygame.transform.scale(pygame.image.load("D:\\ĐHSG\\Python\\Project\\doAnPython\\assets\\images\\plants\\potato3.png"), (40, 40)),
+    # },
+    # "energy_herb_seed": {
+    #     0: pygame.transform.scale(pygame.image.load("D:\\ĐHSG\\Python\\Project\\doAnPython\\assets\\images\\icons\\seed.png"), (40, 40)),
+    #     1: pygame.transform.scale(pygame.image.load("D:\\ĐHSG\\Python\\Project\\doAnPython\\assets\\images\\plants\\energy_herb1.png"), (40, 40)),
+    #     2: pygame.transform.scale(pygame.image.load("D:\\ĐHSG\\Python\\Project\\doAnPython\\assets\\images\\plants\\energy_herb2.png"), (40, 40)),
+    #     3: pygame.transform.scale(pygame.image.load("D:\\ĐHSG\\Python\\Project\\doAnPython\\assets\\images\\plants\\energy_herb3.png"), (40, 40)),
+    # },
+    # "rare_herb_seed": {
+    #     0: pygame.transform.scale(pygame.image.load("D:\\ĐHSG\\Python\\Project\\doAnPython\\assets\\images\\icons\\seed.png"), (40, 40)),
+    #     1: pygame.transform.scale(pygame.image.load("D:\\ĐHSG\\Python\\Project\\doAnPython\\assets\\images\\plants\\rare_herb1.png"), (40, 40)),
+    #     2: pygame.transform.scale(pygame.image.load("D:\\ĐHSG\\Python\\Project\\doAnPython\\assets\\images\\plants\\rare_herb2.png"), (40, 40)),
+    #     3: pygame.transform.scale(pygame.image.load("D:\\ĐHSG\\Python\\Project\\doAnPython\\assets\\images\\plants\\rare_herb3.png"), (40, 40)),
+    # },
+}
+
+# Định dạng tên hạt giống đẹp hơn
+seed_names = {
+    "carrot_seed": "Carrot Seed",
+    "cabbage_seed": "Cabbage Seed",
+    "tomato_seed": "Tomato Seed",
+    "potato_seed": "Potato Seed",
+    "energy_herb_seed": "Energy Herb Seed",
+    "rare_herb_seed": "Rare Herb Seed",
 }
 
 # Màu sắc phong cách pixel
@@ -74,8 +115,29 @@ show_inventory = False
 selected_seed = None
 is_harvesting = False
 
+# Thời gian mỗi giai đoạn (ms)
+STAGE_DURATION = 5000
+
 # Khởi tạo inventory từ inventory.py
 game_inventory = Inventory()
+
+# Hàm lưu inventory vào file
+def save_inventory():
+    with open("D:\\ĐHSG\\Python\\Project\\doAnPython\\src\\core\\inventory_data.json", "w") as f:
+        json.dump(game_inventory.items, f)
+    print("Đã lưu inventory vào file")
+
+# Hàm tải inventory từ file
+def load_inventory():
+    try:
+        with open("D:\\ĐHSG\\Python\\Project\\doAnPython\\src\\core\\inventory_data.json", "r") as f:
+            game_inventory.items = json.load(f)
+        print("Đã tải inventory từ file")
+    except FileNotFoundError:
+        print("Không tìm thấy file inventory, sử dụng mặc định")
+
+# Tải inventory khi bắt đầu
+load_inventory()
 
 # Cấu hình inventory giao diện
 inventory_rows = 2
@@ -93,7 +155,7 @@ def update_inventory_display():
     seed_items = {k: v for k, v in game_inventory.get_all_items().items() if k.endswith("_seed")}
     for item_name, quantity in seed_items.items():
         for _ in range(quantity):
-            inventory_items.append({"name": item_name, "image": seed_images[item_name]})
+            inventory_items.append({"name": item_name, "image": plant_images[item_name][0]})
     
     total_slots = inventory_rows * inventory_cols
     while len(inventory_items) < total_slots:
@@ -110,16 +172,30 @@ def update_inventory_display():
         )
     return inventory_items
 
+# Hàm cập nhật giai đoạn cây trồng
+def update_plant_stages():
+    current_time = pygame.time.get_ticks()
+    for index in list(planted_seeds.keys()):
+        plant = planted_seeds[index]
+        time_elapsed = current_time - plant["time_planted"]
+        new_stage = min(3, time_elapsed // STAGE_DURATION)
+        planted_seeds[index]["stage"] = new_stage
+
 running = True
 while running:
     screen.blit(farm_bg, (0, 0))
+
+    # Cập nhật giai đoạn cây trồng
+    update_plant_stages()
 
     # Vẽ ô đất
     for index, plot in enumerate(plots):
         pygame.draw.rect(screen, BROWN, plot, 3)
         if index in planted_seeds:
+            seed_type = planted_seeds[index]["seed"]
+            stage = planted_seeds[index]["stage"]
             seed_pos = planted_seeds[index]["pos"]
-            screen.blit(seed_images[planted_seeds[index]["seed"]], seed_pos)
+            screen.blit(plant_images[seed_type][stage], seed_pos)
 
     # Lấy vị trí chuột
     mouse_pos = pygame.mouse.get_pos()
@@ -145,6 +221,11 @@ while running:
                 img_x = item["rect"].x + (inventory_cell_size - item["image"].get_width()) // 2
                 img_y = item["rect"].y + (inventory_cell_size - item["image"].get_height()) // 2
                 screen.blit(item["image"], (img_x, img_y))
+            if item["rect"].collidepoint(mouse_pos) and item["name"]:
+                tooltip_text = font.render(seed_names.get(item["name"], item["name"]), True, WHITE)
+                tooltip_rect = tooltip_text.get_rect(topleft=(mouse_pos[0] + 10, mouse_pos[1] + 10))
+                pygame.draw.rect(screen, BLACK, (tooltip_rect.x - 2, tooltip_rect.y - 2, tooltip_rect.width + 4, tooltip_rect.height + 4))
+                screen.blit(tooltip_text, tooltip_rect)
 
     # Vẽ tooltip khi chuột hover vào feature
     for feature in features:
@@ -168,12 +249,13 @@ while running:
             cursor_changed = True
             break
 
-
-    for seed_image in seed_images:
-        if seed_images[seed_image].get_rect(topleft=(20, 20)).collidepoint(mouse_pos):
-            pygame.mouse.set_cursor(hover_cursor)
-            cursor_changed = True
-            break 
+    if show_inventory:
+        inventory_items = update_inventory_display()
+        for item in inventory_items:
+            if item["rect"].collidepoint(mouse_pos):
+                pygame.mouse.set_cursor(hover_cursor)
+                cursor_changed = True
+                break
 
     if not cursor_changed:
         pygame.mouse.set_cursor(default_cursor)
@@ -181,25 +263,33 @@ while running:
     # Xử lý sự kiện
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
+            save_inventory()  # Lưu inventory trước khi thoát
             running = False
 
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
             # Kiểm tra nhấn vào ô đất
             for index, plot in enumerate(plots):
                 if plot.collidepoint(event.pos):
-                    if is_harvesting and index in planted_seeds:  # Thu hoạch
+                    if is_harvesting and index in planted_seeds and planted_seeds[index]["stage"] == 3:
                         seed_type = planted_seeds[index]["seed"]
                         product = seed_to_product[seed_type]
-                        game_inventory.add_item(product, 1)
+                        game_inventory.add_item(product, 1)  # Cộng sản phẩm vào kho
                         del planted_seeds[index]
                         is_harvesting = False
-                        print(f"Đã thu hoạch: {product}")
-                    elif mana >= MANA_COST and selected_seed is not None:  # Trồng cây
-                        if game_inventory.remove_item(selected_seed, 1):
-                            planted_seeds[index] = {"seed": selected_seed, "pos": (plot.x + plot.width // 2 - 20, plot.y + plot.height // 2 - 20)}
+                        save_inventory()  # Lưu sau khi thu hoạch
+                        print(f"Đã thu hoạch: {product}. Số lượng hiện tại: {game_inventory.get_item_quantity(product)}")
+                    elif mana >= MANA_COST and selected_seed is not None and index not in planted_seeds:
+                        if game_inventory.remove_item(selected_seed, 1):  # Giảm hạt giống trong kho
+                            planted_seeds[index] = {
+                                "seed": selected_seed,
+                                "pos": (plot.x + plot.width // 2 - 20, plot.y + plot.height // 2 - 20),
+                                "stage": 0,
+                                "time_planted": pygame.time.get_ticks()
+                            }
                             mana -= MANA_COST
+                            save_inventory()  # Lưu sau khi trồng
+                            print(f"Đã trồng: {selected_seed}. Số lượng còn lại: {game_inventory.get_item_quantity(selected_seed)}")
                             selected_seed = None
-                            print(f"Đã trồng {selected_seed}. Số lượng còn lại: {game_inventory.get_item_quantity(selected_seed)}")
 
             # Kiểm tra nhấn vào feature
             for feature in features:
