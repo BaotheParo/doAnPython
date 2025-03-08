@@ -1,4 +1,6 @@
-from src.core.inventory import Inventory  # Import lớp Inventory
+import sys
+sys.path.append("D:\\ĐHSG\\Python\\Project\\doAnPython\\src\\core")
+from inventory import Inventory
 
 class Player:
     def __init__(self):

@@ -5,8 +5,8 @@ class Inventory:
             # Hạt giống
             "carrot_seed": 2,
             "cabbage_seed": 0,
-            "tomato_seed": 0,
-            "potato_seed": 0,
+            "beetroot_seed ": 0,
+            "pumpkin_seed": 0,
             "energy_herb_seed": 0,
             "rare_herb_seed": 0,
             # Nông sản
