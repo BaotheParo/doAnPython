@@ -19,48 +19,48 @@ farm_bg = pygame.transform.scale(farm_bg, (WIDTH, HEIGHT))
 
 plant_images = {
     "carrot_seed": {
-        0: pygame.transform.scale(pygame.image.load("D:\\ĐHSG\\Python\\Project\\doAnPython\\assets\\images\\plants\\carot.png"), (40, 40)),  # Hình trong inventory
-        1: pygame.transform.scale(pygame.image.load("D:\\ĐHSG\\Python\\Project\\doAnPython\\assets\\images\\icons\\seed.png"), (40, 40)),  # Phase 1 khi trồng
-        2: pygame.transform.scale(pygame.image.load("D:\\ĐHSG\\Python\\Project\\doAnPython\\assets\\images\\plants\\carot1.png"), (40, 40)),  # Phase 2
-        3: pygame.transform.scale(pygame.image.load("D:\\ĐHSG\\Python\\Project\\doAnPython\\assets\\images\\plants\\carot2.png"), (40, 40)),  # Phase 3
+        0: pygame.transform.scale(pygame.image.load("D:\\ĐHSG\\Python\\Project\\doAnPython\\assets\\images\\plants\\carot.png"), (40, 40)),
+        1: pygame.transform.scale(pygame.image.load("D:\\ĐHSG\\Python\\Project\\doAnPython\\assets\\images\\plants\\seed.png"), (50, 50)),
+        2: pygame.transform.scale(pygame.image.load("D:\\ĐHSG\\Python\\Project\\doAnPython\\assets\\images\\plants\\carot1.png"), (40, 40)),
+        3: pygame.transform.scale(pygame.image.load("D:\\ĐHSG\\Python\\Project\\doAnPython\\assets\\images\\plants\\carot2.png"), (70, 70)),
     },
-    # "cabbage_seed": {
-    #     0: pygame.transform.scale(pygame.image.load("D:\\ĐHSG\\Python\\Project\\doAnPython\\assets\\images\\plants\\cabbage.png"), (40, 40)),
-    #     1: pygame.transform.scale(pygame.image.load("D:\\ĐHSG\\Python\\Project\\doAnPython\\assets\\images\\icons\\seed.png"), (40, 40)),
-    #     2: pygame.transform.scale(pygame.image.load("D:\\ĐHSG\\Python\\Project\\doAnPython\\assets\\images\\plants\\cabbage1.png"), (40, 40)),
-    #     3: pygame.transform.scale(pygame.image.load("D:\\ĐHSG\\Python\\Project\\doAnPython\\assets\\images\\plants\\cabbage2.png"), (40, 40)),
-    # },
-    # "tomato_seed": {
-    #     0: pygame.transform.scale(pygame.image.load("D:\\ĐHSG\\Python\\Project\\doAnPython\\assets\\images\\plants\\tomato.png"), (40, 40)),
-    #     1: pygame.transform.scale(pygame.image.load("D:\\ĐHSG\\Python\\Project\\doAnPython\\assets\\images\\icons\\seed.png"), (40, 40)),
-    #     2: pygame.transform.scale(pygame.image.load("D:\\ĐHSG\\Python\\Project\\doAnPython\\assets\\images\\plants\\tomato1.png"), (40, 40)),
-    #     3: pygame.transform.scale(pygame.image.load("D:\\ĐHSG\\Python\\Project\\doAnPython\\assets\\images\\plants\\tomato2.png"), (40, 40)),
-    # },
-    # "potato_seed": {
-    #     0: pygame.transform.scale(pygame.image.load("D:\\ĐHSG\\Python\\Project\\doAnPython\\assets\\images\\plants\\potato.png"), (40, 40)),
-    #     1: pygame.transform.scale(pygame.image.load("D:\\ĐHSG\\Python\\Project\\doAnPython\\assets\\images\\icons\\seed.png"), (40, 40)),
-    #     2: pygame.transform.scale(pygame.image.load("D:\\ĐHSG\\Python\\Project\\doAnPython\\assets\\images\\plants\\potato1.png"), (40, 40)),
-    #     3: pygame.transform.scale(pygame.image.load("D:\\ĐHSG\\Python\\Project\\doAnPython\\assets\\images\\plants\\potato2.png"), (40, 40)),
-    # },
-    # "energy_herb_seed": {
-    #     0: pygame.transform.scale(pygame.image.load("D:\\ĐHSG\\Python\\Project\\doAnPython\\assets\\images\\plants\\energy_herb.png"), (40, 40)),
-    #     1: pygame.transform.scale(pygame.image.load("D:\\ĐHSG\\Python\\Project\\doAnPython\\assets\\images\\icons\\seed.png"), (40, 40)),
-    #     2: pygame.transform.scale(pygame.image.load("D:\\ĐHSG\\Python\\Project\\doAnPython\\assets\\images\\plants\\energy_herb1.png"), (40, 40)),
-    #     3: pygame.transform.scale(pygame.image.load("D:\\ĐHSG\\Python\\Project\\doAnPython\\assets\\images\\plants\\energy_herb2.png"), (40, 40)),
-    # },
-    # "rare_herb_seed": {
-    #     0: pygame.transform.scale(pygame.image.load("D:\\ĐHSG\\Python\\Project\\doAnPython\\assets\\images\\plants\\rare_herb.png"), (40, 40)),
-    #     1: pygame.transform.scale(pygame.image.load("D:\\ĐHSG\\Python\\Project\\doAnPython\\assets\\images\\icons\\seed.png"), (40, 40)),
-    #     2: pygame.transform.scale(pygame.image.load("D:\\ĐHSG\\Python\\Project\\doAnPython\\assets\\images\\plants\\rare_herb1.png"), (40, 40)),
-    #     3: pygame.transform.scale(pygame.image.load("D:\\ĐHSG\\Python\\Project\\doAnPython\\assets\\images\\plants\\rare_herb2.png"), (40, 40)),
-    # },
+    "cabbage_seed": {
+        0: pygame.transform.scale(pygame.image.load("D:\\ĐHSG\\Python\\Project\\doAnPython\\assets\\images\\plants\\bapcai.png"), (40, 40)),
+        1: pygame.transform.scale(pygame.image.load("D:\\ĐHSG\\Python\\Project\\doAnPython\\assets\\images\\plants\\seed.png"), (50, 50)),
+        2: pygame.transform.scale(pygame.image.load("D:\\ĐHSG\\Python\\Project\\doAnPython\\assets\\images\\plants\\bapcai1.png"), (40, 40)),
+        3: pygame.transform.scale(pygame.image.load("D:\\ĐHSG\\Python\\Project\\doAnPython\\assets\\images\\plants\\bapcai2.png"), (70, 70)),
+    },
+    "beetroot_seed": {
+        0: pygame.transform.scale(pygame.image.load("D:\\ĐHSG\\Python\\Project\\doAnPython\\assets\\images\\plants\\cuden.png"), (40, 40)),
+        1: pygame.transform.scale(pygame.image.load("D:\\ĐHSG\\Python\\Project\\doAnPython\\assets\\images\\plants\\seed.png"), (50, 50)),
+        2: pygame.transform.scale(pygame.image.load("D:\\ĐHSG\\Python\\Project\\doAnPython\\assets\\images\\plants\\cuden1.png"), (40, 40)),
+        3: pygame.transform.scale(pygame.image.load("D:\\ĐHSG\\Python\\Project\\doAnPython\\assets\\images\\plants\\cuden2.png"), (70, 70)),
+    },
+    "pumpkin_seed": {
+        0: pygame.transform.scale(pygame.image.load("D:\\ĐHSG\\Python\\Project\\doAnPython\\assets\\images\\plants\\bido.png"), (40, 40)),
+        1: pygame.transform.scale(pygame.image.load("D:\\ĐHSG\\Python\\Project\\doAnPython\\assets\\images\\plants\\seed.png"), (50, 50)),
+        2: pygame.transform.scale(pygame.image.load("D:\\ĐHSG\\Python\\Project\\doAnPython\\assets\\images\\plants\\bido1.png"), (40, 40)),
+        3: pygame.transform.scale(pygame.image.load("D:\\ĐHSG\\Python\\Project\\doAnPython\\assets\\images\\plants\\bido2.png"), (70, 70)),
+    },
+    "energy_herb_seed": {
+        0: pygame.transform.scale(pygame.image.load("D:\\ĐHSG\\Python\\Project\\doAnPython\\assets\\images\\plants\\thaomoc.png"), (40, 40)),
+        1: pygame.transform.scale(pygame.image.load("D:\\ĐHSG\\Python\\Project\\doAnPython\\assets\\images\\plants\\seed.png"), (50, 50)),
+        2: pygame.transform.scale(pygame.image.load("D:\\ĐHSG\\Python\\Project\\doAnPython\\assets\\images\\plants\\thaomoc1.png"), (40, 40)),
+        3: pygame.transform.scale(pygame.image.load("D:\\ĐHSG\\Python\\Project\\doAnPython\\assets\\images\\plants\\thaomoc2.png"), (70, 70)),
+    },
+    "rare_herb_seed": {
+        0: pygame.transform.scale(pygame.image.load("D:\\ĐHSG\\Python\\Project\\doAnPython\\assets\\images\\plants\\lua.png"), (40, 40)),
+        1: pygame.transform.scale(pygame.image.load("D:\\ĐHSG\\Python\\Project\\doAnPython\\assets\\images\\plants\\seed.png"), (50, 50)),
+        2: pygame.transform.scale(pygame.image.load("D:\\ĐHSG\\Python\\Project\\doAnPython\\assets\\images\\plants\\lua1.png"), (40, 40)),
+        3: pygame.transform.scale(pygame.image.load("D:\\ĐHSG\\Python\\Project\\doAnPython\\assets\\images\\plants\\lua2.png"), (70, 70)),
+    },
 }
 
 seed_names = {
     "carrot_seed": "Carrot Seed",
     "cabbage_seed": "Cabbage Seed",
-    "tomato_seed": "Tomato Seed",
-    "potato_seed": "Potato Seed",
+    "beetroot_seed": "Beetroot Seed",
+    "pumpkin_seed": "Pumpkin Seed",
     "energy_herb_seed": "Energy Herb Seed",
     "rare_herb_seed": "Rare Herb Seed",
 }
@@ -98,8 +98,8 @@ features = [
 seed_to_product = {
     "carrot_seed": "carrot",
     "cabbage_seed": "cabbage",
-    "tomato_seed": "tomato",
-    "potato_seed": "potato",
+    "beetroot_seed": "beetroot",
+    "pumpkin_seed": "pumpkin",
     "energy_herb_seed": "energy_herb",
     "rare_herb_seed": "rare_herb",
 }
@@ -115,17 +115,17 @@ default_cursor = pygame.SYSTEM_CURSOR_ARROW
 hover_cursor = pygame.SYSTEM_CURSOR_HAND
 sickle_cursor = pygame.image.load("D:\\ĐHSG\\Python\\Project\\doAnPython\\assets\\images\\icons\\ll.png")
 sickle_cursor = pygame.transform.scale(sickle_cursor, (32, 32))
-watering_can_cursor = pygame.image.load("D:\\ĐHSG\\Python\\Project\\doAnPython\\assets\\images\\icons\\watering_can.png")  # Giả định bạn có ảnh này
+watering_can_cursor = pygame.image.load("D:\\ĐHSG\\Python\\Project\\doAnPython\\assets\\images\\icons\\watering_can.png")
 watering_can_cursor = pygame.transform.scale(watering_can_cursor, (32, 32))
 show_inventory = False
 selected_seed = None
 is_harvesting = False
-is_watering = False  # Thêm biến trạng thái tưới nước
+is_watering = False
 current_page = 0
 
 # Thời gian mỗi giai đoạn và chu kỳ tưới nước (ms)
-STAGE_DURATION = 5000  # 5 giây mỗi giai đoạn
-WATERING_CYCLE = 24000  # 24 giây giả lập 24 giờ
+STAGE_DURATION = 5000
+WATERING_CYCLE = 24000
 
 # Hàm lưu inventory vào file
 def save_inventory():
@@ -205,7 +205,7 @@ def update_plant_stages():
         time_since_last_watered = current_time - plant.get("last_watered", plant["time_planted"])
         if time_since_last_watered > WATERING_CYCLE:
             print(f"Cây tại ô {index} đã chết do không được tưới nước!")
-            del planted_seeds[index]  # Xóa cây nếu không tưới trong 24 giây
+            del planted_seeds[index]
 
 running = True
 while running:
@@ -220,8 +220,12 @@ while running:
         if index in planted_seeds:
             seed_type = planted_seeds[index]["seed"]
             stage = planted_seeds[index]["stage"]
-            seed_pos = planted_seeds[index]["pos"]
-            screen.blit(plant_images[seed_type][stage], seed_pos)
+            center_pos = planted_seeds[index]["center_pos"]  # Tâm điểm ô đất
+            image = plant_images[seed_type][stage]
+            # Tính toán vị trí để tâm hình ảnh trùng với tâm ô đất
+            img_x = center_pos[0] - image.get_width() // 2
+            img_y = center_pos[1] - image.get_height() // 2
+            screen.blit(image, (img_x, img_y))
 
     # Lấy vị trí chuột
     mouse_pos = pygame.mouse.get_pos()
@@ -326,16 +330,16 @@ while running:
                         save_inventory()
                         print(f"Đã thu hoạch: {product}. Số lượng hiện tại: {player.inventory.get_item_quantity(product)}")
                     elif is_watering and index in planted_seeds:
-                        planted_seeds[index]["last_watered"] = pygame.time.get_ticks()  # Cập nhật thời gian tưới
+                        planted_seeds[index]["last_watered"] = pygame.time.get_ticks()
                         print(f"Đã tưới nước cho cây tại ô {index}!")
                     elif index not in planted_seeds and selected_seed is not None and len(planted_seeds) < player.get_garden_slots():
                         if player.reduce_energy(ENERGY_COST) and player.inventory.remove_item(selected_seed, 1):
                             planted_seeds[index] = {
                                 "seed": selected_seed,
-                                "pos": (plot.x + plot.width // 2 - 20, plot.y + plot.height // 2 - 20),
+                                "center_pos": plot.center,  # Lưu tâm điểm của ô đất
                                 "stage": 1,
                                 "time_planted": pygame.time.get_ticks(),
-                                "last_watered": pygame.time.get_ticks()  # Khởi tạo thời gian tưới ban đầu
+                                "last_watered": pygame.time.get_ticks()
                             }
                             save_inventory()
                             print(f"Đã trồng: {selected_seed}. Số lượng còn lại: {player.inventory.get_item_quantity(selected_seed)}")
@@ -349,7 +353,7 @@ while running:
                         is_harvesting = False
                         is_watering = False
                     elif feature["function"] == "water":
-                        is_watering = not is_watering  # Chuyển đổi chế độ tưới nước
+                        is_watering = not is_watering
                         is_harvesting = False
                         show_inventory = False
                         print(f"Chế độ tưới nước {'bật' if is_watering else 'tắt'}!")
@@ -358,7 +362,7 @@ while running:
                         is_harvesting = False
                         is_watering = False
                     elif feature["function"] == "harvest":
-                        is_harvesting = not is_harvesting  # Chuyển đổi chế độ thu hoạch
+                        is_harvesting = not is_harvesting
                         is_watering = False
                         show_inventory = False
                         print(f"Chế độ thu hoạch {'bật' if is_harvesting else 'tắt'}!")
