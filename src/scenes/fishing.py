@@ -2,10 +2,6 @@ import pygame
 from src.core.player import Player
 from src.actions.fishing_action import start_fishing
 from src.utils.constants import SCREEN_WIDTH, SCREEN_HEIGHT, WHITE, BLACK
-
-
-# Không khởi tạo pygame.init() ở đây, sẽ khởi tạo trong main.py
-
 class FishingScene:
     def __init__(self, player, time_system, screen):
         self.player = player
@@ -13,9 +9,17 @@ class FishingScene:
         self.screen = screen
         pygame.display.set_caption("Khu vực câu cá")
 
-        background_path = "../../assets/images/backgrounds/background-cauca.png"
-        self.background = pygame.image.load(background_path).convert()
-        self.background = pygame.transform.scale(self.background, (SCREEN_WIDTH, SCREEN_HEIGHT))
+        # Đường dẫn đến các file background
+        self.day_background_path = "../../assets/images/backgrounds/background-cauca.png"
+        self.night_background_path = "../../assets/images/backgrounds/background-cauca-dem.png"
+
+        # Tải và scale background ban ngày
+        self.day_background = pygame.image.load(self.day_background_path).convert()
+        self.day_background = pygame.transform.scale(self.day_background, (SCREEN_WIDTH, SCREEN_HEIGHT))
+
+        # Tải và scale background ban đêm
+        self.night_background = pygame.image.load(self.night_background_path).convert()
+        self.night_background = pygame.transform.scale(self.night_background, (SCREEN_WIDTH, SCREEN_HEIGHT))
 
         self.lake_rect = pygame.Rect(300, 200, 200, 150)
         self.home_sign_rect = pygame.Rect(50, 500, 100, 50)
@@ -38,7 +42,14 @@ class FishingScene:
                 elif event.type == pygame.MOUSEBUTTONDOWN:
                     self.handle_click(mouse_pos)
 
-            self.screen.blit(self.background, (0, 0))
+            # Kiểm tra thời gian để chọn background
+            time_of_day = self.time_system.get_time_of_day()
+            if time_of_day == "day":
+                self.screen.blit(self.day_background, (0, 0))
+            elif time_of_day == "night":
+                self.screen.blit(self.night_background, (0, 0))
+
+            # Vẽ hiệu ứng hover khi chuột di qua hồ nước
             if self.lake_rect.collidepoint(mouse_pos):
                 self.screen.blit(self.hover_surface, (self.lake_rect.x, self.lake_rect.y))
 
@@ -66,7 +77,7 @@ if __name__ == "__main__":
 
     class FakeTimeSystem:
         def get_time_of_day(self):
-            return "day"
+            return "night"  # Thay đổi thành "night" để kiểm tra background ban đêm
 
 
     player = Player()
