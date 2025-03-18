@@ -1,6 +1,6 @@
 import sys
 sys.path.append("D:\\ĐHSG\\Python\\Project\\doAnPython\\src\\core")
-from inventory import Inventory
+from src.core.inventory import Inventory
 
 class Player:
     def __init__(self):
