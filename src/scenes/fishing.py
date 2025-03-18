@@ -2,6 +2,7 @@ import pygame
 from src.core.player import Player
 from src.actions.fishing_action import start_fishing
 from src.utils.constants import SCREEN_WIDTH, SCREEN_HEIGHT, WHITE, BLACK
+
 class FishingScene:
     def __init__(self, player, time_system, screen):
         self.player = player
@@ -21,13 +22,16 @@ class FishingScene:
         self.night_background = pygame.image.load(self.night_background_path).convert()
         self.night_background = pygame.transform.scale(self.night_background, (SCREEN_WIDTH, SCREEN_HEIGHT))
 
-        self.lake_rect = pygame.Rect(300, 200, 200, 150)
-        self.home_sign_rect = pygame.Rect(50, 500, 100, 50)
-        self.village_sign_rect = pygame.Rect(650, 500, 100, 50)
+        # Chỉ giữ lake_rect
+        self.lake_rect = pygame.Rect(515, 450, 485, 200)  # (x, y, width, height)
 
-        self.hover_color = (200, 200, 200, 128)
+        # Cập nhật hover_surface để khớp với kích thước của lake_rect
+        self.hover_color = (200, 200, 200, 10)
         self.hover_surface = pygame.Surface((self.lake_rect.width, self.lake_rect.height), pygame.SRCALPHA)
         self.hover_surface.fill(self.hover_color)
+
+        # Font để hiển thị tọa độ chuột
+        self.font = pygame.font.SysFont(None, 24)
 
         self.running = True
 
@@ -53,6 +57,10 @@ class FishingScene:
             if self.lake_rect.collidepoint(mouse_pos):
                 self.screen.blit(self.hover_surface, (self.lake_rect.x, self.lake_rect.y))
 
+            # Hiển thị tọa độ chuột trên màn hình
+            coord_text = self.font.render(f"X: {mouse_pos[0]}, Y: {mouse_pos[1]}", True, WHITE)
+            self.screen.blit(coord_text, (10, 10))  # Vẽ tọa độ ở góc trên cùng bên trái
+
             pygame.display.flip()
             clock.tick(60)
 
@@ -60,25 +68,16 @@ class FishingScene:
         if self.lake_rect.collidepoint(pos):
             print("Bắt đầu câu cá!")
             start_fishing(self.player, self.time_system.get_time_of_day(), self.screen)  # Chạy minigame
-            print("Quay lại khu vực câu cá!")  # Thông báo sau khi minigame kết thúc
-        elif self.home_sign_rect.collidepoint(pos):
-            print("Quay về phòng ngủ!")
-            self.running = False
-        elif self.village_sign_rect.collidepoint(pos):
-            print("Đi đến làng!")
-            self.running = False
-
+            print("Quay lại khu vực câu cá!")  # Thông báo sau khi minigame kết thúc)
 
 if __name__ == "__main__":
     pygame.init()
     screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
     from src.core.player import Player
 
-
     class FakeTimeSystem:
         def get_time_of_day(self):
             return "night"  # Thay đổi thành "night" để kiểm tra background ban đêm
-
 
     player = Player()
     time_system = FakeTimeSystem()
