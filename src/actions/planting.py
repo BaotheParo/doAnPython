@@ -1,60 +1,69 @@
 import pygame
 import sys
 import json
+import os
 sys.path.append("D:\\ĐHSG\\Python\\Project\\doAnPython\\src\\core")
 from inventory import Inventory
 from player import Player
+from time_system import TimeSystem
 
-# Khởi tạo pygame
 pygame.init()
 
-# Cấu hình màn hình
 WIDTH, HEIGHT = 800, 600
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Nông trại")
 
-# Load hình ảnh nền
-farm_bg = pygame.image.load("D:\\ĐHSG\\Python\\Project\\doAnPython\\assets\\images\\backgrounds\\khuvuon.png")
+farm_bg = pygame.image.load("D:\\ĐHSG\\Python\\Project\\doAnPython\\assets\\images\\backgrounds\\khuvuon.png").convert()
 farm_bg = pygame.transform.scale(farm_bg, (WIDTH, HEIGHT))
 
+# Load hình ảnh cây
 plant_images = {
     "carrot_seed": {
         0: pygame.transform.scale(pygame.image.load("D:\\ĐHSG\\Python\\Project\\doAnPython\\assets\\images\\plants\\carot.png"), (40, 40)),
         1: pygame.transform.scale(pygame.image.load("D:\\ĐHSG\\Python\\Project\\doAnPython\\assets\\images\\plants\\seed.png"), (50, 50)),
         2: pygame.transform.scale(pygame.image.load("D:\\ĐHSG\\Python\\Project\\doAnPython\\assets\\images\\plants\\carot1.png"), (40, 40)),
         3: pygame.transform.scale(pygame.image.load("D:\\ĐHSG\\Python\\Project\\doAnPython\\assets\\images\\plants\\carot2.png"), (70, 70)),
+        4: pygame.transform.scale(pygame.image.load("D:\\ĐHSG\\Python\\Project\\doAnPython\\assets\\images\\plants\\caychet.png"), (50, 50)),
     },
     "cabbage_seed": {
         0: pygame.transform.scale(pygame.image.load("D:\\ĐHSG\\Python\\Project\\doAnPython\\assets\\images\\plants\\bapcai.png"), (40, 40)),
         1: pygame.transform.scale(pygame.image.load("D:\\ĐHSG\\Python\\Project\\doAnPython\\assets\\images\\plants\\seed.png"), (50, 50)),
         2: pygame.transform.scale(pygame.image.load("D:\\ĐHSG\\Python\\Project\\doAnPython\\assets\\images\\plants\\bapcai1.png"), (40, 40)),
         3: pygame.transform.scale(pygame.image.load("D:\\ĐHSG\\Python\\Project\\doAnPython\\assets\\images\\plants\\bapcai2.png"), (70, 70)),
+        4: pygame.transform.scale(pygame.image.load("D:\\ĐHSG\\Python\\Project\\doAnPython\\assets\\images\\plants\\caychet.png"), (50, 50)),
     },
     "beetroot_seed": {
         0: pygame.transform.scale(pygame.image.load("D:\\ĐHSG\\Python\\Project\\doAnPython\\assets\\images\\plants\\cuden.png"), (40, 40)),
         1: pygame.transform.scale(pygame.image.load("D:\\ĐHSG\\Python\\Project\\doAnPython\\assets\\images\\plants\\seed.png"), (50, 50)),
         2: pygame.transform.scale(pygame.image.load("D:\\ĐHSG\\Python\\Project\\doAnPython\\assets\\images\\plants\\cuden1.png"), (40, 40)),
         3: pygame.transform.scale(pygame.image.load("D:\\ĐHSG\\Python\\Project\\doAnPython\\assets\\images\\plants\\cuden2.png"), (70, 70)),
+        4: pygame.transform.scale(pygame.image.load("D:\\ĐHSG\\Python\\Project\\doAnPython\\assets\\images\\plants\\caychet.png"), (50, 50)),
     },
     "pumpkin_seed": {
         0: pygame.transform.scale(pygame.image.load("D:\\ĐHSG\\Python\\Project\\doAnPython\\assets\\images\\plants\\bido.png"), (40, 40)),
         1: pygame.transform.scale(pygame.image.load("D:\\ĐHSG\\Python\\Project\\doAnPython\\assets\\images\\plants\\seed.png"), (50, 50)),
         2: pygame.transform.scale(pygame.image.load("D:\\ĐHSG\\Python\\Project\\doAnPython\\assets\\images\\plants\\bido1.png"), (40, 40)),
         3: pygame.transform.scale(pygame.image.load("D:\\ĐHSG\\Python\\Project\\doAnPython\\assets\\images\\plants\\bido2.png"), (70, 70)),
+        4: pygame.transform.scale(pygame.image.load("D:\\ĐHSG\\Python\\Project\\doAnPython\\assets\\images\\plants\\caychet.png"), (50, 50)),
     },
     "energy_herb_seed": {
         0: pygame.transform.scale(pygame.image.load("D:\\ĐHSG\\Python\\Project\\doAnPython\\assets\\images\\plants\\thaomoc.png"), (40, 40)),
         1: pygame.transform.scale(pygame.image.load("D:\\ĐHSG\\Python\\Project\\doAnPython\\assets\\images\\plants\\seed.png"), (50, 50)),
         2: pygame.transform.scale(pygame.image.load("D:\\ĐHSG\\Python\\Project\\doAnPython\\assets\\images\\plants\\thaomoc1.png"), (40, 40)),
         3: pygame.transform.scale(pygame.image.load("D:\\ĐHSG\\Python\\Project\\doAnPython\\assets\\images\\plants\\thaomoc2.png"), (70, 70)),
+        4: pygame.transform.scale(pygame.image.load("D:\\ĐHSG\\Python\\Project\\doAnPython\\assets\\images\\plants\\caychet.png"), (50, 50)),
     },
     "rare_herb_seed": {
         0: pygame.transform.scale(pygame.image.load("D:\\ĐHSG\\Python\\Project\\doAnPython\\assets\\images\\plants\\lua.png"), (40, 40)),
         1: pygame.transform.scale(pygame.image.load("D:\\ĐHSG\\Python\\Project\\doAnPython\\assets\\images\\plants\\seed.png"), (50, 50)),
         2: pygame.transform.scale(pygame.image.load("D:\\ĐHSG\\Python\\Project\\doAnPython\\assets\\images\\plants\\lua1.png"), (40, 40)),
         3: pygame.transform.scale(pygame.image.load("D:\\ĐHSG\\Python\\Project\\doAnPython\\assets\\images\\plants\\lua2.png"), (70, 70)),
+        4: pygame.transform.scale(pygame.image.load("D:\\ĐHSG\\Python\\Project\\doAnPython\\assets\\images\\plants\\caychet.png"), (50, 50)),
     },
 }
+
+warning_icon = pygame.image.load("D:\\ĐHSG\\Python\\Project\\doAnPython\\assets\\images\\icons\\need_watering.png")
+warning_icon = pygame.transform.scale(warning_icon, (20, 20))
 
 seed_names = {
     "carrot_seed": "Carrot Seed",
@@ -65,7 +74,7 @@ seed_names = {
     "rare_herb_seed": "Rare Herb Seed",
 }
 
-# Màu sắc phong cách pixel
+# Màu sắc
 BROWN = (139, 69, 19)
 BLUE = (0, 0, 255)
 WHITE = (255, 255, 255)
@@ -94,7 +103,7 @@ features = [
     {"rect": pygame.Rect(518, 35, 58, 78), "function": "harvest", "label": "Harvest"},
 ]
 
-# Ánh xạ hạt giống với sản phẩm thu hoạch
+# Ánh xạ hạt giống với sản phẩm
 seed_to_product = {
     "carrot_seed": "carrot",
     "cabbage_seed": "cabbage",
@@ -104,48 +113,75 @@ seed_to_product = {
     "rare_herb_seed": "rare_herb",
 }
 
-# Khởi tạo người chơi
 player = Player()
+time_system = TimeSystem()
 ENERGY_COST = 20
+DEATH_TIME = 120000  # 2 phút
+UPGRADE_TIME = 60000  # 1 phút
+WARNING_TIME = 30000  # 30 giây
 
-# Biến lưu trạng thái
 planted_seeds = {}
 font = pygame.font.Font(None, 24)
+large_font = pygame.font.Font(None, 48)
 default_cursor = pygame.SYSTEM_CURSOR_ARROW
 hover_cursor = pygame.SYSTEM_CURSOR_HAND
-sickle_cursor = pygame.image.load("D:\\ĐHSG\\Python\\Project\\doAnPython\\assets\\images\\icons\\ll.png")
-sickle_cursor = pygame.transform.scale(sickle_cursor, (32, 32))
-watering_can_cursor = pygame.image.load("D:\\ĐHSG\\Python\\Project\\doAnPython\\assets\\images\\icons\\watering_can.png")
-watering_can_cursor = pygame.transform.scale(watering_can_cursor, (32, 32))
+sickle_cursor = pygame.transform.scale(pygame.image.load("D:\\ĐHSG\\Python\\Project\\doAnPython\\assets\\images\\icons\\ll.png"), (32, 32))
+watering_can_cursor = pygame.transform.scale(pygame.image.load("D:\\ĐHSG\\Python\\Project\\doAnPython\\assets\\images\\icons\\watering_can.png"), (32, 32))
+water_can_cursor = pygame.transform.scale(pygame.image.load("D:\\ĐHSG\\Python\\Project\\doAnPython\\assets\\images\\icons\\water-can.png"), (32, 32))
 show_inventory = False
 selected_seed = None
 is_harvesting = False
 is_watering = False
+is_removing = False
 current_page = 0
+watering_animation = False
+watering_animation_start = 0
+WATERING_ANIMATION_DURATION = 500
+FARM_DATA_FILE = "D:\\ĐHSG\\Python\\Project\\doAnPython\\src\\core\\farm_data.json"
 
-# Thời gian mỗi giai đoạn và chu kỳ tưới nước (ms)
-STAGE_DURATION = 5000
-WATERING_CYCLE = 24000
-
-# Hàm lưu inventory vào file
 def save_inventory():
     with open("D:\\ĐHSG\\Python\\Project\\doAnPython\\src\\core\\inventory_data.json", "w") as f:
         json.dump(player.inventory.items, f)
-    print("Đã lưu inventory vào file")
 
-# Hàm tải inventory từ file
 def load_inventory():
     try:
         with open("D:\\ĐHSG\\Python\\Project\\doAnPython\\src\\core\\inventory_data.json", "r") as f:
             player.inventory.items = json.load(f)
-        print("Đã tải inventory từ file")
     except FileNotFoundError:
-        print("Không tìm thấy file inventory, sử dụng mặc định")
+        pass
 
-# Tải inventory khi bắt đầu
+def save_farm_data():
+    farm_data = {}
+    for index, plant in planted_seeds.items():
+        farm_data[str(index)] = {
+            "seed": plant["seed"],
+            "stage": plant["stage"],
+            "remaining_upgrade_time": plant["remaining_upgrade_time"],
+            "remaining_death_time": plant["remaining_death_time"],
+            "center_pos": plant["center_pos"]
+        }
+    with open(FARM_DATA_FILE, "w") as f:
+        json.dump(farm_data, f)
+
+def load_farm_data():
+    global planted_seeds
+    try:
+        with open(FARM_DATA_FILE, "r") as f:
+            farm_data = json.load(f)
+            for index, plant in farm_data.items():
+                planted_seeds[int(index)] = {
+                    "seed": plant["seed"],
+                    "stage": plant["stage"],
+                    "remaining_upgrade_time": plant["remaining_upgrade_time"],
+                    "remaining_death_time": plant["remaining_death_time"],
+                    "center_pos": tuple(plant["center_pos"])
+                }
+    except FileNotFoundError:
+        planted_seeds = {}
+
 load_inventory()
+load_farm_data()
 
-# Cấu hình inventory giao diện
 inventory_rows = 2
 inventory_cols = 5
 inventory_cell_size = 50
@@ -156,11 +192,9 @@ inventory_x = WIDTH // 2 - inventory_width // 2
 inventory_y = HEIGHT // 2 - inventory_height // 2
 total_slots = inventory_rows * inventory_cols
 
-# Nút phân trang
 prev_button = pygame.Rect(inventory_x + inventory_padding, inventory_y + inventory_height - 30, 50, 20)
 next_button = pygame.Rect(inventory_x + inventory_width - inventory_padding - 50, inventory_y + inventory_height - 30, 50, 20)
 
-# Hàm cập nhật inventory giao diện với phân trang
 def update_inventory_display():
     global current_page
     inventory_items = []
@@ -192,134 +226,171 @@ def update_inventory_display():
     
     return visible_items, total_pages
 
-# Hàm cập nhật giai đoạn cây trồng và kiểm tra tưới nước
-def update_plant_stages():
-    current_time = pygame.time.get_ticks()
+def update_plant_stages(delta_time):
     for index in list(planted_seeds.keys()):
         plant = planted_seeds[index]
-        time_elapsed = current_time - plant["time_planted"]
-        new_stage = min(3, 1 + (time_elapsed // STAGE_DURATION))
-        planted_seeds[index]["stage"] = new_stage
         
-        # Kiểm tra tưới nước
-        time_since_last_watered = current_time - plant.get("last_watered", plant["time_planted"])
-        if time_since_last_watered > WATERING_CYCLE:
-            print(f"Cây tại ô {index} đã chết do không được tưới nước!")
-            del planted_seeds[index]
+        if plant["stage"] >= 3:  # Trưởng thành hoặc chết
+            continue
+        
+        # Giảm thời gian chết
+        plant["remaining_death_time"] -= delta_time
+        if plant["remaining_death_time"] <= 0 and plant["stage"] < 4:
+            plant["stage"] = 4  # Cây chết
+            plant["remaining_upgrade_time"] = None
+            print(f"Cây tại ô {index} đã chết!")
+        
+        # Giảm thời gian lên stage nếu đã tưới
+        if plant["remaining_upgrade_time"] is not None:
+            plant["remaining_upgrade_time"] -= delta_time
+            if plant["remaining_upgrade_time"] <= 0:
+                plant["stage"] += 1
+                if plant["stage"] < 3:  # Nếu chưa trưởng thành, yêu cầu tưới lại
+                    plant["remaining_upgrade_time"] = None
+                    plant["remaining_death_time"] = DEATH_TIME
+                else:  # Trưởng thành
+                    plant["remaining_upgrade_time"] = None
+                    plant["remaining_death_time"] = None
+                print(f"Cây tại ô {index} lên stage {plant['stage']}!")
+                if plant["stage"] == 3:
+                    print(f"Cây tại ô {index} trưởng thành!")
 
 running = True
+clock = pygame.time.Clock()
+last_time = pygame.time.get_ticks()
+
 while running:
+    current_time = pygame.time.get_ticks()
+    delta_time = current_time - last_time
+    last_time = current_time
+
     screen.blit(farm_bg, (0, 0))
 
-    # Cập nhật giai đoạn cây trồng và kiểm tra tưới nước
-    update_plant_stages()
+    time_system.update(delta_time)
+    update_plant_stages(delta_time)
 
-    # Vẽ ô đất
     for index, plot in enumerate(plots):
-        pygame.draw.rect(screen, BROWN, plot, 3)
+        # pygame.draw.rect(screen, BROWN, plot, 3)
         if index in planted_seeds:
             seed_type = planted_seeds[index]["seed"]
             stage = planted_seeds[index]["stage"]
-            center_pos = planted_seeds[index]["center_pos"]  # Tâm điểm ô đất
+            center_pos = planted_seeds[index]["center_pos"]
             image = plant_images[seed_type][stage]
-            # Tính toán vị trí để tâm hình ảnh trùng với tâm ô đất
             img_x = center_pos[0] - image.get_width() // 2
             img_y = center_pos[1] - image.get_height() // 2
             screen.blit(image, (img_x, img_y))
 
-    # Lấy vị trí chuột
+            if stage < 3 and (planted_seeds[index]["remaining_upgrade_time"] is None or planted_seeds[index]["remaining_death_time"] <= WARNING_TIME):
+                if (current_time // 500) % 2 == 0:
+                    warning_x = img_x + image.get_width() - warning_icon.get_width() // 2
+                    warning_y = img_y - warning_icon.get_height() // 2
+                    screen.blit(warning_icon, (warning_x, warning_y))
+
     mouse_pos = pygame.mouse.get_pos()
 
-    # Vẽ các nút feature
-    for feature in features:
-        pygame.draw.rect(screen, BLUE, feature["rect"], 3)
+    # for feature in features:
+    #     pygame.draw.rect(screen, BLUE, feature["rect"], 3)
 
-    # Vẽ thanh năng lượng
     pygame.draw.rect(screen, WHITE, (20, 20, 104, 24))
     pygame.draw.rect(screen, BLUE, (22, 22, player.get_energy(), 20))
-    energy_text = font.render(f"Năng lượng: {player.get_energy()}/{player.max_energy}", True, WHITE)
+    energy_text = font.render(f"MANA: {player.get_energy()}/{player.max_energy}", True, WHITE)
     screen.blit(energy_text, (20, 50))
 
-    # Vẽ inventory nếu được kích hoạt
-    if show_inventory:
-        inventory_items, total_pages = update_inventory_display()
-        pygame.draw.rect(screen, INVENTORY_BG, (inventory_x, inventory_y, inventory_width, inventory_height))
-        for item in inventory_items:
-            pygame.draw.rect(screen, INVENTORY_CELL_BG, item["rect"])
-            pygame.draw.rect(screen, BLACK, item["rect"], 3)
-            if item["image"]:
-                img_x = item["rect"].x + (inventory_cell_size - item["image"].get_width()) // 2
-                img_y = item["rect"].y + (inventory_cell_size - item["image"].get_height()) // 2
-                screen.blit(item["image"], (img_x, img_y))
-            if item["rect"].collidepoint(mouse_pos) and item["name"]:
-                tooltip_text = font.render(seed_names.get(item["name"], item["name"]), True, WHITE)
-                tooltip_rect = tooltip_text.get_rect(topleft=(mouse_pos[0] + 10, mouse_pos[1] + 10))
-                pygame.draw.rect(screen, BLACK, (tooltip_rect.x - 2, tooltip_rect.y - 2, tooltip_rect.width + 4, tooltip_rect.height + 4))
-                screen.blit(tooltip_text, tooltip_rect)
-        
-        pygame.draw.rect(screen, BUTTON_COLOR, prev_button)
-        pygame.draw.rect(screen, BUTTON_COLOR, next_button)
-        prev_text = font.render("<", True, WHITE)
-        next_text = font.render(">", True, WHITE)
-        screen.blit(prev_text, (prev_button.x + 20, prev_button.y + 2))
-        screen.blit(next_text, (next_button.x + 20, next_button.y + 2))
-        
-        page_text = font.render(f"Trang {current_page + 1}/{total_pages}", True, WHITE)
-        page_rect = page_text.get_rect(center=(inventory_x + inventory_width // 2, inventory_y + inventory_height - 15))
-        screen.blit(page_text, page_rect)
+    day_text = font.render(f"Date: {time_system.current_day}", True, WHITE)
+    time_text = font.render(f"Time: {time_system.format_time(time_system.get_remaining_time())}", True, WHITE)
+    day_night_text = font.render(f"Status: {time_system.get_time_of_day()}", True, WHITE)
+    screen.blit(day_text, (WIDTH - 150, 10))
+    screen.blit(time_text, (WIDTH - 150, 30))
+    screen.blit(day_night_text, (WIDTH - 150, 50))
 
-    # Vẽ tooltip khi chuột hover vào feature
-    for feature in features:
-        if feature["rect"].collidepoint(mouse_pos):
-            tooltip_text = font.render(feature["label"], True, WHITE)
-            tooltip_rect = tooltip_text.get_rect(topleft=(mouse_pos[0] + 10, mouse_pos[1] + 10))
-            pygame.draw.rect(screen, BLACK, (tooltip_rect.x - 2, tooltip_rect.y - 2, tooltip_rect.width + 4, tooltip_rect.height + 4))
-            screen.blit(tooltip_text, tooltip_rect)
-
-    # Kiểm tra và cập nhật con trỏ chuột
-    cursor_changed = False
-    if is_harvesting:
-        pygame.mouse.set_visible(False)
-        screen.blit(sickle_cursor, (mouse_pos[0], mouse_pos[1]))
-    elif is_watering:
-        pygame.mouse.set_visible(False)
-        screen.blit(watering_can_cursor, (mouse_pos[0], mouse_pos[1]))
+    if not time_system.is_day():
+        night_overlay = pygame.Surface((WIDTH, HEIGHT))
+        night_overlay.set_alpha(200)
+        night_overlay.fill(BLACK)
+        screen.blit(night_overlay, (0, 0))
+        night_message = large_font.render("It's night, buddy! You can't be here!", True, WHITE)
+        screen.blit(night_message, night_message.get_rect(center=(WIDTH // 2, HEIGHT // 2)))
     else:
-        pygame.mouse.set_visible(True)
-        for plot in plots:
-            if plot.collidepoint(mouse_pos):
-                pygame.mouse.set_cursor(hover_cursor)
-                cursor_changed = True
-                break
+        if show_inventory:
+            inventory_items, total_pages = update_inventory_display()
+            pygame.draw.rect(screen, INVENTORY_BG, (inventory_x, inventory_y, inventory_width, inventory_height))
+            for item in inventory_items:
+                pygame.draw.rect(screen, INVENTORY_CELL_BG, item["rect"])
+                pygame.draw.rect(screen, BLACK, item["rect"], 3)
+                if item["image"]:
+                    img_x = item["rect"].x + (inventory_cell_size - item["image"].get_width()) // 2
+                    img_y = item["rect"].y + (inventory_cell_size - item["image"].get_height()) // 2
+                    screen.blit(item["image"], (img_x, img_y))
+                # if item["rect"].collidepoint(mouse_pos) and item["name"]:
+                #     tooltip_text = font.render(seed_names.get(item["name"], item["name"]), True, WHITE)
+                #     tooltip_rect = tooltip_text.get_rect(topleft=(mouse_pos[0] + 10, mouse_pos[1] + 10))
+                #     pygame.draw.rect(screen, BLACK, (tooltip_rect.x - 2, tooltip_rect.y - 2, tooltip_rect.width + 4, tooltip_rect.height + 4))
+                #     screen.blit(tooltip_text, tooltip_rect)
+            
+            pygame.draw.rect(screen, BUTTON_COLOR, prev_button)
+            pygame.draw.rect(screen, BUTTON_COLOR, next_button)
+            prev_text = font.render("<", True, WHITE)
+            next_text = font.render(">", True, WHITE)
+            screen.blit(prev_text, (prev_button.x + 20, prev_button.y + 2))
+            screen.blit(next_text, (next_button.x + 20, next_button.y + 2))
+            page_text = font.render(f"Trang {current_page + 1}/{total_pages}", True, WHITE)
+            screen.blit(page_text, page_text.get_rect(center=(inventory_x + inventory_width // 2, inventory_y + inventory_height - 15)))
 
         for feature in features:
             if feature["rect"].collidepoint(mouse_pos):
-                pygame.mouse.set_cursor(hover_cursor)
-                cursor_changed = True
-                break
+                tooltip_text = font.render(feature["label"], True, WHITE)
+                tooltip_rect = tooltip_text.get_rect(topleft=(mouse_pos[0] + 10, mouse_pos[1] + 10))
+                pygame.draw.rect(screen, BLACK, (tooltip_rect.x - 2, tooltip_rect.y - 2, tooltip_rect.width + 4, tooltip_rect.height + 4))
+                screen.blit(tooltip_text, tooltip_rect)
 
-        if show_inventory:
-            inventory_items, total_pages = update_inventory_display()
-            for item in inventory_items:
-                if item["rect"].collidepoint(mouse_pos):
+    cursor_changed = False
+    if time_system.is_day():
+        if is_harvesting:
+            pygame.mouse.set_visible(False)
+            screen.blit(sickle_cursor, (mouse_pos[0], mouse_pos[1]))
+        elif is_watering:
+            pygame.mouse.set_visible(False)
+            if watering_animation and (current_time - watering_animation_start < WATERING_ANIMATION_DURATION):
+                screen.blit(watering_can_cursor, (mouse_pos[0], mouse_pos[1]))
+            else:
+                screen.blit(water_can_cursor, (mouse_pos[0], mouse_pos[1]))
+                watering_animation = False
+        elif is_removing:
+            pygame.mouse.set_visible(False)
+            screen.blit(sickle_cursor, (mouse_pos[0], mouse_pos[1]))
+        else:
+            pygame.mouse.set_visible(True)
+            for plot in plots:
+                if plot.collidepoint(mouse_pos):
                     pygame.mouse.set_cursor(hover_cursor)
                     cursor_changed = True
                     break
-            if prev_button.collidepoint(mouse_pos) or next_button.collidepoint(mouse_pos):
-                pygame.mouse.set_cursor(hover_cursor)
-                cursor_changed = True
+            for feature in features:
+                if feature["rect"].collidepoint(mouse_pos):
+                    pygame.mouse.set_cursor(hover_cursor)
+                    cursor_changed = True
+                    break
+            if show_inventory:
+                inventory_items, total_pages = update_inventory_display()
+                for item in inventory_items:
+                    if item["rect"].collidepoint(mouse_pos):
+                        pygame.mouse.set_cursor(hover_cursor)
+                        cursor_changed = True
+                        break
+                if prev_button.collidepoint(mouse_pos) or next_button.collidepoint(mouse_pos):
+                    pygame.mouse.set_cursor(hover_cursor)
+                    cursor_changed = True
+            if not cursor_changed:
+                pygame.mouse.set_cursor(default_cursor)
 
-        if not cursor_changed:
-            pygame.mouse.set_cursor(default_cursor)
-
-    # Xử lý sự kiện
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             save_inventory()
+            save_farm_data()
+            time_system.save_time_data()
             running = False
 
-        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-            # Kiểm tra nhấn vào ô đất
+        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1 and time_system.is_day():
             for index, plot in enumerate(plots):
                 if plot.collidepoint(event.pos):
                     if is_harvesting and index in planted_seeds and planted_seeds[index]["stage"] == 3:
@@ -328,62 +399,59 @@ while running:
                         player.inventory.add_item(product, 1)
                         del planted_seeds[index]
                         save_inventory()
-                        print(f"Đã thu hoạch: {product}. Số lượng hiện tại: {player.inventory.get_item_quantity(product)}")
-                    elif is_watering and index in planted_seeds:
-                        planted_seeds[index]["last_watered"] = pygame.time.get_ticks()
-                        print(f"Đã tưới nước cho cây tại ô {index}!")
-                    elif index not in planted_seeds and selected_seed is not None and len(planted_seeds) < player.get_garden_slots():
+                        save_farm_data()
+                    elif is_watering and index in planted_seeds and planted_seeds[index]["stage"] < 4:
+                        plant = planted_seeds[index]
+                        if plant["stage"] < 3 and plant["remaining_upgrade_time"] is None:
+                            plant["remaining_upgrade_time"] = UPGRADE_TIME
+                            plant["remaining_death_time"] = DEATH_TIME
+                            watering_animation = True
+                            watering_animation_start = current_time
+                            save_farm_data()
+                            print(f"Đã tưới nước cho cây tại ô {index} ở stage {plant['stage']}!")
+                    elif is_removing and index in planted_seeds:
+                        del planted_seeds[index]
+                        save_farm_data()
+                    elif index not in planted_seeds and selected_seed is not None:
                         if player.reduce_energy(ENERGY_COST) and player.inventory.remove_item(selected_seed, 1):
                             planted_seeds[index] = {
                                 "seed": selected_seed,
-                                "center_pos": plot.center,  # Lưu tâm điểm của ô đất
                                 "stage": 1,
-                                "time_planted": pygame.time.get_ticks(),
-                                "last_watered": pygame.time.get_ticks()
+                                "remaining_upgrade_time": None,  # Chưa tưới
+                                "remaining_death_time": DEATH_TIME,
+                                "center_pos": list(plot.center)
                             }
                             save_inventory()
-                            print(f"Đã trồng: {selected_seed}. Số lượng còn lại: {player.inventory.get_item_quantity(selected_seed)}")
+                            save_farm_data()
                             selected_seed = None
 
-            # Kiểm tra nhấn vào feature
             for feature in features:
                 if feature["rect"].collidepoint(event.pos):
                     if feature["function"] == "plant_menu":
                         show_inventory = not show_inventory
-                        is_harvesting = False
-                        is_watering = False
+                        is_harvesting = is_watering = is_removing = False
                     elif feature["function"] == "water":
                         is_watering = not is_watering
-                        is_harvesting = False
-                        show_inventory = False
-                        print(f"Chế độ tưới nước {'bật' if is_watering else 'tắt'}!")
+                        is_harvesting = is_removing = show_inventory = False
                     elif feature["function"] == "remove":
-                        print("Chức năng xóa được kích hoạt!")
-                        is_harvesting = False
-                        is_watering = False
+                        is_removing = not is_removing
+                        is_harvesting = is_watering = show_inventory = False
                     elif feature["function"] == "harvest":
                         is_harvesting = not is_harvesting
-                        is_watering = False
-                        show_inventory = False
-                        print(f"Chế độ thu hoạch {'bật' if is_harvesting else 'tắt'}!")
+                        is_watering = is_removing = show_inventory = False
 
-            # Kiểm tra nhấn vào ô trong inventory
             if show_inventory:
                 inventory_items, total_pages = update_inventory_display()
                 for item in inventory_items:
                     if item["rect"].collidepoint(event.pos) and item["name"]:
                         selected_seed = item["name"]
-                        print(f"Đã chọn: {selected_seed}")
                         show_inventory = False
-                
                 if prev_button.collidepoint(event.pos) and current_page > 0:
                     current_page -= 1
                 if next_button.collidepoint(event.pos) and current_page < total_pages - 1:
                     current_page += 1
 
-    mouse_x, mouse_y = pygame.mouse.get_pos()
-    text_surface = font.render(f"({mouse_x}, {mouse_y})", True, WHITE)
-    screen.blit(text_surface, (10, 10))
     pygame.display.flip()
+    clock.tick(60)
 
 pygame.quit()
