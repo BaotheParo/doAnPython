@@ -1,5 +1,12 @@
 import pygame
 import random
+
+import sys, os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
+BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))
+
+
+
 from src.core.player import Player
 from src.utils.constants import (
     SCREEN_WIDTH, SCREEN_HEIGHT, WHITE, BLACK, GREEN, RED,
@@ -24,17 +31,23 @@ class FishingMinigame:
         self.green_zone_size = FISHING_GREEN_ZONE_SIZE[self.rod_level]
 
         # Tải background cho minigame
-        self.background_path1 = "../../assets/images/backgrounds/animation-cauca1.png"
+        # self.background_path1 = "../../assets/images/backgrounds/animation-cauca1.png"
+
+        self.background_path1 = os.path.join(BASE_DIR, "assets", "images", "backgrounds", "animation-cauca1.png")
         self.background = pygame.image.load(self.background_path1).convert()
         self.background = pygame.transform.scale(self.background, (SCREEN_WIDTH, SCREEN_HEIGHT))
 
         # Tải background sau khi hoàn thành (giai đoạn 1)
-        self.background_path2 = "../../assets/images/backgrounds/animation-cauca2.png"
+        # self.background_path2 = "../../assets/images/backgrounds/animation-cauca2.png"
+
+        self.background_path2 = os.path.join(BASE_DIR, "assets", "images", "backgrounds", "animation-cauca2.png")
         self.background_complete = pygame.image.load(self.background_path2).convert()
         self.background_complete = pygame.transform.scale(self.background_complete, (SCREEN_WIDTH, SCREEN_HEIGHT))
 
         # Tải hình ảnh cho fishing bar (thay thế màu đen)
-        self.bar_image_path = "../../assets/images/fish/fishing_bar.png"
+        # self.bar_image_path = "../../assets/images/fish/fishing_bar.png"
+
+        self.bar_image_path = os.path.join(BASE_DIR, "assets", "images", "fish", "fishing_bar.png")
         try:
             self.bar_image = pygame.image.load(self.bar_image_path).convert_alpha()
             self.bar_image = pygame.transform.scale(self.bar_image, (FISHING_BAR_WIDTH, FISHING_BAR_HEIGHT))
@@ -44,7 +57,9 @@ class FishingMinigame:
             self.bar_image.fill(BLACK)
 
         # Tải hình ảnh cho con cá (thay thế màu đỏ)
-        self.fish_image_path = "../../assets/images/fish/fish.png"
+        # self.fish_image_path = "../../assets/images/fish/fish.png"
+
+        self.fish_image_path = os.path.join(BASE_DIR, "assets", "images", "fish", "fish.png")
         try:
             self.fish_image = pygame.image.load(self.fish_image_path).convert_alpha()
             self.fish_image = pygame.transform.scale(self.fish_image, (FISHING_FISH_SIZE, FISHING_FISH_SIZE))
@@ -54,7 +69,9 @@ class FishingMinigame:
             self.fish_image.fill(RED)
 
         # Tải hình ảnh cho thanh xanh lá (thay thế màu GREEN)
-        self.green_zone_image_path = "../../assets/images/green_zone.png"
+        # self.green_zone_image_path = "../../assets/images/green_zone.png"
+
+        self.green_zone_image_path = os.path.join(BASE_DIR, "assets", "images", "green_zone.png")
         try:
             self.green_zone_image = pygame.image.load(self.green_zone_image_path).convert_alpha()
             self.green_zone_image = pygame.transform.scale(self.green_zone_image,
@@ -65,7 +82,9 @@ class FishingMinigame:
             self.green_zone_image.fill(GREEN)
 
         # Tải hình ảnh cho khung bao quanh thanh đen
-        self.border_path = "../../assets/images/fish/Picture2.png"
+        # self.border_path = "../../assets/images/fish/Picture2.png"
+
+        self.border_path = os.path.join(BASE_DIR, "assets", "images", "fish", "Picture2.png")
         try:
             self.border_image = pygame.image.load(self.border_path).convert_alpha()
             self.border_image = pygame.transform.scale(self.border_image, (150, 450))
@@ -75,7 +94,9 @@ class FishingMinigame:
             self.border_image.fill(GREEN)
 
         # Tải hình ảnh khung cho kết quả (khi bắt được cá)
-        self.result_frame_path = "../../assets/images/fish/Picture3.png"
+        # self.result_frame_path = "../../assets/images/fish/Picture3.png"
+
+        self.result_frame_path = os.path.join(BASE_DIR, "assets", "images", "fish", "Picture3.png")
         try:
             self.result_frame = pygame.image.load(self.result_frame_path).convert_alpha()
             # Scale hình ảnh khung để bao quanh hình ảnh cá và dòng chữ
@@ -224,7 +245,8 @@ class FishingMinigame:
             "tilapia": "caRoPhi.png"
         }
         fish_image_name = fish_images.get(self.caught_fish, "caRoPhi.png")  # Mặc định là caRoPhi nếu không tìm thấy
-        fish_image_path = f"../../assets/images/fish/{fish_image_name}"
+        # fish_image_path = f"../../assets/images/fish/{fish_image_name}"
+        fish_image_path = os.path.join(BASE_DIR, "assets", "images", "fish", fish_image_name)
         self.caught_fish_image = pygame.image.load(fish_image_path).convert_alpha()
         self.caught_fish_image = pygame.transform.scale(self.caught_fish_image, (200, 200))
 
