@@ -1,6 +1,7 @@
 import pygame
 from src.core.player import Player
 from src.actions.fishing_action import start_fishing
+from src.core.time_system import TimeSystem  # Import TimeSystem
 from src.utils.constants import SCREEN_WIDTH, SCREEN_HEIGHT, WHITE, BLACK
 
 class FishingScene:
@@ -14,13 +15,20 @@ class FishingScene:
         self.day_background_path = "../../assets/images/backgrounds/background-cauca.png"
         self.night_background_path = "../../assets/images/backgrounds/background-cauca-dem.png"
 
-        # Tải và scale background ban ngày
-        self.day_background = pygame.image.load(self.day_background_path).convert()
-        self.day_background = pygame.transform.scale(self.day_background, (SCREEN_WIDTH, SCREEN_HEIGHT))
+        try:
+            # Tải và scale background ban ngày
+            self.day_background = pygame.image.load(self.day_background_path).convert()
+            self.day_background = pygame.transform.scale(self.day_background, (SCREEN_WIDTH, SCREEN_HEIGHT))
 
-        # Tải và scale background ban đêm
-        self.night_background = pygame.image.load(self.night_background_path).convert()
-        self.night_background = pygame.transform.scale(self.night_background, (SCREEN_WIDTH, SCREEN_HEIGHT))
+            # Tải và scale background ban đêm
+            self.night_background = pygame.image.load(self.night_background_path).convert()
+            self.night_background = pygame.transform.scale(self.night_background, (SCREEN_WIDTH, SCREEN_HEIGHT))
+        except FileNotFoundError as e:
+            print(f"Lỗi: Không tìm thấy file - {e}")
+            self.day_background = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
+            self.day_background.fill((100, 200, 100))
+            self.night_background = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
+            self.night_background.fill((0, 0, 50))
 
         # Chỉ giữ lake_rect
         self.lake_rect = pygame.Rect(515, 450, 485, 200)  # (x, y, width, height)
@@ -30,7 +38,7 @@ class FishingScene:
         self.hover_surface = pygame.Surface((self.lake_rect.width, self.lake_rect.height), pygame.SRCALPHA)
         self.hover_surface.fill(self.hover_color)
 
-        # Font để hiển thị tọa độ chuột
+        # Font để hiển thị tọa độ chuột và thời gian
         self.font = pygame.font.SysFont(None, 24)
 
         self.running = True
@@ -39,18 +47,21 @@ class FishingScene:
         clock = pygame.time.Clock()
 
         while self.running:
+            delta_time = clock.tick(60)  # Thời gian trôi qua giữa các khung hình (ms)
+            self.time_system.update(delta_time)  # Cập nhật thời gian trong game
+
             mouse_pos = pygame.mouse.get_pos()
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     self.running = False
+                    self.time_system.save_time_data()  # Lưu thời gian trước khi thoát
                 elif event.type == pygame.MOUSEBUTTONDOWN:
                     self.handle_click(mouse_pos)
 
-            # Kiểm tra thời gian để chọn background
-            time_of_day = self.time_system.get_time_of_day()
-            if time_of_day == "day":
+            # Vẽ background dựa trên thời gian
+            if self.time_system.is_day():
                 self.screen.blit(self.day_background, (0, 0))
-            elif time_of_day == "night":
+            else:
                 self.screen.blit(self.night_background, (0, 0))
 
             # Vẽ hiệu ứng hover khi chuột di qua hồ nước
@@ -58,29 +69,38 @@ class FishingScene:
                 self.screen.blit(self.hover_surface, (self.lake_rect.x, self.lake_rect.y))
 
             # Hiển thị tọa độ chuột trên màn hình
-            coord_text = self.font.render(f"X: {mouse_pos[0]}, Y: {mouse_pos[1]}", True, WHITE)
-            self.screen.blit(coord_text, (10, 10))  # Vẽ tọa độ ở góc trên cùng bên trái
+            coord_text = self.font.render(f"Mouse: {mouse_pos}", True, WHITE)
+            coord_bg = pygame.Surface((150, 25))
+            coord_bg.fill((50, 50, 50))
+            self.screen.blit(coord_bg, (10, 10))
+            self.screen.blit(coord_text, (15, 15))
+
+            # Hiển thị thời gian hiện tại (ngày/đêm và thời gian còn lại)
+            time_text = self.font.render(
+                f"Day: {self.time_system.current_day} | {self.time_system.get_time_of_day()} | Time Left: {self.time_system.format_time(self.time_system.get_remaining_time())}",
+                True, WHITE
+            )
+            time_bg = pygame.Surface((300, 25))
+            time_bg.fill((50, 50, 50))
+            self.screen.blit(time_bg, (10, 40))
+            self.screen.blit(time_text, (15, 45))
 
             pygame.display.flip()
-            clock.tick(60)
 
     def handle_click(self, pos):
         if self.lake_rect.collidepoint(pos):
             print("Bắt đầu câu cá!")
             start_fishing(self.player, self.time_system.get_time_of_day(), self.screen)  # Chạy minigame
-            print("Quay lại khu vực câu cá!")  # Thông báo sau khi minigame kết thúc)
+            print("Quay lại khu vực câu cá!")
 
 if __name__ == "__main__":
     pygame.init()
     screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
     from src.core.player import Player
-
-    class FakeTimeSystem:
-        def get_time_of_day(self):
-            return "night"  # Thay đổi thành "night" để kiểm tra background ban đêm
+    from src.core.time_system import TimeSystem
 
     player = Player()
-    time_system = FakeTimeSystem()
+    time_system = TimeSystem()  # Khởi tạo TimeSystem
     fishing_scene = FishingScene(player, time_system, screen)
     fishing_scene.run()
     pygame.quit()
