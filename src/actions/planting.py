@@ -2,7 +2,10 @@ import pygame
 import sys
 import json
 import os
-sys.path.append("D:\\ĐHSG\\Python\\Project\\doAnPython\\src\\core")
+
+BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))
+sys.path.append(os.path.join(BASE_DIR, "src", "core"))
+
 from inventory import Inventory
 from player import Player
 from time_system import TimeSystem
@@ -11,59 +14,59 @@ pygame.init()
 
 WIDTH, HEIGHT = 800, 600
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
-pygame.display.set_caption("Nông trại")
+pygame.display.set_caption("Farm Game")
 
-farm_bg = pygame.image.load("D:\\ĐHSG\\Python\\Project\\doAnPython\\assets\\images\\backgrounds\\khuvuon.png").convert()
+farm_bg = pygame.image.load(os.path.join(BASE_DIR, "assets", "images", "backgrounds", "khuvuon.png")).convert()
 farm_bg = pygame.transform.scale(farm_bg, (WIDTH, HEIGHT))
 
-# Load hình ảnh cây
+# Load plant images
 plant_images = {
     "carrot_seed": {
-        0: pygame.transform.scale(pygame.image.load("D:\\ĐHSG\\Python\\Project\\doAnPython\\assets\\images\\plants\\carot.png"), (40, 40)),
-        1: pygame.transform.scale(pygame.image.load("D:\\ĐHSG\\Python\\Project\\doAnPython\\assets\\images\\plants\\seed.png"), (50, 50)),
-        2: pygame.transform.scale(pygame.image.load("D:\\ĐHSG\\Python\\Project\\doAnPython\\assets\\images\\plants\\carot1.png"), (40, 40)),
-        3: pygame.transform.scale(pygame.image.load("D:\\ĐHSG\\Python\\Project\\doAnPython\\assets\\images\\plants\\carot2.png"), (70, 70)),
-        4: pygame.transform.scale(pygame.image.load("D:\\ĐHSG\\Python\\Project\\doAnPython\\assets\\images\\plants\\caychet.png"), (50, 50)),
+        0: pygame.transform.scale(pygame.image.load(os.path.join(BASE_DIR, "assets", "images", "plants", "carot.png")), (40, 40)),
+        1: pygame.transform.scale(pygame.image.load(os.path.join(BASE_DIR, "assets", "images", "plants", "seed.png")), (50, 50)),
+        2: pygame.transform.scale(pygame.image.load(os.path.join(BASE_DIR, "assets", "images", "plants", "carot1.png")), (40, 40)),
+        3: pygame.transform.scale(pygame.image.load(os.path.join(BASE_DIR, "assets", "images", "plants", "carot2.png")), (70, 70)),
+        4: pygame.transform.scale(pygame.image.load(os.path.join(BASE_DIR, "assets", "images", "plants", "caychet.png")), (50, 50)),
     },
     "cabbage_seed": {
-        0: pygame.transform.scale(pygame.image.load("D:\\ĐHSG\\Python\\Project\\doAnPython\\assets\\images\\plants\\bapcai.png"), (40, 40)),
-        1: pygame.transform.scale(pygame.image.load("D:\\ĐHSG\\Python\\Project\\doAnPython\\assets\\images\\plants\\seed.png"), (50, 50)),
-        2: pygame.transform.scale(pygame.image.load("D:\\ĐHSG\\Python\\Project\\doAnPython\\assets\\images\\plants\\bapcai1.png"), (40, 40)),
-        3: pygame.transform.scale(pygame.image.load("D:\\ĐHSG\\Python\\Project\\doAnPython\\assets\\images\\plants\\bapcai2.png"), (70, 70)),
-        4: pygame.transform.scale(pygame.image.load("D:\\ĐHSG\\Python\\Project\\doAnPython\\assets\\images\\plants\\caychet.png"), (50, 50)),
+        0: pygame.transform.scale(pygame.image.load(os.path.join(BASE_DIR, "assets", "images", "plants", "bapcai.png")), (40, 40)),
+        1: pygame.transform.scale(pygame.image.load(os.path.join(BASE_DIR, "assets", "images", "plants", "seed.png")), (50, 50)),
+        2: pygame.transform.scale(pygame.image.load(os.path.join(BASE_DIR, "assets", "images", "plants", "bapcai1.png")), (40, 40)),
+        3: pygame.transform.scale(pygame.image.load(os.path.join(BASE_DIR, "assets", "images", "plants", "bapcai2.png")), (70, 70)),
+        4: pygame.transform.scale(pygame.image.load(os.path.join(BASE_DIR, "assets", "images", "plants", "caychet.png")), (50, 50)),
     },
     "beetroot_seed": {
-        0: pygame.transform.scale(pygame.image.load("D:\\ĐHSG\\Python\\Project\\doAnPython\\assets\\images\\plants\\cuden.png"), (40, 40)),
-        1: pygame.transform.scale(pygame.image.load("D:\\ĐHSG\\Python\\Project\\doAnPython\\assets\\images\\plants\\seed.png"), (50, 50)),
-        2: pygame.transform.scale(pygame.image.load("D:\\ĐHSG\\Python\\Project\\doAnPython\\assets\\images\\plants\\cuden1.png"), (40, 40)),
-        3: pygame.transform.scale(pygame.image.load("D:\\ĐHSG\\Python\\Project\\doAnPython\\assets\\images\\plants\\cuden2.png"), (70, 70)),
-        4: pygame.transform.scale(pygame.image.load("D:\\ĐHSG\\Python\\Project\\doAnPython\\assets\\images\\plants\\caychet.png"), (50, 50)),
+        0: pygame.transform.scale(pygame.image.load(os.path.join(BASE_DIR, "assets", "images", "plants", "cuden.png")), (40, 40)),
+        1: pygame.transform.scale(pygame.image.load(os.path.join(BASE_DIR, "assets", "images", "plants", "seed.png")), (50, 50)),
+        2: pygame.transform.scale(pygame.image.load(os.path.join(BASE_DIR, "assets", "images", "plants", "cuden1.png")), (40, 40)),
+        3: pygame.transform.scale(pygame.image.load(os.path.join(BASE_DIR, "assets", "images", "plants", "cuden2.png")), (70, 70)),
+        4: pygame.transform.scale(pygame.image.load(os.path.join(BASE_DIR, "assets", "images", "plants", "caychet.png")), (50, 50)),
     },
     "pumpkin_seed": {
-        0: pygame.transform.scale(pygame.image.load("D:\\ĐHSG\\Python\\Project\\doAnPython\\assets\\images\\plants\\bido.png"), (40, 40)),
-        1: pygame.transform.scale(pygame.image.load("D:\\ĐHSG\\Python\\Project\\doAnPython\\assets\\images\\plants\\seed.png"), (50, 50)),
-        2: pygame.transform.scale(pygame.image.load("D:\\ĐHSG\\Python\\Project\\doAnPython\\assets\\images\\plants\\bido1.png"), (40, 40)),
-        3: pygame.transform.scale(pygame.image.load("D:\\ĐHSG\\Python\\Project\\doAnPython\\assets\\images\\plants\\bido2.png"), (70, 70)),
-        4: pygame.transform.scale(pygame.image.load("D:\\ĐHSG\\Python\\Project\\doAnPython\\assets\\images\\plants\\caychet.png"), (50, 50)),
+        0: pygame.transform.scale(pygame.image.load(os.path.join(BASE_DIR, "assets", "images", "plants", "bido.png")), (40, 40)),
+        1: pygame.transform.scale(pygame.image.load(os.path.join(BASE_DIR, "assets", "images", "plants", "seed.png")), (50, 50)),
+        2: pygame.transform.scale(pygame.image.load(os.path.join(BASE_DIR, "assets", "images", "plants", "bido1.png")), (40, 40)),
+        3: pygame.transform.scale(pygame.image.load(os.path.join(BASE_DIR, "assets", "images", "plants", "bido2.png")), (70, 70)),
+        4: pygame.transform.scale(pygame.image.load(os.path.join(BASE_DIR, "assets", "images", "plants", "caychet.png")), (50, 50)),
     },
     "energy_herb_seed": {
-        0: pygame.transform.scale(pygame.image.load("D:\\ĐHSG\\Python\\Project\\doAnPython\\assets\\images\\plants\\thaomoc.png"), (40, 40)),
-        1: pygame.transform.scale(pygame.image.load("D:\\ĐHSG\\Python\\Project\\doAnPython\\assets\\images\\plants\\seed.png"), (50, 50)),
-        2: pygame.transform.scale(pygame.image.load("D:\\ĐHSG\\Python\\Project\\doAnPython\\assets\\images\\plants\\thaomoc1.png"), (40, 40)),
-        3: pygame.transform.scale(pygame.image.load("D:\\ĐHSG\\Python\\Project\\doAnPython\\assets\\images\\plants\\thaomoc2.png"), (70, 70)),
-        4: pygame.transform.scale(pygame.image.load("D:\\ĐHSG\\Python\\Project\\doAnPython\\assets\\images\\plants\\caychet.png"), (50, 50)),
+        0: pygame.transform.scale(pygame.image.load(os.path.join(BASE_DIR, "assets", "images", "plants", "thaomoc.png")), (40, 40)),
+        1: pygame.transform.scale(pygame.image.load(os.path.join(BASE_DIR, "assets", "images", "plants", "seed.png")), (50, 50)),
+        2: pygame.transform.scale(pygame.image.load(os.path.join(BASE_DIR, "assets", "images", "plants", "thaomoc1.png")), (40, 40)),
+        3: pygame.transform.scale(pygame.image.load(os.path.join(BASE_DIR, "assets", "images", "plants", "thaomoc2.png")), (70, 70)),
+        4: pygame.transform.scale(pygame.image.load(os.path.join(BASE_DIR, "assets", "images", "plants", "caychet.png")), (50, 50)),
     },
     "rare_herb_seed": {
-        0: pygame.transform.scale(pygame.image.load("D:\\ĐHSG\\Python\\Project\\doAnPython\\assets\\images\\plants\\lua.png"), (40, 40)),
-        1: pygame.transform.scale(pygame.image.load("D:\\ĐHSG\\Python\\Project\\doAnPython\\assets\\images\\plants\\seed.png"), (50, 50)),
-        2: pygame.transform.scale(pygame.image.load("D:\\ĐHSG\\Python\\Project\\doAnPython\\assets\\images\\plants\\lua1.png"), (40, 40)),
-        3: pygame.transform.scale(pygame.image.load("D:\\ĐHSG\\Python\\Project\\doAnPython\\assets\\images\\plants\\lua2.png"), (70, 70)),
-        4: pygame.transform.scale(pygame.image.load("D:\\ĐHSG\\Python\\Project\\doAnPython\\assets\\images\\plants\\caychet.png"), (50, 50)),
+        0: pygame.transform.scale(pygame.image.load(os.path.join(BASE_DIR, "assets", "images", "plants", "lua.png")), (40, 40)),
+        1: pygame.transform.scale(pygame.image.load(os.path.join(BASE_DIR, "assets", "images", "plants", "seed.png")), (50, 50)),
+        2: pygame.transform.scale(pygame.image.load(os.path.join(BASE_DIR, "assets", "images", "plants", "lua1.png")), (40, 40)),
+        3: pygame.transform.scale(pygame.image.load(os.path.join(BASE_DIR, "assets", "images", "plants", "lua2.png")), (70, 70)),
+        4: pygame.transform.scale(pygame.image.load(os.path.join(BASE_DIR, "assets", "images", "plants", "caychet.png")), (50, 50)),
     },
 }
 
-warning_icon = pygame.image.load("D:\\ĐHSG\\Python\\Project\\doAnPython\\assets\\images\\icons\\need_watering.png")
-warning_icon = pygame.transform.scale(warning_icon, (20, 20))
+warning_icon = pygame.transform.scale(pygame.image.load(os.path.join(BASE_DIR, "assets", "images", "icons", "need_watering.png")), (20, 20))
+lock_icon = pygame.transform.scale(pygame.image.load(os.path.join(BASE_DIR, "assets", "images", "icons", "padlock.png")), (40, 40))
 
 seed_names = {
     "carrot_seed": "Carrot Seed",
@@ -74,7 +77,7 @@ seed_names = {
     "rare_herb_seed": "Rare Herb Seed",
 }
 
-# Màu sắc
+# Colors
 BROWN = (139, 69, 19)
 BLUE = (0, 0, 255)
 WHITE = (255, 255, 255)
@@ -82,20 +85,21 @@ BLACK = (0, 0, 0)
 INVENTORY_BG = (100, 70, 50)
 INVENTORY_CELL_BG = (70, 50, 40)
 BUTTON_COLOR = (150, 150, 150)
+LOCKED_OVERLAY = (50, 50, 50, 150)
 
-# Định nghĩa các ô đất
+# Define plot rectangles
 plots = [
-    pygame.Rect(176, 330, 120, 50),
+    pygame.Rect(176, 330, 120, 50),  # Row 1
     pygame.Rect(326, 330, 80, 50),
     pygame.Rect(446, 330, 100, 50),
     pygame.Rect(583, 332, 120, 50),
-    pygame.Rect(156, 409, 120, 50),
+    pygame.Rect(156, 409, 120, 50),  # Row 2
     pygame.Rect(312, 412, 85, 50),
     pygame.Rect(437, 409, 100, 50),
     pygame.Rect(588, 414, 90, 50)
 ]
 
-# Định nghĩa các nút feature
+# Define feature buttons
 features = [
     {"rect": pygame.Rect(318, 35, 58, 78), "function": "plant_menu", "label": "Planting"},
     {"rect": pygame.Rect(386, 35, 58, 78), "function": "water", "label": "Watering"},
@@ -103,7 +107,6 @@ features = [
     {"rect": pygame.Rect(518, 35, 58, 78), "function": "harvest", "label": "Harvest"},
 ]
 
-# Ánh xạ hạt giống với sản phẩm
 seed_to_product = {
     "carrot_seed": "carrot",
     "cabbage_seed": "cabbage",
@@ -114,20 +117,20 @@ seed_to_product = {
 }
 
 player = Player()
+player.load_game()  # Tải dữ liệu khi khởi tạo
 time_system = TimeSystem()
 ENERGY_COST = 20
-DEATH_TIME = 120000  # 2 phút
-UPGRADE_TIME = 60000  # 1 phút
-WARNING_TIME = 30000  # 30 giây
+DEATH_TIME = 120000  # 2 minutes
+UPGRADE_TIME = 60000  # 1 minute
+WARNING_TIME = 30000  # 30 seconds
 
-planted_seeds = {}
 font = pygame.font.Font(None, 24)
 large_font = pygame.font.Font(None, 48)
 default_cursor = pygame.SYSTEM_CURSOR_ARROW
 hover_cursor = pygame.SYSTEM_CURSOR_HAND
-sickle_cursor = pygame.transform.scale(pygame.image.load("D:\\ĐHSG\\Python\\Project\\doAnPython\\assets\\images\\icons\\ll.png"), (32, 32))
-watering_can_cursor = pygame.transform.scale(pygame.image.load("D:\\ĐHSG\\Python\\Project\\doAnPython\\assets\\images\\icons\\watering_can.png"), (32, 32))
-water_can_cursor = pygame.transform.scale(pygame.image.load("D:\\ĐHSG\\Python\\Project\\doAnPython\\assets\\images\\icons\\water-can.png"), (32, 32))
+sickle_cursor = pygame.transform.scale(pygame.image.load(os.path.join(BASE_DIR, "assets", "images", "icons", "ll.png")), (32, 32))
+watering_can_cursor = pygame.transform.scale(pygame.image.load(os.path.join(BASE_DIR, "assets", "images", "icons", "watering_can.png")), (32, 32))
+water_can_cursor = pygame.transform.scale(pygame.image.load(os.path.join(BASE_DIR, "assets", "images", "icons", "water-can.png")), (32, 32))
 show_inventory = False
 selected_seed = None
 is_harvesting = False
@@ -137,50 +140,6 @@ current_page = 0
 watering_animation = False
 watering_animation_start = 0
 WATERING_ANIMATION_DURATION = 500
-FARM_DATA_FILE = "D:\\ĐHSG\\Python\\Project\\doAnPython\\src\\core\\farm_data.json"
-
-def save_inventory():
-    with open("D:\\ĐHSG\\Python\\Project\\doAnPython\\src\\core\\inventory_data.json", "w") as f:
-        json.dump(player.inventory.items, f)
-
-def load_inventory():
-    try:
-        with open("D:\\ĐHSG\\Python\\Project\\doAnPython\\src\\core\\inventory_data.json", "r") as f:
-            player.inventory.items = json.load(f)
-    except FileNotFoundError:
-        pass
-
-def save_farm_data():
-    farm_data = {}
-    for index, plant in planted_seeds.items():
-        farm_data[str(index)] = {
-            "seed": plant["seed"],
-            "stage": plant["stage"],
-            "remaining_upgrade_time": plant["remaining_upgrade_time"],
-            "remaining_death_time": plant["remaining_death_time"],
-            "center_pos": plant["center_pos"]
-        }
-    with open(FARM_DATA_FILE, "w") as f:
-        json.dump(farm_data, f)
-
-def load_farm_data():
-    global planted_seeds
-    try:
-        with open(FARM_DATA_FILE, "r") as f:
-            farm_data = json.load(f)
-            for index, plant in farm_data.items():
-                planted_seeds[int(index)] = {
-                    "seed": plant["seed"],
-                    "stage": plant["stage"],
-                    "remaining_upgrade_time": plant["remaining_upgrade_time"],
-                    "remaining_death_time": plant["remaining_death_time"],
-                    "center_pos": tuple(plant["center_pos"])
-                }
-    except FileNotFoundError:
-        planted_seeds = {}
-
-load_inventory()
-load_farm_data()
 
 inventory_rows = 2
 inventory_cols = 5
@@ -227,33 +186,30 @@ def update_inventory_display():
     return visible_items, total_pages
 
 def update_plant_stages(delta_time):
-    for index in list(planted_seeds.keys()):
-        plant = planted_seeds[index]
-        
-        if plant["stage"] >= 3:  # Trưởng thành hoặc chết
+    for index in list(player.planted_seeds.keys()):
+        plant = player.planted_seeds[index]
+        if plant["stage"] >= 3:
             continue
-        
-        # Giảm thời gian chết
         plant["remaining_death_time"] -= delta_time
         if plant["remaining_death_time"] <= 0 and plant["stage"] < 4:
-            plant["stage"] = 4  # Cây chết
+            plant["stage"] = 4
             plant["remaining_upgrade_time"] = None
-            print(f"Cây tại ô {index} đã chết!")
-        
-        # Giảm thời gian lên stage nếu đã tưới
+            print(f"Plant at plot {index} has died!")
+            player.save_game()
         if plant["remaining_upgrade_time"] is not None:
             plant["remaining_upgrade_time"] -= delta_time
             if plant["remaining_upgrade_time"] <= 0:
                 plant["stage"] += 1
-                if plant["stage"] < 3:  # Nếu chưa trưởng thành, yêu cầu tưới lại
+                if plant["stage"] < 3:
                     plant["remaining_upgrade_time"] = None
                     plant["remaining_death_time"] = DEATH_TIME
-                else:  # Trưởng thành
+                else:
                     plant["remaining_upgrade_time"] = None
                     plant["remaining_death_time"] = None
-                print(f"Cây tại ô {index} lên stage {plant['stage']}!")
+                print(f"Plant at plot {index} upgraded to stage {plant['stage']}!")
                 if plant["stage"] == 3:
-                    print(f"Cây tại ô {index} trưởng thành!")
+                    print(f"Plant at plot {index} is fully grown!")
+                player.save_game()
 
 running = True
 clock = pygame.time.Clock()
@@ -269,32 +225,41 @@ while running:
     time_system.update(delta_time)
     update_plant_stages(delta_time)
 
+    garden_slots = player.get_garden_slots()
     for index, plot in enumerate(plots):
-        # pygame.draw.rect(screen, BROWN, plot, 3)
-        if index in planted_seeds:
-            seed_type = planted_seeds[index]["seed"]
-            stage = planted_seeds[index]["stage"]
-            center_pos = planted_seeds[index]["center_pos"]
-            image = plant_images[seed_type][stage]
-            img_x = center_pos[0] - image.get_width() // 2
-            img_y = center_pos[1] - image.get_height() // 2
-            screen.blit(image, (img_x, img_y))
-
-            if stage < 3 and (planted_seeds[index]["remaining_upgrade_time"] is None or planted_seeds[index]["remaining_death_time"] <= WARNING_TIME):
-                if (current_time // 500) % 2 == 0:
-                    warning_x = img_x + image.get_width() - warning_icon.get_width() // 2
-                    warning_y = img_y - warning_icon.get_height() // 2
-                    screen.blit(warning_icon, (warning_x, warning_y))
+        if index < garden_slots:
+            if index in player.planted_seeds:
+                seed_type = player.planted_seeds[index]["seed"]
+                stage = player.planted_seeds[index]["stage"]
+                center_pos = player.planted_seeds[index]["center_pos"]
+                image = plant_images[seed_type][stage]
+                img_x = center_pos[0] - image.get_width() // 2
+                img_y = center_pos[1] - image.get_height() // 2
+                screen.blit(image, (img_x, img_y))
+                if stage < 3 and (player.planted_seeds[index]["remaining_upgrade_time"] is None or player.planted_seeds[index]["remaining_death_time"] <= WARNING_TIME):
+                    if (current_time // 500) % 2 == 0:
+                        warning_x = img_x + image.get_width() - warning_icon.get_width() // 2
+                        warning_y = img_y - warning_icon.get_height() // 2
+                        screen.blit(warning_icon, (warning_x, warning_y))
+        else:
+            overlay = pygame.Surface((plot.width, plot.height), pygame.SRCALPHA)
+            overlay.fill(LOCKED_OVERLAY)
+            screen.blit(overlay, (plot.x, plot.y))
+            lock_alpha = 255 if (current_time // 500) % 2 == 0 else 200
+            lock_surface = lock_icon.copy()
+            lock_surface.set_alpha(lock_alpha)
+            lock_x = plot.centerx - lock_surface.get_width() // 2
+            lock_y = plot.centery - lock_surface.get_height() // 2
+            screen.blit(lock_surface, (lock_x, lock_y))
 
     mouse_pos = pygame.mouse.get_pos()
-
-    # for feature in features:
-    #     pygame.draw.rect(screen, BLUE, feature["rect"], 3)
 
     pygame.draw.rect(screen, WHITE, (20, 20, 104, 24))
     pygame.draw.rect(screen, BLUE, (22, 22, player.get_energy(), 20))
     energy_text = font.render(f"MANA: {player.get_energy()}/{player.max_energy}", True, WHITE)
-    screen.blit(energy_text, (20, 50))
+    # money_text = font.render(f"Money: {player.get_money()} coins", True, WHITE)
+    # screen.blit(energy_text, (20, 50))
+    # screen.blit(money_text, (20, 80))
 
     day_text = font.render(f"Date: {time_system.current_day}", True, WHITE)
     time_text = font.render(f"Time: {time_system.format_time(time_system.get_remaining_time())}", True, WHITE)
@@ -321,19 +286,14 @@ while running:
                     img_x = item["rect"].x + (inventory_cell_size - item["image"].get_width()) // 2
                     img_y = item["rect"].y + (inventory_cell_size - item["image"].get_height()) // 2
                     screen.blit(item["image"], (img_x, img_y))
-                # if item["rect"].collidepoint(mouse_pos) and item["name"]:
-                #     tooltip_text = font.render(seed_names.get(item["name"], item["name"]), True, WHITE)
-                #     tooltip_rect = tooltip_text.get_rect(topleft=(mouse_pos[0] + 10, mouse_pos[1] + 10))
-                #     pygame.draw.rect(screen, BLACK, (tooltip_rect.x - 2, tooltip_rect.y - 2, tooltip_rect.width + 4, tooltip_rect.height + 4))
-                #     screen.blit(tooltip_text, tooltip_rect)
-            
+
             pygame.draw.rect(screen, BUTTON_COLOR, prev_button)
             pygame.draw.rect(screen, BUTTON_COLOR, next_button)
             prev_text = font.render("<", True, WHITE)
             next_text = font.render(">", True, WHITE)
             screen.blit(prev_text, (prev_button.x + 20, prev_button.y + 2))
             screen.blit(next_text, (next_button.x + 20, next_button.y + 2))
-            page_text = font.render(f"Trang {current_page + 1}/{total_pages}", True, WHITE)
+            page_text = font.render(f"Page {current_page + 1}/{total_pages}", True, WHITE)
             screen.blit(page_text, page_text.get_rect(center=(inventory_x + inventory_width // 2, inventory_y + inventory_height - 15)))
 
         for feature in features:
@@ -360,13 +320,18 @@ while running:
             screen.blit(sickle_cursor, (mouse_pos[0], mouse_pos[1]))
         else:
             pygame.mouse.set_visible(True)
-            for plot in plots:
+            for plot in plots[:garden_slots]:
                 if plot.collidepoint(mouse_pos):
                     pygame.mouse.set_cursor(hover_cursor)
                     cursor_changed = True
                     break
             for feature in features:
                 if feature["rect"].collidepoint(mouse_pos):
+                    pygame.mouse.set_cursor(hover_cursor)
+                    cursor_changed = True
+                    break
+            for plot in plots[garden_slots:]:
+                if plot.collidepoint(mouse_pos):
                     pygame.mouse.set_cursor(hover_cursor)
                     cursor_changed = True
                     break
@@ -385,45 +350,50 @@ while running:
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
-            save_inventory()
-            save_farm_data()
             time_system.save_time_data()
             running = False
 
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1 and time_system.is_day():
-            for index, plot in enumerate(plots):
+            for index, plot in enumerate(plots[:garden_slots]):
                 if plot.collidepoint(event.pos):
-                    if is_harvesting and index in planted_seeds and planted_seeds[index]["stage"] == 3:
-                        seed_type = planted_seeds[index]["seed"]
+                    if is_harvesting and index in player.planted_seeds and player.planted_seeds[index]["stage"] == 3:
+                        seed_type = player.planted_seeds[index]["seed"]
                         product = seed_to_product[seed_type]
                         player.inventory.add_item(product, 1)
-                        del planted_seeds[index]
-                        save_inventory()
-                        save_farm_data()
-                    elif is_watering and index in planted_seeds and planted_seeds[index]["stage"] < 4:
-                        plant = planted_seeds[index]
+                        del player.planted_seeds[index]
+                        player.save_game()
+                    elif is_watering and index in player.planted_seeds and player.planted_seeds[index]["stage"] < 4:
+                        plant = player.planted_seeds[index]
                         if plant["stage"] < 3 and plant["remaining_upgrade_time"] is None:
                             plant["remaining_upgrade_time"] = UPGRADE_TIME
                             plant["remaining_death_time"] = DEATH_TIME
                             watering_animation = True
                             watering_animation_start = current_time
-                            save_farm_data()
-                            print(f"Đã tưới nước cho cây tại ô {index} ở stage {plant['stage']}!")
-                    elif is_removing and index in planted_seeds:
-                        del planted_seeds[index]
-                        save_farm_data()
-                    elif index not in planted_seeds and selected_seed is not None:
-                        if player.reduce_energy(ENERGY_COST) and player.inventory.remove_item(selected_seed, 1):
-                            planted_seeds[index] = {
+                            player.save_game()
+                            print(f"Watered plant at plot {index} in stage {plant['stage']}!")
+                    elif is_removing and index in player.planted_seeds:
+                        del player.planted_seeds[index]
+                        player.save_game()
+                    elif index not in player.planted_seeds and selected_seed is not None:
+                        energy_success = player.reduce_energy(ENERGY_COST)
+                        inventory_success = player.inventory.remove_item(selected_seed, 1)
+                        if energy_success and inventory_success:
+                            player.planted_seeds[index] = {
                                 "seed": selected_seed,
                                 "stage": 1,
-                                "remaining_upgrade_time": None,  # Chưa tưới
+                                "remaining_upgrade_time": None,
                                 "remaining_death_time": DEATH_TIME,
                                 "center_pos": list(plot.center)
                             }
-                            save_inventory()
-                            save_farm_data()
+                            print(f"Đã trồng {selected_seed} tại ô {index}")
+                            player.save_game()
                             selected_seed = None
+                        else:
+                            if not energy_success:
+                                print("Không đủ năng lượng để trồng cây!")
+                            if not inventory_success:
+                                print(f"Không đủ {selected_seed} trong kho!")
+                            player.save_game()
 
             for feature in features:
                 if feature["rect"].collidepoint(event.pos):
