@@ -14,13 +14,6 @@ class SettingsUI:
         self.show_menu = False   # Trạng thái menu
         self.show_map = False    # Trạng thái bản đồ
 
-        self.map_x = 316
-        self.map_y = 176
-        self.map_width = 987
-        self.map_height = 646
-
-        # Vùng ngôi làng (toạ độ tương đối 100, 150, size 80x80 chẳng hạn)
-        self.village_rect_rel = pygame.Rect(100, 150, 80, 80)
 
         # Lấy kích thước màn hình
         self.screen_width, self.screen_height = self.screen.get_size()
@@ -36,6 +29,9 @@ class SettingsUI:
         self.map_height = int(self.screen_height * 0.5)
         self.map_x = (self.screen_width - self.map_width) // 2
         self.map_y = (self.screen_height - self.map_height) // 2
+
+        # Vùng ngôi làng (toạ độ tương đối 100, 150, size 80x80 chẳng hạn)
+        self.village_rect_rel = pygame.Rect(100, 150, 80, 80)
 
         # Icons
         self.icon_settings = pygame.image.load(os.path.join(IMAGE_DIR, "icons", "SettingBtn.png")).convert_alpha()

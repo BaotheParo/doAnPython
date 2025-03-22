@@ -85,6 +85,7 @@ class FishingScene:
             coord_bg.fill((50, 50, 50))
             self.screen.blit(coord_bg, (10, 10))
             self.screen.blit(coord_text, (15, 15))
+            self.ui.draw()
 
             # Hiển thị thời gian hiện tại (ngày/đêm và thời gian còn lại)
             time_text = self.font.render(
@@ -110,9 +111,11 @@ if __name__ == "__main__":
     screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
     from src.core.player import Player
     from src.core.time_system import TimeSystem
+    from src.core.ui import SettingsUI
 
     player = Player()
+    settings_ui = SettingsUI(screen, player)
     time_system = TimeSystem()  # Khởi tạo TimeSystem
-    fishing_scene = FishingScene(player, time_system, screen)
+    fishing_scene = FishingScene(player, time_system, screen,settings_ui)
     fishing_scene.run()
     pygame.quit()

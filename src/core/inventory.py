@@ -1,11 +1,15 @@
 import json
-import os
+import os, sys
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
 
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DATA_DIR = os.path.abspath(os.path.join(BASE_DIR, "../../src/data"))
 
 class Inventory:
     def __init__(self):
         # Đường dẫn tương đối đến file inventory_data.json
-        self.data_path = "../data/inventory_data.json"
+        self.data_path =os.path.join(DATA_DIR,"inventory_data.json")
+
 
         # Khởi tạo kho đồ từ file JSON
         self.items = self.load_inventory()
