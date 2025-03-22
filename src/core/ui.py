@@ -1,19 +1,21 @@
 import pygame
 import sys
 import os
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
+import json
 
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 IMAGE_DIR = os.path.abspath(os.path.join(BASE_DIR, "../../assets/images"))
-
+FARM_DATA_FILE = os.path.abspath(os.path.join(BASE_DIR, "../../src/core/farm_data.json"))
 
 class SettingsUI:
-    def __init__(self, screen, player):
+    def __init__(self, screen, player, time_system=None, planted_seeds=None):
         self.screen = screen
-        self.player = player  # Truyền đối tượng Player để gọi save_game()
-        self.show_menu = False   # Trạng thái menu
-        self.show_map = False    # Trạng thái bản đồ
-
+        self.player = player
+        self.time_system = time_system  # Thêm time_system
+        self.planted_seeds = planted_seeds  # Thêm planted_seeds
+        self.show_menu = False
+        self.show_map = False
 
         # Lấy kích thước màn hình
         self.screen_width, self.screen_height = self.screen.get_size()
@@ -53,7 +55,6 @@ class SettingsUI:
         # Nút "Quay lại" trong bản đồ
         self.back_icon = pygame.image.load(os.path.join(IMAGE_DIR, "icons", "icon-quaylai.png")).convert_alpha()
         self.back_icon = pygame.transform.scale(self.back_icon, (40, 40))
-        # Vị trí nút "Quay lại" sẽ được tính trong draw()
 
         # Font chữ
         self.font = pygame.font.Font(None, int(self.screen_width * 0.02))
@@ -99,15 +100,11 @@ class SettingsUI:
             border_y = self.map_y - 4
             border_w = self.map_width + 8
             border_h = self.map_height + 8
-            # Vẽ khung viền nổi cho bản đồ
             pygame.draw.rect(self.screen, (155, 173, 183), 
                              (border_x, border_y, border_w, border_h), width=4)
-            # Vẽ nền bên trong khung (nếu cần)
             pygame.draw.rect(self.screen, (50, 50, 50),
                              (self.map_x, self.map_y, self.map_width, self.map_height))
-            # Vẽ ảnh bản đồ lên khung
             self.screen.blit(self.map_image, (self.map_x, self.map_y))
-            # Tính vị trí nút "Quay lại" ở góc trên phải khung bản đồ
             self.back_icon_rect = self.back_icon.get_rect(
                 topright=(self.map_x + self.map_width - 10, self.map_y + 10)
             )
@@ -115,30 +112,43 @@ class SettingsUI:
 
     def handle_event(self, event):
         if event.type == pygame.MOUSEBUTTONDOWN:
-            # Nếu bấm icon Settings -> mở/tắt menu Settings
             if self.icon_settings_rect.collidepoint(event.pos):
                 self.show_menu = not self.show_menu
                 self.show_map = False
                 return
-            # Nếu bấm icon Map -> mở/tắt bản đồ
             if self.icon_map_rect.collidepoint(event.pos):
                 self.show_map = not self.show_map
                 self.show_menu = False
                 return
-            # Nếu bản đồ đang mở, kiểm tra click nút "Quay lại"
             if self.show_map:
                 if self.back_icon_rect.collidepoint(event.pos):
                     self.show_map = False
                     return
-            # Nếu menu Settings đang mở, kiểm tra click các nút
             if self.show_menu:
                 for button in self.buttons:
                     if button["rect"].collidepoint(event.pos):
                         button["action"]()
 
+    def save_farm_data(self):
+        if self.planted_seeds is not None:
+            farm_data = {}
+            for index, plant in self.planted_seeds.items():
+                farm_data[str(index)] = {
+                    "seed": plant["seed"],
+                    "stage": plant["stage"],
+                    "remaining_upgrade_time": plant["remaining_upgrade_time"],
+                    "remaining_death_time": plant["remaining_death_time"],
+                    "center_pos": plant["center_pos"]
+                }
+            with open(FARM_DATA_FILE, "w") as f:
+                json.dump(farm_data, f)
+
     def save_game_ui(self):
-        # Gọi hàm save_game của player để lưu trạng thái game
         self.player.save_game("player_data.json")
+        if self.time_system:
+            self.time_system.save_time_data()
+        if self.planted_seeds is not None:
+            self.save_farm_data()
         print("Game đã được lưu từ UI!")
         self.show_menu = False
 
@@ -149,15 +159,13 @@ class SettingsUI:
     def exit_game(self):
         print("Thoát game!")
         pygame.quit()
-        exit()
+        sys.exit()
 
-
-
-def start_ui(player):
+def start_ui(player, time_system=None, planted_seeds=None):
     pygame.init()
     screen = pygame.display.set_mode((1280, 720), pygame.RESIZABLE)
     pygame.display.set_caption("UI Settings")
-    settings_ui = SettingsUI(screen, player)
+    settings_ui = SettingsUI(screen, player, time_system, planted_seeds)
     clock = pygame.time.Clock()
     running = True
 
@@ -167,9 +175,10 @@ def start_ui(player):
                 running = False
             elif event.type == pygame.VIDEORESIZE:
                 screen = pygame.display.set_mode((event.w, event.h), pygame.RESIZABLE)
-                settings_ui = SettingsUI(screen, player)
+                settings_ui = SettingsUI(screen, player, time_system, planted_seeds)
             settings_ui.handle_event(event)
 
+        screen.fill((0, 0, 0))  # Đặt nền đen để dễ nhìn giao diện
         settings_ui.draw()
         pygame.display.flip()
         clock.tick(60)
@@ -180,5 +189,8 @@ if __name__ == "__main__":
     pygame.init()
     screen = pygame.display.set_mode((1280, 720), pygame.RESIZABLE)
     from src.core.player import Player
+    from src.core.time_system import TimeSystem
     player = Player()
-    start_ui(player)
+    time_system = TimeSystem()
+    planted_seeds = {}
+    start_ui(player, time_system, planted_seeds)

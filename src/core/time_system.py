@@ -13,7 +13,7 @@ class TimeSystem:
         self.save_file = os.path.join(save_dir, filename)
         
         self.day_duration = 50000  # Ban ngày = 50,000 ms
-        self.night_duration = 20000  # Ban đêm = 20,000 ms
+        self.night_duration = 10000  # Ban đêm = 20,000 ms
         self.day_length = self.day_duration + self.night_duration  # Tổng thời gian của ngày (70,000 ms)
         self.load_time_data()
 

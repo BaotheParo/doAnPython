@@ -105,10 +105,11 @@ class Player:
 
     def load_game(self, filename="player_data.json"):
         """Tải thông tin người chơi từ file JSON."""
-        if not os.path.exists(filename):
-            print(f"Không tìm thấy file {filename}. Bắt đầu game mới.")
+        save_path = os.path.join(save_dir, filename)
+        if not os.path.exists(save_path):
+            print(f"Không tìm thấy file {save_path}. Bắt đầu game mới.")
             return
-        with open(filename, "r", encoding="utf-8") as f:
+        with open(save_path, "r", encoding="utf-8") as f:
             data = json.load(f)
         self.energy = data["energy"]
         self.money = data["money"]
@@ -116,7 +117,7 @@ class Player:
         self.max_energy = data["max_energy"]
         self.garden_slots = data["garden_slots"]
         self.inventory.items = data["inventory"]
-        print(f"Đã tải game từ {filename}")
+        print(f"Đã tải game từ {save_path}")
 
 if __name__ == "__main__":
     player = Player()
