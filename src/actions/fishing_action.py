@@ -4,9 +4,6 @@ import random
 import sys, os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
 BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))
-
-
-
 from src.core.player import Player
 from src.utils.constants import (
     SCREEN_WIDTH, SCREEN_HEIGHT, WHITE, BLACK, GREEN, RED,
