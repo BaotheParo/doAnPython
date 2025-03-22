@@ -1,13 +1,13 @@
 {
-    "energy": 80,
-    "money": 0,
+    "energy": 100,
+    "money": 100,
     "rod_level": "wood",
     "max_energy": 100,
-    "garden_slots": 2,
+    "garden_slots": 4,
     "inventory": {
         "carrot_seed": 0,
         "cabbage_seed": 0,
-        "beetroot_seed": 8,
+        "beetroot_seed": 5,
         "pumpkin_seed": 16,
         "energy_herb_seed": 10,
         "rare_herb_seed": 10,
@@ -30,17 +30,5 @@
             "gold_rod"
         ],
         "current_rod": "gold_rod"
-    },
-    "planted_seeds": {
-        "0": {
-            "seed": "cabbage_seed",
-            "stage": 4,
-            "remaining_upgrade_time": null,
-            "remaining_death_time": -7,
-            "center_pos": [
-                236,
-                355
-            ]
-        }
     }
 }
