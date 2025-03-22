@@ -14,6 +14,14 @@ class SettingsUI:
         self.show_menu = False   # Trạng thái menu
         self.show_map = False    # Trạng thái bản đồ
 
+        self.map_x = 316
+        self.map_y = 176
+        self.map_width = 987
+        self.map_height = 646
+
+        # Vùng ngôi làng (toạ độ tương đối 100, 150, size 80x80 chẳng hạn)
+        self.village_rect_rel = pygame.Rect(100, 150, 80, 80)
+
         # Lấy kích thước màn hình
         self.screen_width, self.screen_height = self.screen.get_size()
 
@@ -147,27 +155,17 @@ class SettingsUI:
         pygame.quit()
         exit()
 
-if __name__ == "__main__":
+
+
+def start_ui(player):
     pygame.init()
     screen = pygame.display.set_mode((1280, 720), pygame.RESIZABLE)
-    pygame.display.set_caption("Test UI Settings")
-
-    # Load ảnh background
-    IMAGE_DIR = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../assets/images"))
-    background = pygame.image.load(os.path.join(IMAGE_DIR, "backgrounds", "mainscreen.png")).convert()
-    background = pygame.transform.scale(background, (1280, 720))
-
-    # Tạo đối tượng player và (tùy chọn) load game
-    from src.core.player import Player
-    player = Player()
-    # player.load_game("player_data.json")
-
+    pygame.display.set_caption("UI Settings")
     settings_ui = SettingsUI(screen, player)
-    running = True
     clock = pygame.time.Clock()
+    running = True
 
     while running:
-        screen.blit(background, (0, 0))
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
@@ -175,7 +173,16 @@ if __name__ == "__main__":
                 screen = pygame.display.set_mode((event.w, event.h), pygame.RESIZABLE)
                 settings_ui = SettingsUI(screen, player)
             settings_ui.handle_event(event)
+
         settings_ui.draw()
         pygame.display.flip()
         clock.tick(60)
+
     pygame.quit()
+
+if __name__ == "__main__":
+    pygame.init()
+    screen = pygame.display.set_mode((1280, 720), pygame.RESIZABLE)
+    from src.core.player import Player
+    player = Player()
+    start_ui(player)
