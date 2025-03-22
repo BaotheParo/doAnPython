@@ -1,1 +1,9 @@
+<<<<<<< HEAD
 {"current_day": 18, "remaining_day_time": 5863, "is_day_state": false}
+=======
+{
+    "current_day": 9,
+    "remaining_day_time": 49037,
+    "is_day_state": true
+}
+>>>>>>> 6f9fb230d7b7d5c10942b7ce2040763efcfd6b1d
