@@ -1,19 +1,29 @@
 import pygame
+import os, sys
+
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
+BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))
+
 from src.core.player import Player
+from src.core.ui import SettingsUI
 from src.actions.fishing_action import start_fishing
 from src.core.time_system import TimeSystem  # Import TimeSystem
 from src.utils.constants import SCREEN_WIDTH, SCREEN_HEIGHT, WHITE, BLACK
 
 class FishingScene:
-    def __init__(self, player, time_system, screen):
+    def __init__(self, player, time_system, screen,ui):
         self.player = player
         self.time_system = time_system
+        self.ui = ui
         self.screen = screen
         pygame.display.set_caption("Khu vực câu cá")
 
         # Đường dẫn đến các file background
-        self.day_background_path = "../../assets/images/backgrounds/background-cauca.png"
-        self.night_background_path = "../../assets/images/backgrounds/background-cauca-dem.png"
+        self.day_background_path = os.path.join(BASE_DIR, "assets", "images", "backgrounds", "background-cauca.png")
+        self.night_background_path = os.path.join(BASE_DIR, "assets", "images", "backgrounds", "background-cauca-dem.png")
+
+        # self.day_background_path = "../../assets/images/backgrounds/background-cauca.png"
+        # self.night_background_path = "../../assets/images/backgrounds/background-cauca-dem.png"
 
         try:
             # Tải và scale background ban ngày
@@ -57,6 +67,7 @@ class FishingScene:
                     self.time_system.save_time_data()  # Lưu thời gian trước khi thoát
                 elif event.type == pygame.MOUSEBUTTONDOWN:
                     self.handle_click(mouse_pos)
+                    self.ui.handle_event(event)
 
             # Vẽ background dựa trên thời gian
             if self.time_system.is_day():
@@ -84,6 +95,7 @@ class FishingScene:
             time_bg.fill((50, 50, 50))
             self.screen.blit(time_bg, (10, 40))
             self.screen.blit(time_text, (15, 45))
+            self.ui.draw()
 
             pygame.display.flip()
 
