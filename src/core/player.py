@@ -2,7 +2,7 @@ import sys
 import os
 import json
 
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
+save_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "../data"))
 from src.core.inventory import Inventory
 
 class Player:
@@ -88,7 +88,7 @@ class Player:
     # === Thêm hàm save/load game ===
     def save_game(self, filename="player_data.json"):
         player_dir = os.path.dirname(os.path.abspath(__file__))
-        save_path = os.path.join(player_dir, filename)
+        save_path = os.path.join(save_dir, filename)
 
         data = {
             "energy": self.energy,
