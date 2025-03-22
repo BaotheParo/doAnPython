@@ -1,29 +1,46 @@
+import json
+import os
+
+
 class Inventory:
     def __init__(self):
-        # Khởi tạo kho đồ rỗng dưới dạng từ điển: {tên vật phẩm: số lượng}
-        self.items = {
-            # Hạt giống
-            "carrot_seed": 2,
-            "cabbage_seed": 0,
-            "beetroot_seed ": 0,
-            "pumpkin_seed": 0,
-            "energy_herb_seed": 0,
-            "rare_herb_seed": 0,
-            # Nông sản
-            "carrot": 0,
-            "cabbage": 0,
-            "tomato": 0,
-            "potato": 0,
-            "energy_herb": 0,
-            "rare_herb": 0,
-            # Ngư sản
-            "tilapia": 0,
-            "carp": 0,
-            "catfish": 0,
-            "eel": 0,
-            "ghost_fish": 0,
-            "frog": 0
-        }
+        # Đường dẫn tương đối đến file inventory_data.json
+        # Từ thư mục src/scenes/, đi ngược lên hai cấp (src/ -> thư mục gốc), rồi vào data/
+        self.data_path = "../data/inventory_data.json"
+
+        # Khởi tạo kho đồ từ file JSON
+        self.items = self.load_inventory()
+
+    def load_inventory(self):
+        """Đọc dữ liệu từ inventory_data.json."""
+        try:
+            with open(self.data_path, "r") as f:
+                loaded_data = json.load(f)
+                # Đảm bảo tất cả các trường cần thiết có trong dữ liệu
+                required_keys = {
+                    "carrot_seed", "cabbage_seed", "beetroot_seed", "pumpkin_seed",
+                    "energy_herb_seed", "rare_herb_seed", "carrot", "cabbage", "tomato",
+                    "potato", "beetroot", "pumpkin", "energy_herb", "rare_herb",
+                    "tilapia", "carp", "catfish", "eel", "ghost_fish", "frog"
+                }
+                for key in required_keys:
+                    if key not in loaded_data:
+                        raise KeyError(f"Thiếu trường bắt buộc: {key} trong {self.data_path}")
+                return loaded_data
+        except FileNotFoundError:
+            raise FileNotFoundError(
+                f"Lỗi: Không tìm thấy file {self.data_path}. Vui lòng tạo file inventory_data.json trong thư mục data/ với dữ liệu hợp lệ.")
+        except json.JSONDecodeError:
+            raise ValueError(f"Lỗi: File {self.data_path} không phải là định dạng JSON hợp lệ.")
+        except KeyError as e:
+            raise ValueError(f"Lỗi: {str(e)}. Vui lòng kiểm tra lại cấu trúc file {self.data_path}.")
+
+    def save_inventory(self, data=None):
+        """Lưu dữ liệu vào inventory_data.json."""
+        if data is None:
+            data = self.items
+        with open(self.data_path, "w") as f:
+            json.dump(data, f, indent=2)
 
     def add_item(self, item_name, quantity):
         """Thêm vật phẩm vào kho."""
@@ -33,15 +50,21 @@ class Inventory:
         else:
             self.items[item_name] = quantity
             print(f"Đã thêm vật phẩm mới: {item_name} x{quantity}")
+        self.save_inventory()  # Lưu sau khi thay đổi
 
     def remove_item(self, item_name, quantity):
         """Xóa vật phẩm khỏi kho, trả về True nếu thành công."""
-        if item_name in self.items and self.items[item_name] >= quantity:
-            self.items[item_name] -= quantity
-            print(f"Đã xóa {quantity} {item_name} khỏi kho. Còn lại: {self.items[item_name]}")
-            return True
+        if item_name in self.items:
+            if self.items[item_name] >= quantity:
+                self.items[item_name] -= quantity
+                print(f"Đã xóa {quantity} {item_name} khỏi kho. Còn lại: {self.items[item_name]}")
+                self.save_inventory()  # Lưu sau khi thay đổi
+                return True
+            else:
+                print(f"Không đủ {item_name} trong kho để xóa! Hiện có: {self.items.get(item_name, 0)}")
+                return False
         else:
-            print(f"Không đủ {item_name} trong kho để xóa! Hiện có: {self.items.get(item_name, 0)}")
+            print(f"Vật phẩm {item_name} không tồn tại trong kho!")
             return False
 
     def get_item_quantity(self, item_name):
@@ -64,23 +87,27 @@ class Inventory:
                 print(f"{item}: {quantity}")
         print("=============")
 
+
 # Ví dụ chạy thử
 if __name__ == "__main__":
-    inventory = Inventory()
-    inventory.display_inventory()  # Hiển thị kho ban đầu
+    try:
+        inventory = Inventory()
+        inventory.display_inventory()  # Hiển thị kho ban đầu
 
-    # Thử thêm vật phẩm
-    inventory.add_item("tomato", 3)       # Thu hoạch 3 cà chua
-    inventory.add_item("tilapia", 1)      # Câu được 1 cá rô phi
-    inventory.add_item("energy_herb", 1)  # Thu hoạch thảo mộc tăng năng lượng
+        # Thử thêm vật phẩm
+        inventory.add_item("tomato", 3)  # Thu hoạch 3 cà chua
+        inventory.add_item("tilapia", 1)  # Câu được 1 cá rô phi
+        inventory.add_item("energy_herb", 1)  # Thu hoạch thảo mộc tăng năng lượng
 
-    # Thử xóa vật phẩm
-    inventory.remove_item("carrot_seed", 1)  # Dùng 1 hạt cà rốt để trồng
-    inventory.remove_item("tomato", 2)       # Bán 2 cà chua
+        # Thử xóa vật phẩm
+        inventory.remove_item("carrot_seed", 1)  # Dùng 1 hạt cà rốt để trồng
+        inventory.remove_item("tomato", 2)  # Bán 2 cà chua
 
-    # Kiểm tra số lượng
-    print(f"Số lượng cà rốt: {inventory.get_item_quantity('carrot')}")
-    print(f"Có đủ 2 hạt cà rốt không? {inventory.has_item('carrot_seed', 2)}")
+        # Kiểm tra số lượng
+        print(f"Số lượng cà rốt: {inventory.get_item_quantity('carrot')}")
+        print(f"Có đủ 2 hạt cà rốt không? {inventory.has_item('carrot_seed', 2)}")
 
-    # Hiển thị kho cuối cùng
-    inventory.display_inventory()
+        # Hiển thị kho cuối cùng
+        inventory.display_inventory()
+    except (FileNotFoundError, ValueError) as e:
+        print(f"Lỗi: {e}")

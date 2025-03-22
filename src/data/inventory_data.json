@@ -1,0 +1,22 @@
+{
+  "carrot_seed": 8,
+  "cabbage_seed": 1,
+  "beetroot_seed": 8,
+  "pumpkin_seed": 16,
+  "energy_herb_seed": 10,
+  "rare_herb_seed": 10,
+  "carrot": 46,
+  "cabbage": 2,
+  "tomato": 1,
+  "potato": 0,
+  "beetroot": 0,
+  "pumpkin": 0,
+  "energy_herb": 1,
+  "rare_herb": 0,
+  "tilapia": 1,
+  "carp": 0,
+  "catfish": 0,
+  "eel": 0,
+  "ghost_fish": 0,
+  "frog": 0
+}
