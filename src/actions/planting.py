@@ -117,13 +117,14 @@ seed_to_product = {
 }
 
 player = Player()
-player.load_game()  # Tải dữ liệu khi khởi tạo
+player.load_game()  # Tải dữ liệu từ player_data.json
 time_system = TimeSystem()
 ENERGY_COST = 20
 DEATH_TIME = 120000  # 2 minutes
 UPGRADE_TIME = 60000  # 1 minute
 WARNING_TIME = 30000  # 30 seconds
 
+planted_seeds = {}  # Giữ nguyên biến toàn cục vì Player không quản lý planted_seeds
 font = pygame.font.Font(None, 24)
 large_font = pygame.font.Font(None, 48)
 default_cursor = pygame.SYSTEM_CURSOR_ARROW
@@ -140,6 +141,38 @@ current_page = 0
 watering_animation = False
 watering_animation_start = 0
 WATERING_ANIMATION_DURATION = 500
+FARM_DATA_FILE = os.path.join(BASE_DIR, "src", "core", "farm_data.json")
+
+def save_farm_data():
+    farm_data = {}
+    for index, plant in planted_seeds.items():
+        farm_data[str(index)] = {
+            "seed": plant["seed"],
+            "stage": plant["stage"],
+            "remaining_upgrade_time": plant["remaining_upgrade_time"],
+            "remaining_death_time": plant["remaining_death_time"],
+            "center_pos": plant["center_pos"]
+        }
+    with open(FARM_DATA_FILE, "w") as f:
+        json.dump(farm_data, f)
+
+def load_farm_data():
+    global planted_seeds
+    try:
+        with open(FARM_DATA_FILE, "r") as f:
+            farm_data = json.load(f)
+            for index, plant in farm_data.items():
+                planted_seeds[int(index)] = {
+                    "seed": plant["seed"],
+                    "stage": plant["stage"],
+                    "remaining_upgrade_time": plant["remaining_upgrade_time"],
+                    "remaining_death_time": plant["remaining_death_time"],
+                    "center_pos": tuple(plant["center_pos"])
+                }
+    except FileNotFoundError:
+        planted_seeds = {}
+
+load_farm_data()  # Tải dữ liệu cây trồng từ farm_data.json
 
 inventory_rows = 2
 inventory_cols = 5
@@ -186,8 +219,8 @@ def update_inventory_display():
     return visible_items, total_pages
 
 def update_plant_stages(delta_time):
-    for index in list(player.planted_seeds.keys()):
-        plant = player.planted_seeds[index]
+    for index in list(planted_seeds.keys()):
+        plant = planted_seeds[index]
         if plant["stage"] >= 3:
             continue
         plant["remaining_death_time"] -= delta_time
@@ -195,7 +228,7 @@ def update_plant_stages(delta_time):
             plant["stage"] = 4
             plant["remaining_upgrade_time"] = None
             print(f"Plant at plot {index} has died!")
-            player.save_game()
+            save_farm_data()
         if plant["remaining_upgrade_time"] is not None:
             plant["remaining_upgrade_time"] -= delta_time
             if plant["remaining_upgrade_time"] <= 0:
@@ -209,7 +242,7 @@ def update_plant_stages(delta_time):
                 print(f"Plant at plot {index} upgraded to stage {plant['stage']}!")
                 if plant["stage"] == 3:
                     print(f"Plant at plot {index} is fully grown!")
-                player.save_game()
+                save_farm_data()
 
 running = True
 clock = pygame.time.Clock()
@@ -228,15 +261,15 @@ while running:
     garden_slots = player.get_garden_slots()
     for index, plot in enumerate(plots):
         if index < garden_slots:
-            if index in player.planted_seeds:
-                seed_type = player.planted_seeds[index]["seed"]
-                stage = player.planted_seeds[index]["stage"]
-                center_pos = player.planted_seeds[index]["center_pos"]
+            if index in planted_seeds:
+                seed_type = planted_seeds[index]["seed"]
+                stage = planted_seeds[index]["stage"]
+                center_pos = planted_seeds[index]["center_pos"]
                 image = plant_images[seed_type][stage]
                 img_x = center_pos[0] - image.get_width() // 2
                 img_y = center_pos[1] - image.get_height() // 2
                 screen.blit(image, (img_x, img_y))
-                if stage < 3 and (player.planted_seeds[index]["remaining_upgrade_time"] is None or player.planted_seeds[index]["remaining_death_time"] <= WARNING_TIME):
+                if stage < 3 and (planted_seeds[index]["remaining_upgrade_time"] is None or planted_seeds[index]["remaining_death_time"] <= WARNING_TIME):
                     if (current_time // 500) % 2 == 0:
                         warning_x = img_x + image.get_width() - warning_icon.get_width() // 2
                         warning_y = img_y - warning_icon.get_height() // 2
@@ -257,9 +290,6 @@ while running:
     pygame.draw.rect(screen, WHITE, (20, 20, 104, 24))
     pygame.draw.rect(screen, BLUE, (22, 22, player.get_energy(), 20))
     energy_text = font.render(f"MANA: {player.get_energy()}/{player.max_energy}", True, WHITE)
-    # money_text = font.render(f"Money: {player.get_money()} coins", True, WHITE)
-    # screen.blit(energy_text, (20, 50))
-    # screen.blit(money_text, (20, 80))
 
     day_text = font.render(f"Date: {time_system.current_day}", True, WHITE)
     time_text = font.render(f"Time: {time_system.format_time(time_system.get_remaining_time())}", True, WHITE)
@@ -350,50 +380,53 @@ while running:
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
+            player.save_game()  # Lưu dữ liệu Player khi thoát
+            save_farm_data()    # Lưu dữ liệu cây trồng khi thoát
             time_system.save_time_data()
             running = False
 
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1 and time_system.is_day():
             for index, plot in enumerate(plots[:garden_slots]):
                 if plot.collidepoint(event.pos):
-                    if is_harvesting and index in player.planted_seeds and player.planted_seeds[index]["stage"] == 3:
-                        seed_type = player.planted_seeds[index]["seed"]
+                    if is_harvesting and index in planted_seeds and planted_seeds[index]["stage"] == 3:
+                        seed_type = planted_seeds[index]["seed"]
                         product = seed_to_product[seed_type]
                         player.inventory.add_item(product, 1)
-                        del player.planted_seeds[index]
-                        player.save_game()
-                    elif is_watering and index in player.planted_seeds and player.planted_seeds[index]["stage"] < 4:
-                        plant = player.planted_seeds[index]
+                        del planted_seeds[index]
+                        player.save_game()  # Lưu inventory sau khi thu hoạch
+                        save_farm_data()    # Lưu trạng thái cây trồng
+                    elif is_watering and index in planted_seeds and planted_seeds[index]["stage"] < 4:
+                        plant = planted_seeds[index]
                         if plant["stage"] < 3 and plant["remaining_upgrade_time"] is None:
                             plant["remaining_upgrade_time"] = UPGRADE_TIME
                             plant["remaining_death_time"] = DEATH_TIME
                             watering_animation = True
                             watering_animation_start = current_time
-                            player.save_game()
+                            save_farm_data()  # Lưu trạng thái cây trồng sau khi tưới
                             print(f"Watered plant at plot {index} in stage {plant['stage']}!")
-                    elif is_removing and index in player.planted_seeds:
-                        del player.planted_seeds[index]
-                        player.save_game()
-                    elif index not in player.planted_seeds and selected_seed is not None:
+                    elif is_removing and index in planted_seeds:
+                        del planted_seeds[index]
+                        save_farm_data()  # Lưu trạng thái cây trồng sau khi xóa
+                    elif index not in planted_seeds and selected_seed is not None:
                         energy_success = player.reduce_energy(ENERGY_COST)
                         inventory_success = player.inventory.remove_item(selected_seed, 1)
                         if energy_success and inventory_success:
-                            player.planted_seeds[index] = {
+                            planted_seeds[index] = {
                                 "seed": selected_seed,
                                 "stage": 1,
                                 "remaining_upgrade_time": None,
                                 "remaining_death_time": DEATH_TIME,
                                 "center_pos": list(plot.center)
                             }
+                            player.save_game()  # Lưu energy và inventory sau khi trồng
+                            save_farm_data()    # Lưu trạng thái cây trồng
                             print(f"Đã trồng {selected_seed} tại ô {index}")
-                            player.save_game()
                             selected_seed = None
                         else:
                             if not energy_success:
                                 print("Không đủ năng lượng để trồng cây!")
                             if not inventory_success:
                                 print(f"Không đủ {selected_seed} trong kho!")
-                            player.save_game()
 
             for feature in features:
                 if feature["rect"].collidepoint(event.pos):
