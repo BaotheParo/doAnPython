@@ -2,28 +2,66 @@ import sys
 import os
 import json
 
-save_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "../data"))
-from src.core.inventory import Inventory
+BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "../"))
+save_dir = os.path.join(BASE_DIR, "data")
+sys.path.append(os.path.join(BASE_DIR, "src", "core"))
+
+from inventory import Inventory
 
 class Player:
     def __init__(self):
         self.energy = 100
-        self.money = 0
+        self.money = 100
         self.rod_level = "wood"
         self.max_energy = 100
         self.garden_slots = 4
         self.inventory = Inventory()
+        self.planted_seeds = {}  # Thêm thuộc tính để lưu trữ cây trồng
+        if not os.path.exists(save_dir):
+            os.makedirs(save_dir)
 
-    # --- Các phương thức cũ giữ nguyên ---
+    def save_game(self, filename="player_data.json"):
+        save_path = os.path.join(save_dir, filename)
+        data = {
+            "energy": self.energy,
+            "money": self.money,
+            "rod_level": self.rod_level,
+            "max_energy": self.max_energy,
+            "garden_slots": self.garden_slots,
+            "inventory": self.inventory.items,
+            "planted_seeds": self.planted_seeds  # Lưu dữ liệu cây trồng
+        }
+        with open(save_path, "w", encoding="utf-8") as f:
+            json.dump(data, f, ensure_ascii=False, indent=4)
+        print(f"Game đã được lưu vào {save_path}")
+
+    def load_game(self, filename="player_data.json"):
+        save_path = os.path.join(save_dir, filename)
+        if not os.path.exists(save_path):
+            print(f"Không tìm thấy file {save_path}. Bắt đầu game mới.")
+            self.save_game(filename)
+            return
+        with open(save_path, "r", encoding="utf-8") as f:
+            data = json.load(f)
+        self.energy = data["energy"]
+        self.money = data["money"]
+        self.rod_level = data["rod_level"]
+        self.max_energy = data["max_energy"]
+        self.garden_slots = data["garden_slots"]
+        self.inventory.items = data["inventory"]
+        self.planted_seeds = {int(k): v for k, v in data.get("planted_seeds", {}).items()}  # Tải dữ liệu cây trồng
+        print(f"Đã tải game từ {save_path}")
 
     def add_energy(self, amount):
         self.energy = min(self.max_energy, self.energy + amount)
         print(f"Năng lượng hiện tại: {self.energy}")
+        self.save_game()
 
     def reduce_energy(self, amount):
         if self.energy >= amount:
             self.energy -= amount
             print(f"Năng lượng hiện tại: {self.energy}")
+            self.save_game()
             return True
         else:
             print("Không đủ năng lượng!")
@@ -32,11 +70,13 @@ class Player:
     def add_money(self, amount):
         self.money += amount
         print(f"Tiền hiện tại: {self.money} đồng")
+        self.save_game()
 
     def spend_money(self, amount):
         if self.money >= amount:
             self.money -= amount
             print(f"Tiền hiện tại: {self.money} đồng")
+            self.save_game()
             return True
         else:
             print("Không đủ tiền!")
@@ -56,6 +96,7 @@ class Player:
         if self.spend_money(rod_costs[new_level]):
             self.rod_level = new_level
             print(f"Đã nâng cấp cần câu lên {new_level}!")
+            self.save_game()
             return True
         return False
 
@@ -70,6 +111,7 @@ class Player:
         if self.spend_money(slot_costs[new_slots]):
             self.garden_slots = new_slots
             print(f"Đã mở rộng vườn lên {new_slots} ô!")
+            self.save_game()
             return True
         return False
 
@@ -84,47 +126,3 @@ class Player:
 
     def get_garden_slots(self):
         return self.garden_slots
-
-    # === Thêm hàm save/load game ===
-    def save_game(self, filename="player_data.json"):
-        player_dir = os.path.dirname(os.path.abspath(__file__))
-        save_path = os.path.join(save_dir, filename)
-
-        data = {
-            "energy": self.energy,
-            "money": self.money,
-            "rod_level": self.rod_level,
-            "max_energy": self.max_energy,
-            "garden_slots": self.garden_slots,
-            "inventory": self.inventory.items 
-        }
-        with open(save_path, "w", encoding="utf-8") as f:
-            json.dump(data, f, ensure_ascii=False, indent=4)
-
-        print(f"Game đã được lưu vào {save_path}")
-
-    def load_game(self, filename="player_data.json"):
-        """Tải thông tin người chơi từ file JSON."""
-        if not os.path.exists(filename):
-            print(f"Không tìm thấy file {filename}. Bắt đầu game mới.")
-            return
-        with open(filename, "r", encoding="utf-8") as f:
-            data = json.load(f)
-        self.energy = data["energy"]
-        self.money = data["money"]
-        self.rod_level = data["rod_level"]
-        self.max_energy = data["max_energy"]
-        self.garden_slots = data["garden_slots"]
-        self.inventory.items = data["inventory"]
-        print(f"Đã tải game từ {filename}")
-
-if __name__ == "__main__":
-    player = Player()
-    print(f"Năng lượng ban đầu: {player.get_energy()}")
-    print(f"Tiền ban đầu: {player.get_money()}")
-    player.inventory.display_inventory()  # Kiểm tra kho đồ
-
-    # Thử lưu game
-    player.save_game()
-    # Thử load game
-    player.load_game()

@@ -1,13 +1,13 @@
 {
-    "energy": 80,
-    "money": 0,
+    "energy": 20,
+    "money": 100,
     "rod_level": "wood",
     "max_energy": 100,
-    "garden_slots": 2,
+    "garden_slots": 4,
     "inventory": {
         "carrot_seed": 0,
         "cabbage_seed": 0,
-        "beetroot_seed": 8,
+        "beetroot_seed": 4,
         "pumpkin_seed": 16,
         "energy_herb_seed": 10,
         "rare_herb_seed": 10,
@@ -33,10 +33,10 @@
     },
     "planted_seeds": {
         "0": {
-            "seed": "cabbage_seed",
-            "stage": 4,
+            "seed": "beetroot_seed",
+            "stage": 1,
             "remaining_upgrade_time": null,
-            "remaining_death_time": -7,
+            "remaining_death_time": 120000,
             "center_pos": [
                 236,
                 355
