@@ -1,6 +1,5 @@
 import pygame
 import random
-
 import sys, os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
 BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))
@@ -10,8 +9,6 @@ from src.utils.constants import (
     FISHING_BAR_WIDTH, FISHING_BAR_HEIGHT, FISHING_FISH_SIZE,
     FISHING_GREEN_ZONE_SIZE, ENERGY_COSTS, FISH_DAY, FISH_NIGHT
 )
-
-# Không khởi tạo pygame.init() ở đây
 
 TIMER_WIDTH = 30
 TIMER_HEIGHT = 400
@@ -27,23 +24,20 @@ class FishingMinigame:
         self.rod_level = player.get_rod_level()
         self.green_zone_size = FISHING_GREEN_ZONE_SIZE[self.rod_level]
 
-        # Tải background cho minigame
-        # self.background_path1 = "../../assets/images/backgrounds/animation-cauca1.png"
+        # In giá trị time_of_day để kiểm tra
+        print(f"Time of day: {self.time_of_day}")
 
+        # Tải background cho minigame
         self.background_path1 = os.path.join(BASE_DIR, "assets", "images", "backgrounds", "animation-cauca1.png")
         self.background = pygame.image.load(self.background_path1).convert()
         self.background = pygame.transform.scale(self.background, (SCREEN_WIDTH, SCREEN_HEIGHT))
 
         # Tải background sau khi hoàn thành (giai đoạn 1)
-        # self.background_path2 = "../../assets/images/backgrounds/animation-cauca2.png"
-
         self.background_path2 = os.path.join(BASE_DIR, "assets", "images", "backgrounds", "animation-cauca2.png")
         self.background_complete = pygame.image.load(self.background_path2).convert()
         self.background_complete = pygame.transform.scale(self.background_complete, (SCREEN_WIDTH, SCREEN_HEIGHT))
 
         # Tải hình ảnh cho fishing bar (thay thế màu đen)
-        # self.bar_image_path = "../../assets/images/fish/fishing_bar.png"
-
         self.bar_image_path = os.path.join(BASE_DIR, "assets", "images", "fish", "fishing_bar.png")
         try:
             self.bar_image = pygame.image.load(self.bar_image_path).convert_alpha()
@@ -54,8 +48,6 @@ class FishingMinigame:
             self.bar_image.fill(BLACK)
 
         # Tải hình ảnh cho con cá (thay thế màu đỏ)
-        # self.fish_image_path = "../../assets/images/fish/fish.png"
-
         self.fish_image_path = os.path.join(BASE_DIR, "assets", "images", "fish", "fish.png")
         try:
             self.fish_image = pygame.image.load(self.fish_image_path).convert_alpha()
@@ -66,8 +58,6 @@ class FishingMinigame:
             self.fish_image.fill(RED)
 
         # Tải hình ảnh cho thanh xanh lá (thay thế màu GREEN)
-        # self.green_zone_image_path = "../../assets/images/green_zone.png"
-
         self.green_zone_image_path = os.path.join(BASE_DIR, "assets", "images", "green_zone.png")
         try:
             self.green_zone_image = pygame.image.load(self.green_zone_image_path).convert_alpha()
@@ -79,8 +69,6 @@ class FishingMinigame:
             self.green_zone_image.fill(GREEN)
 
         # Tải hình ảnh cho khung bao quanh thanh đen
-        # self.border_path = "../../assets/images/fish/Picture2.png"
-
         self.border_path = os.path.join(BASE_DIR, "assets", "images", "fish", "Picture2.png")
         try:
             self.border_image = pygame.image.load(self.border_path).convert_alpha()
@@ -91,12 +79,9 @@ class FishingMinigame:
             self.border_image.fill(GREEN)
 
         # Tải hình ảnh khung cho kết quả (khi bắt được cá)
-        # self.result_frame_path = "../../assets/images/fish/Picture3.png"
-
         self.result_frame_path = os.path.join(BASE_DIR, "assets", "images", "fish", "Picture3.png")
         try:
             self.result_frame = pygame.image.load(self.result_frame_path).convert_alpha()
-            # Scale hình ảnh khung để bao quanh hình ảnh cá và dòng chữ
             self.result_frame = pygame.transform.scale(self.result_frame, (850, 400))
         except FileNotFoundError:
             print(f"Lỗi: Không tìm thấy file {self.result_frame_path}")
@@ -116,10 +101,10 @@ class FishingMinigame:
 
         self.running = True
         self.success = False
-        self.result_phase = 0  # 0: minigame, 1: animation-cauca2, 2: kết quả cá
+        self.result_phase = 0
         self.result_timer = 0
         self.caught_fish = None
-        self.caught_fish_image = None  # Sẽ tải trong catch_fish()
+        self.caught_fish_image = None
 
     def run(self):
         clock = pygame.time.Clock()
@@ -135,7 +120,6 @@ class FishingMinigame:
                     self.green_zone_speed = 5
 
             if self.result_phase == 0:
-                # Logic minigame
                 self.green_zone_pos += self.green_zone_speed
                 self.green_zone_pos = max(self.bar_y, min(self.bar_y + FISHING_BAR_HEIGHT - self.green_zone_size,
                                                           self.green_zone_pos))
@@ -168,9 +152,7 @@ class FishingMinigame:
                     self.success = False
                     self.result_phase = 1
 
-            # Vẽ giao diện
             if self.result_phase == 0:
-                # Vẽ minigame
                 self.screen.blit(self.background, (0, 0))
                 timer_x = 147
                 timer_y = 52
@@ -179,29 +161,22 @@ class FishingMinigame:
                 pygame.draw.rect(self.screen, GREEN,
                                  (timer_x, timer_y + TIMER_HEIGHT - timer_height, TIMER_WIDTH, timer_height))
 
-                # Thay màu đen bằng hình ảnh
                 self.screen.blit(self.bar_image, (self.bar_x, self.bar_y))
                 self.screen.blit(self.border_image, (self.bar_x_border, self.bar_y_border))
-                # Thay màu xanh lá bằng hình ảnh
                 self.screen.blit(self.green_zone_image, (self.bar_x + 8, self.green_zone_pos))
-                # Thay màu đỏ bằng hình ảnh cá
                 fish_x = self.bar_x + (FISHING_BAR_WIDTH - FISHING_FISH_SIZE) // 2
                 fish_y = self.fish_pos - FISHING_FISH_SIZE // 2
                 self.screen.blit(self.fish_image, (fish_x, fish_y))
             elif self.result_phase == 1:
-                # Giai đoạn 1: Hiển thị animation-cauca2.png
                 self.screen.blit(self.background_complete, (0, 0))
                 self.result_timer += clock.get_time()
-                if self.result_timer >= 2000:  # Sau 2 giây
+                if self.result_timer >= 2000:
                     self.result_phase = 2
                     self.result_timer = 0
             elif self.result_phase == 2:
-                # Giai đoạn 2: Hiển thị kết quả với background animation-cauca2.png
-                self.screen.blit(self.background_complete, (0, 0))  # Giữ animation-cauca2 làm nền
+                self.screen.blit(self.background_complete, (0, 0))
 
-                # Vẽ khung bao quanh kết quả
                 if self.result_frame:
-                    # Căn giữa khung trên màn hình
                     frame_x = (SCREEN_WIDTH - self.result_frame.get_width()) // 2
                     frame_y = (SCREEN_HEIGHT - self.result_frame.get_height()) // 2 - 50
                     self.screen.blit(self.result_frame, (frame_x, frame_y))
@@ -219,7 +194,7 @@ class FishingMinigame:
                     self.screen.blit(text, text_rect)
 
                 self.result_timer += clock.get_time()
-                if self.result_timer >= 2000:  # Sau 2 giây nữa
+                if self.result_timer >= 2000:
                     self.running = False
 
             pygame.display.flip()
@@ -228,11 +203,11 @@ class FishingMinigame:
         self.player.reduce_energy(ENERGY_COSTS["fish"])
 
     def catch_fish(self):
-        fish_list = FISH_DAY if self.time_of_day == "day" else FISH_NIGHT
+        # Sửa điều kiện để so sánh với "Ngày" và "Đêm"
+        fish_list = FISH_DAY if self.time_of_day == "Ngày" else FISH_NIGHT
         self.caught_fish = random.choice(fish_list)
         self.player.inventory.add_item(self.caught_fish, 1)
 
-        # Tải hình ảnh cá dựa trên loại cá bắt được
         fish_images = {
             "catfish": "caTre.png",
             "carp": "caChep.png",
@@ -241,8 +216,7 @@ class FishingMinigame:
             "eel": "caChinh.png",
             "tilapia": "caRoPhi.png"
         }
-        fish_image_name = fish_images.get(self.caught_fish, "caRoPhi.png")  # Mặc định là caRoPhi nếu không tìm thấy
-        # fish_image_path = f"../../assets/images/fish/{fish_image_name}"
+        fish_image_name = fish_images.get(self.caught_fish, "caRoPhi.png")
         fish_image_path = os.path.join(BASE_DIR, "assets", "images", "fish", fish_image_name)
         self.caught_fish_image = pygame.image.load(fish_image_path).convert_alpha()
         self.caught_fish_image = pygame.transform.scale(self.caught_fish_image, (200, 200))

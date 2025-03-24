@@ -1,5 +1,5 @@
 {
-    "energy": 0,
+    "energy": 40,
     "money": 100,
     "rod_level": "wood",
     "max_energy": 100,
@@ -10,7 +10,7 @@
         "beetroot_seed": 0,
         "pumpkin_seed": 0,
         "energy_herb_seed": 5,
-        "rare_herb_seed": 10,
+        "rare_herb_seed": 9,
         "carrot": 53,
         "cabbage": 2,
         "tomato": 2,
@@ -19,16 +19,14 @@
         "pumpkin": 10,
         "energy_herb": 7,
         "rare_herb": 0,
-        "tilapia": 1,
-        "carp": 0,
-        "catfish": 0,
-        "eel": 0,
-        "ghost_fish": 1,
-        "frog": 0,
+        "tilapia": 4,
+        "carp": 2,
+        "catfish": 2,
+        "eel": 1,
+        "ghost_fish": 3,
+        "frog": 5,
         "rods_owned": [
-            "basic_rod",
-            "gold_rod"
-        ],
-        "current_rod": "gold_rod"
+            "basic_rod"
+        ]
     }
 }

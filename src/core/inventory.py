@@ -1,5 +1,7 @@
 import json
-import os, sys
+import os
+import sys
+
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -8,8 +10,7 @@ DATA_DIR = os.path.abspath(os.path.join(BASE_DIR, "../../src/data"))
 class Inventory:
     def __init__(self):
         # Đường dẫn tương đối đến file inventory_data.json
-        self.data_path =os.path.join(DATA_DIR,"inventory_data.json")
-
+        self.data_path = os.path.join(DATA_DIR, "inventory_data.json")
 
         # Khởi tạo kho đồ từ file JSON
         self.items = self.load_inventory()
@@ -24,8 +25,7 @@ class Inventory:
                     "carrot_seed", "cabbage_seed", "beetroot_seed", "pumpkin_seed",
                     "energy_herb_seed", "rare_herb_seed", "carrot", "cabbage", "tomato",
                     "potato", "beetroot", "pumpkin", "energy_herb", "rare_herb",
-                    "tilapia", "carp", "catfish", "eel", "ghost_fish", "frog",
-                    "rods_owned", "current_rod"
+                    "tilapia", "carp", "catfish", "eel", "ghost_fish", "frog"
                 }
                 for key in required_keys:
                     if key not in loaded_data:
@@ -48,28 +48,17 @@ class Inventory:
 
     def add_item(self, item_name, quantity):
         """Thêm vật phẩm vào kho."""
-        if item_name in self.items and item_name not in ["rods_owned", "current_rod"]:
+        if item_name in self.items:
             self.items[item_name] += quantity
             print(f"Đã thêm {quantity} {item_name} vào kho. Hiện có: {self.items[item_name]}")
         else:
-            if item_name not in ["rods_owned", "current_rod"]:
-                self.items[item_name] = quantity
-                print(f"Đã thêm vật phẩm mới: {item_name} x{quantity}")
+            self.items[item_name] = quantity
+            print(f"Đã thêm vật phẩm mới: {item_name} x{quantity}")
         self.save_inventory()  # Lưu sau khi thay đổi
-
-    def add_rod(self, rod_name):
-        """Thêm một cần câu vào danh sách rods_owned và đặt làm cần câu hiện tại."""
-        if rod_name not in self.items["rods_owned"]:
-            self.items["rods_owned"].append(rod_name)
-            self.items["current_rod"] = rod_name  # Đặt cần câu mới mua làm cần câu hiện tại
-            print(f"Đã mua cần câu {rod_name}. Cần câu hiện tại: {self.items['current_rod']}")
-            self.save_inventory()  # Lưu sau khi thay đổi
-        else:
-            print(f"Bạn đã sở hữu cần câu {rod_name} rồi!")
 
     def remove_item(self, item_name, quantity):
         """Xóa vật phẩm khỏi kho, trả về True nếu thành công."""
-        if item_name in self.items and item_name not in ["rods_owned", "current_rod"]:
+        if item_name in self.items:
             if self.items[item_name] >= quantity:
                 self.items[item_name] -= quantity
                 print(f"Đã xóa {quantity} {item_name} khỏi kho. Còn lại: {self.items[item_name]}")
@@ -84,30 +73,23 @@ class Inventory:
 
     def get_item_quantity(self, item_name):
         """Trả về số lượng của một vật phẩm trong kho."""
-        if item_name in ["rods_owned", "current_rod"]:
-            return self.items.get(item_name, [])
         return self.items.get(item_name, 0)
 
     def has_item(self, item_name, quantity=1):
         """Kiểm tra xem có đủ số lượng vật phẩm hay không."""
-        if item_name in ["rods_owned", "current_rod"]:
-            return item_name in self.items
         return self.items.get(item_name, 0) >= quantity
 
     def get_all_items(self):
         """Trả về danh sách tất cả vật phẩm và số lượng."""
-        return {item: qty for item, qty in self.items.items() if item not in ["rods_owned", "current_rod"] and qty > 0}
+        return {item: qty for item, qty in self.items.items() if qty > 0}
 
     def display_inventory(self):
         """Hiển thị toàn bộ kho đồ hiện tại."""
         print("=== Kho đồ ===")
         for item, quantity in self.items.items():
-            if item not in ["rods_owned", "current_rod"] and quantity > 0:
+            if quantity > 0:
                 print(f"{item}: {quantity}")
-        print(f"Cần câu sở hữu: {self.items.get('rods_owned', [])}")
-        print(f"Cần câu hiện tại: {self.items.get('current_rod', 'basic_rod')}")
         print("=============")
-
 
 # Ví dụ chạy thử
 if __name__ == "__main__":

@@ -13,7 +13,7 @@ class Player:
         self.max_energy = 100
         self.garden_slots = 4
         self.inventory = Inventory()
-
+        self.load_game()
     # --- Các phương thức cũ giữ nguyên ---
 
     def add_energy(self, amount):
