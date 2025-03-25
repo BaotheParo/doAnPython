@@ -6,16 +6,13 @@ import json
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 IMAGE_DIR = os.path.abspath(os.path.join(BASE_DIR, "../../assets/images"))
-FARM_DATA_FILE = os.path.abspath(os.path.join(BASE_DIR, "../../src/core/farm_data.json"))
 
 from src.utils.constants import SCREEN_WIDTH, SCREEN_HEIGHT
 
 class SettingsUI:
-    def __init__(self, screen, player, time_system=None, planted_seeds=None):
+    def __init__(self, screen, game_state):
         self.screen = screen
-        self.player = player
-        self.time_system = time_system
-        self.planted_seeds = planted_seeds if planted_seeds is not None else {}
+        self.game_state = game_state  # Sử dụng GameState thay vì player, time_system, planted_seeds riêng
         self.show_menu = False
         self.show_map = False
 
@@ -108,26 +105,8 @@ class SettingsUI:
                     if button["rect"].collidepoint(event.pos):
                         button["action"]()
 
-    def save_farm_data(self):
-        farm_data = {}
-        for index, plant in self.planted_seeds.items():
-            farm_data[str(index)] = {
-                "seed": plant["seed"],
-                "stage": plant["stage"],
-                "remaining_upgrade_time": plant["remaining_upgrade_time"],
-                "remaining_death_time": plant["remaining_death_time"],
-                "center_pos": plant["center_pos"]
-            }
-        with open(FARM_DATA_FILE, "w") as f:
-            json.dump(farm_data, f)
-        print(f"Saved farm data to {FARM_DATA_FILE}: {farm_data}")
-
     def save_game_ui(self):
-        self.player.save_game("player_data.json")
-        if self.time_system:
-            self.time_system.save_time_data()
-        if self.planted_seeds:
-            self.save_farm_data()
+        self.game_state.save_game()  # Gọi save_game từ GameState
         print("Game đã được lưu từ UI!")
         self.show_menu = False
 
@@ -143,12 +122,9 @@ class SettingsUI:
 if __name__ == "__main__":
     pygame.init()
     screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.RESIZABLE)
-    from src.core.player import Player
-    from src.core.time_system import TimeSystem
-    player = Player()
-    time_system = TimeSystem()
-    planted_seeds = {}
-    settings_ui = SettingsUI(screen, player, time_system, planted_seeds)
+    from src.core.game_state import GameState
+    game_state = GameState()
+    settings_ui = SettingsUI(screen, game_state)
     running = True
     clock = pygame.time.Clock()
 
@@ -158,7 +134,7 @@ if __name__ == "__main__":
                 running = False
             elif event.type == pygame.VIDEORESIZE:
                 screen = pygame.display.set_mode((event.w, event.h), pygame.RESIZABLE)
-                settings_ui = SettingsUI(screen, player, time_system, planted_seeds)
+                settings_ui = SettingsUI(screen, game_state)
             settings_ui.handle_event(event)
 
         screen.fill((0, 0, 0))
