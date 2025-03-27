@@ -58,8 +58,12 @@ class FishingScene:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     self.running = False
+                    self.ui.save_game_ui()
+                    pygame.quit()
+                    sys.exit()
                 elif event.type == pygame.MOUSEBUTTONDOWN:
-                    self.handle_click(mouse_pos)
+                    if not self.ui.show_map:
+                        self.handle_click(mouse_pos)
                     self.ui.handle_event(event)
                     if self.back_button_rect.collidepoint(mouse_pos):
                         from src.scenes.farm import FarmScene
