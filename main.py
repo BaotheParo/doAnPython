@@ -12,7 +12,6 @@ def main():
     
     game_state = GameState()
     settings_ui = SettingsUI(screen, game_state)
-    
     current_scene = Bedroom(game_state, screen, settings_ui)
     
     while True:
@@ -23,3 +22,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
