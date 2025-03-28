@@ -1,5 +1,12 @@
 import pygame
 import os
+import sys
+
+# Thêm đường dẫn gốc của dự án vào sys.path
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
+# Lấy đường dẫn tuyệt đối đến thư mục gốc của dự án
+BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))
+
 from src.core.player import Player
 from src.core.inventory import Inventory
 from src.core.time_system import TimeSystem  # Import TimeSystem
@@ -15,9 +22,9 @@ class VillageScene:
         # Gán Inventory instance cho player.inventory
         self.player.inventory = Inventory()
 
-        # Đường dẫn tương đối đến các file background
-        self.day_background_path = "../../assets/images/backgrounds/background-ngoilang.png"
-        self.night_background_path = "../../assets/images/backgrounds/background-ngoilang-dem.png"
+        # Đường dẫn tuyệt đối đến các file background
+        self.day_background_path = os.path.join(BASE_DIR, "assets", "images", "backgrounds", "background-ngoilang.png")
+        self.night_background_path = os.path.join(BASE_DIR, "assets", "images", "backgrounds", "background-ngoilang-dem.png")
 
         try:
             self.day_background = pygame.image.load(self.day_background_path).convert()
@@ -73,13 +80,13 @@ class VillageScene:
         # Font để hiển thị tọa độ chuột và thời gian
         self.mouse_pos_font = pygame.font.SysFont(None, 25)
 
-        # Tải các hình ảnh menu (đường dẫn tương đối)
+        # Tải các hình ảnh menu (đường dẫn tuyệt đối)
         self.menu_images = {
-            "menubanhat": "../../assets/images/fish/menubanhat.png",
-            "menubanrau": "../../assets/images/fish/menubanrau.png",
-            "menumuadat": "../../assets/images/fish/menumuadat.png",
-            "menubanca": "../../assets/images/fish/menubanca.png",
-            "menucancau": "../../assets/images/fish/menucancau.png"
+            "menubanhat": os.path.join(BASE_DIR, "assets", "images", "fish", "menubanhat.png"),
+            "menubanrau": os.path.join(BASE_DIR, "assets", "images", "fish", "menubanrau.png"),
+            "menumuadat": os.path.join(BASE_DIR, "assets", "images", "fish", "menumuadat.png"),
+            "menubanca": os.path.join(BASE_DIR, "assets", "images", "fish", "menubanca.png"),
+            "menucancau": os.path.join(BASE_DIR, "assets", "images", "fish", "menucancau.png")
         }
         self.current_menu = "menubanhat"
 
