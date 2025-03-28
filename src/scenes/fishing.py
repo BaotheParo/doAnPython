@@ -62,7 +62,7 @@ class FishingScene:
                     pygame.quit()
                     sys.exit()
                 elif event.type == pygame.MOUSEBUTTONDOWN:
-                    if not self.ui.show_map:
+                    if not (self.ui.show_map or self.ui.show_inventory):
                         self.handle_click(mouse_pos)
                     self.ui.handle_event(event)
                     if self.back_button_rect.collidepoint(mouse_pos):
