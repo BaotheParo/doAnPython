@@ -11,7 +11,7 @@ class Player:
         self.money = 100
         self.rod_level = "wood"
         self.max_energy = 100
-        self.garden_slots = 4
+        self.garden_slots = 2  # Thay đổi kích thước vườn ban đầu từ 4 thành 2
         self.inventory = Inventory()
 
     def add_energy(self, amount):
@@ -58,7 +58,8 @@ class Player:
         return False
 
     def upgrade_garden(self, new_slots):
-        slot_costs = {6: 18, 8: 25, 10: 32}
+        # Cập nhật chi phí cho các mức mở rộng mới
+        slot_costs = {4: 18, 6: 25, 8: 32}  # Từ 2->4: 18 đồng, 4->6: 25 đồng, 6->8: 32 đồng
         if new_slots not in slot_costs:
             print("Số ô không hợp lệ!")
             return False
@@ -98,11 +99,12 @@ class Player:
         self.money = data.get("money", 100)
         self.rod_level = data.get("rod_level", "wood")
         self.max_energy = data.get("max_energy", 100)
-        self.garden_slots = data.get("garden_slots", 4)
+        self.garden_slots = data.get("garden_slots", 2)  # Thay đổi giá trị mặc định từ 4 thành 2
         self.inventory.items = data.get("inventory", {})
 
 if __name__ == "__main__":
     player = Player()
     print(f"Năng lượng ban đầu: {player.get_energy()}")
     print(f"Tiền ban đầu: {player.get_money()}")
+    print(f"Số ô vườn ban đầu: {player.get_garden_slots()}")
     player.inventory.display_inventory()

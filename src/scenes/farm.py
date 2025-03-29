@@ -65,7 +65,6 @@ class FarmScene:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     self.running = False
-                    self.ui.save_game_ui()
                     pygame.quit()
                     sys.exit()
                     continue
