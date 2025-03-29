@@ -1,15 +1,8 @@
 {
-<<<<<<< HEAD
-  "carrot_seed": 20,
-  "cabbage_seed": 8,
-  "beetroot_seed": 10,
-  "pumpkin_seed": 8,
-=======
   "carrot_seed": 22,
   "cabbage_seed": 0,
   "beetroot_seed": 0,
   "pumpkin_seed": 0,
->>>>>>> 927fae50a5153499319aef4225acd28241eed787
   "energy_herb_seed": 0,
   "rare_herb_seed": 0,
   "carrot": 55,
@@ -18,11 +11,7 @@
   "pumpkin": 10,
   "energy_herb": 90,
   "rare_herb": 0,
-<<<<<<< HEAD
-  "tilapia": 9,
-=======
   "tilapia": 7,
->>>>>>> 927fae50a5153499319aef4225acd28241eed787
   "carp": 7,
   "catfish": 2,
   "eel": 1,

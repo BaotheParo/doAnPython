@@ -65,10 +65,6 @@ class FarmScene:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     self.running = False
-<<<<<<< HEAD
-=======
-
->>>>>>> 927fae50a5153499319aef4225acd28241eed787
                     pygame.quit()
                     sys.exit()
                     continue
