@@ -1,1 +1,5 @@
 src/data/*.json
+src/data/farm_data.json
+src/data/inventory_data.json
+src/data/player_data.json
+src/data/time_data.json

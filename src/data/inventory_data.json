@@ -1,5 +1,5 @@
 {
-  "carrot_seed": 23,
+  "carrot_seed": 22,
   "cabbage_seed": 0,
   "beetroot_seed": 0,
   "pumpkin_seed": 0,
@@ -14,7 +14,7 @@
   "energy_herb": 0,
   "rare_herb": 0,
   "tilapia": 7,
-  "carp": 6,
+  "carp": 7,
   "catfish": 2,
   "eel": 1,
   "ghost_fish": 1,
