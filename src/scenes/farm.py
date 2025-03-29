@@ -65,9 +65,19 @@ class FarmScene:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     self.running = False
-                elif event.type == pygame.MOUSEBUTTONDOWN:
+                    self.ui.save_game_ui()
+                    pygame.quit()
+                    sys.exit()
+                    continue
+                ui_handled = self.ui.handle_event(event)
+                if ui_handled:
+                    # Nếu UI đã xử lý hoặc đang bật map => chặn event
+                    continue
+
+                # Nếu UI không xử lý => scene xử lý
+                if event.type == pygame.MOUSEBUTTONDOWN:
                     self.handle_click(mouse_pos)
-                    self.ui.handle_event(event)
+                    # Kiểm tra Fishing button
                     if self.fishing_button_rect.collidepoint(mouse_pos):
                         from src.scenes.fishing import FishingScene
                         print("Chuyển đến FishingScene!")
@@ -77,6 +87,7 @@ class FarmScene:
                         pygame.display.set_caption("Khu vực nông trại")
                         self.ui = SettingsUI(self.screen, self.game_state)
                         self.running = True
+                
 
             if self.game_state.time_system.is_day():
                 self.screen.blit(self.day_background, (0, 0))
@@ -150,3 +161,5 @@ class FarmScene:
         text_y = bg_y + padding
         self.screen.blit(bg_surface, (bg_x, bg_y))
         self.screen.blit(text_surface, (text_x, text_y))
+
+

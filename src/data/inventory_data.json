@@ -1,25 +1,30 @@
 {
+<<<<<<< HEAD
   "carrot_seed": 27,
+=======
+  "carrot_seed": 23,
+>>>>>>> c0aa83f14019f5dbe3a689d4b6e3d84ef11187b7
   "cabbage_seed": 0,
   "beetroot_seed": 0,
   "pumpkin_seed": 0,
   "energy_herb_seed": 0,
   "rare_herb_seed": 0,
-  "carrot": 53,
+  "carrot": 54,
   "cabbage": 2,
   "tomato": 2,
   "potato": 0,
-  "beetroot": 0,
+  "beetroot": 90,
   "pumpkin": 10,
-  "energy_herb": 7,
+  "energy_herb": 0,
   "rare_herb": 0,
-  "tilapia": 0,
-  "carp": 0,
-  "catfish": 0,
-  "eel": 0,
-  "ghost_fish": 0,
-  "frog": 1,
-  "rods_owned": [
-    "basic_rod"
-  ]
+  "tilapia": 7,
+  "carp": 6,
+  "catfish": 2,
+  "eel": 1,
+  "ghost_fish": 1,
+  "frog": 7,
+  "basic_rod": 1,
+  "silver_rod": 1,
+  "gold_rod": 1,
+  "diamond_rod": 1
 }
