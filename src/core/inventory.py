@@ -19,8 +19,7 @@ class Inventory:
                 loaded_data = json.load(f)
                 required_keys = {
                     "carrot_seed", "cabbage_seed", "beetroot_seed", "pumpkin_seed",
-                    "energy_herb_seed", "rare_herb_seed", "carrot", "cabbage", "tomato",
-                    "potato", "beetroot", "pumpkin", "energy_herb", "rare_herb",
+                    "energy_herb_seed", "rare_herb_seed", "carrot", "cabbage", "beetroot", "pumpkin", "energy_herb", "rare_herb",
                     "tilapia", "carp", "catfish", "eel", "ghost_fish", "frog","basic_rod","gold_rod","diamond_rod"
                 }
                 for key in required_keys:
