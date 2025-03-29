@@ -145,9 +145,9 @@ class FarmGame:
         self.warning_icon = pygame.transform.scale(pygame.image.load(os.path.join(BASE_DIR, "assets", "images", "icons", "need_watering.png")), self.scale_size((20, 20)))
         self.lock_icon = pygame.transform.scale(pygame.image.load(os.path.join(BASE_DIR, "assets", "images", "icons", "padlock.png")), self.scale_size((50, 50)))
         self.back_button_image = pygame.transform.scale(pygame.image.load(os.path.join(BASE_DIR, "assets", "images", "icons", "icon-quaylai.png")), self.scale_size((40, 40)))
-        self.sickle_cursor = pygame.transform.scale(pygame.image.load(os.path.join(BASE_DIR, "assets", "images", "icons", "ll.png")), self.scale_size((32, 32)))
-        self.watering_can_cursor = pygame.transform.scale(pygame.image.load(os.path.join(BASE_DIR, "assets", "images", "icons", "watering_can.png")), self.scale_size((32, 32)))
-        self.water_can_cursor = pygame.transform.scale(pygame.image.load(os.path.join(BASE_DIR, "assets", "images", "icons", "water-can.png")), self.scale_size((32, 32)))
+        self.sickle_cursor = pygame.transform.scale(pygame.image.load(os.path.join(BASE_DIR, "assets", "images", "icons", "ll.png")), self.scale_size((50, 50)))
+        self.watering_can_cursor = pygame.transform.scale(pygame.image.load(os.path.join(BASE_DIR, "assets", "images", "icons", "watering_can.png")), self.scale_size((60, 60)))
+        self.water_can_cursor = pygame.transform.scale(pygame.image.load(os.path.join(BASE_DIR, "assets", "images", "icons", "water-can.png")), self.scale_size((50, 50)))
 
         self.seed_names = {
             "carrot_seed": "Carrot Seed",
