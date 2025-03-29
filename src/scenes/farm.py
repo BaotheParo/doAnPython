@@ -42,11 +42,11 @@ class FarmScene:
         self.font = pygame.font.SysFont(None, 24)
         self.message_font = pygame.font.SysFont("Arial", 48, bold=True)
 
-        self.fishing_button_rect = pygame.Rect(10, SCREEN_HEIGHT - 50, 150, 40)
-        self.fishing_button_text = self.font.render("Go to Fishing", True, WHITE)
-        self.fishing_button_bg = pygame.Surface((150, 40))
-        self.fishing_button_bg.fill((50, 50, 50))
-        self.fishing_button_hover = False
+        # self.fishing_button_rect = pygame.Rect(10, SCREEN_HEIGHT - 50, 150, 40)
+        # self.fishing_button_text = self.font.render("Go to Fishing", True, WHITE)
+        # self.fishing_button_bg = pygame.Surface((150, 40))
+        # self.fishing_button_bg.fill((50, 50, 50))
+        # self.fishing_button_hover = False
 
         self.show_night_message = False
         self.night_message_timer = 0
@@ -77,15 +77,15 @@ class FarmScene:
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     self.handle_click(mouse_pos)
                     # Kiểm tra Fishing button
-                    if self.fishing_button_rect.collidepoint(mouse_pos):
-                        from src.scenes.fishing import FishingScene
-                        print("Chuyển đến FishingScene!")
-                        self.running = False
-                        fishing_scene = FishingScene(self.game_state, self.screen, self.ui)
-                        fishing_scene.run()
-                        pygame.display.set_caption("Khu vực nông trại")
-                        self.ui = SettingsUI(self.screen, self.game_state)
-                        self.running = True
+                    # if self.fishing_button_rect.collidepoint(mouse_pos):
+                    #     from src.scenes.fishing import FishingScene
+                    #     print("Chuyển đến FishingScene!")
+                    #     self.running = False
+                    #     fishing_scene = FishingScene(self.game_state, self.screen, self.ui)
+                    #     fishing_scene.run()
+                    #     pygame.display.set_caption("Khu vực nông trại")
+                    #     self.ui = SettingsUI(self.screen, self.game_state)
+                    #     self.running = True
                 
 
             if self.game_state.time_system.is_day():
@@ -113,11 +113,11 @@ class FarmScene:
             self.screen.blit(time_bg, (10, 40))
             self.screen.blit(time_text, (15, 45))
 
-            self.fishing_button_hover = self.fishing_button_rect.collidepoint(mouse_pos)
-            self.fishing_button_bg.fill((100, 100, 100) if self.fishing_button_hover else (50, 50, 50))
-            self.screen.blit(self.fishing_button_bg, (self.fishing_button_rect.x, self.fishing_button_rect.y))
-            self.screen.blit(self.fishing_button_text, (self.fishing_button_rect.x + 10, self.fishing_button_rect.y + 10))
-            pygame.draw.rect(self.screen, WHITE, self.fishing_button_rect, 2)
+            # self.fishing_button_hover = self.fishing_button_rect.collidepoint(mouse_pos)
+            # self.fishing_button_bg.fill((100, 100, 100) if self.fishing_button_hover else (50, 50, 50))
+            # self.screen.blit(self.fishing_button_bg, (self.fishing_button_rect.x, self.fishing_button_rect.y))
+            # self.screen.blit(self.fishing_button_text, (self.fishing_button_rect.x + 10, self.fishing_button_rect.y + 10))
+            # pygame.draw.rect(self.screen, WHITE, self.fishing_button_rect, 2)
 
             if self.show_night_message:
                 self.render_night_message()

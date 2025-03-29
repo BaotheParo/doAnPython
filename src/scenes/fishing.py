@@ -38,11 +38,11 @@ class FishingScene:
 
         self.font = pygame.font.SysFont(None, 24)
 
-        self.back_button_rect = pygame.Rect(10, SCREEN_HEIGHT - 50, 150, 40)
-        self.back_button_text = self.font.render("Back to Farm", True, WHITE)
-        self.back_button_bg = pygame.Surface((150, 40))
-        self.back_button_bg.fill((50, 50, 50))
-        self.back_button_hover = False
+        # self.back_button_rect = pygame.Rect(10, SCREEN_HEIGHT - 50, 150, 40)
+        # self.back_button_text = self.font.render("Back to Farm", True, WHITE)
+        # self.back_button_bg = pygame.Surface((150, 40))
+        # self.back_button_bg.fill((50, 50, 50))
+        # self.back_button_hover = False
 
         self.running = True
         self.ui = SettingsUI(self.screen, self.game_state)
@@ -64,12 +64,12 @@ class FishingScene:
                     if not (self.ui.show_map or self.ui.show_inventory):
                         self.handle_click(mouse_pos)
                     self.ui.handle_event(event)
-                    if self.back_button_rect.collidepoint(mouse_pos):
-                        from src.scenes.farm import FarmScene
-                        print("Chuyển về FarmScene!")
-                        self.running = False
-                        farm_scene = FarmScene(self.game_state, self.screen, self.ui)
-                        farm_scene.run()
+                    # if self.back_button_rect.collidepoint(mouse_pos):
+                    #     from src.scenes.farm import FarmScene
+                    #     print("Chuyển về FarmScene!")
+                    #     self.running = False
+                    #     farm_scene = FarmScene(self.game_state, self.screen, self.ui)
+                    #     farm_scene.run()
 
             if self.game_state.time_system.is_day():
                 self.screen.blit(self.day_background, (0, 0))
@@ -94,11 +94,11 @@ class FishingScene:
             self.screen.blit(time_bg, (10, 40))
             self.screen.blit(time_text, (15, 45))
 
-            self.back_button_hover = self.back_button_rect.collidepoint(mouse_pos)
-            self.back_button_bg.fill((100, 100, 100) if self.back_button_hover else (50, 50, 50))
-            self.screen.blit(self.back_button_bg, (self.back_button_rect.x, self.back_button_rect.y))
-            self.screen.blit(self.back_button_text, (self.back_button_rect.x + 10, self.back_button_rect.y + 10))
-            pygame.draw.rect(self.screen, WHITE, self.back_button_rect, 2)
+            # self.back_button_hover = self.back_button_rect.collidepoint(mouse_pos)
+            # self.back_button_bg.fill((100, 100, 100) if self.back_button_hover else (50, 50, 50))
+            # self.screen.blit(self.back_button_bg, (self.back_button_rect.x, self.back_button_rect.y))
+            # self.screen.blit(self.back_button_text, (self.back_button_rect.x + 10, self.back_button_rect.y + 10))
+            # pygame.draw.rect(self.screen, WHITE, self.back_button_rect, 2)
 
             self.ui.draw()
             pygame.display.flip()

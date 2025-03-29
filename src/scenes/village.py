@@ -335,11 +335,11 @@ class VillageScene:
             self.screen.blit(time_text, (15, 75))
 
             # Vẽ nút "Back to Farm"
-            self.back_button_hover = self.back_button_rect.collidepoint(mouse_pos)
-            self.back_button_bg.fill((100, 100, 100) if self.back_button_hover else (50, 50, 50))
-            self.screen.blit(self.back_button_bg, (self.back_button_rect.x, self.back_button_rect.y))
-            self.screen.blit(self.back_button_text, (self.back_button_rect.x + 10, self.back_button_rect.y + 10))
-            pygame.draw.rect(self.screen, WHITE, self.back_button_rect, 2)
+            # self.back_button_hover = self.back_button_rect.collidepoint(mouse_pos)
+            # self.back_button_bg.fill((100, 100, 100) if self.back_button_hover else (50, 50, 50))
+            # self.screen.blit(self.back_button_bg, (self.back_button_rect.x, self.back_button_rect.y))
+            # self.screen.blit(self.back_button_text, (self.back_button_rect.x + 10, self.back_button_rect.y + 10))
+            # pygame.draw.rect(self.screen, WHITE, self.back_button_rect, 2)
 
             # Vẽ UI (map, inventory, v.v.)
             self.ui.draw()
