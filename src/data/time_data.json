@@ -1,1 +1,10 @@
+<<<<<<< HEAD
 {"current_day": 147, "remaining_day_time": 49616, "is_day_state": true, "last_update_time": 41206}
+=======
+{
+    "current_day": 141,
+    "remaining_day_time": 320,
+    "is_day_state": false,
+    "last_update_time": 62303
+}
+>>>>>>> 3db41c1c594bea49030095a61f6a9b10555aec26

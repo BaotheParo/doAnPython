@@ -14,9 +14,19 @@ class FishingScene:
         self.screen = screen
         self.ui = ui
         pygame.display.set_caption("Khu vực câu cá")
+    
 
         self.day_background_path = os.path.join(BASE_DIR, "assets", "images", "backgrounds", "background-cauca.png")
         self.night_background_path = os.path.join(BASE_DIR, "assets", "images", "backgrounds", "background-cauca-dem.png")
+
+        self.font = pygame.font.Font(None, 36)
+
+        # Thông báo khi vào làng
+        self.notification_text = "Đã di chuyển tới ao cá"
+        self.notification_surface = self.font.render(self.notification_text, True, (255, 255, 255))
+        self.notification_timer = 3000  # Hiển thị trong 3 giây (3000ms)
+        self.notification_start_time = pygame.time.get_ticks()
+
 
         try:
             self.day_background = pygame.image.load(self.day_background_path).convert()
@@ -53,7 +63,7 @@ class FishingScene:
         while self.running:
             delta_time = clock.tick(60)
             self.game_state.time_system.update(delta_time)
-
+            
             mouse_pos = pygame.mouse.get_pos()
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -99,7 +109,20 @@ class FishingScene:
             # self.screen.blit(self.back_button_bg, (self.back_button_rect.x, self.back_button_rect.y))
             # self.screen.blit(self.back_button_text, (self.back_button_rect.x + 10, self.back_button_rect.y + 10))
             # pygame.draw.rect(self.screen, WHITE, self.back_button_rect, 2)
-
+            if self.notification_timer > 0:
+                current_time = pygame.time.get_ticks()
+                elapsed_time = current_time - self.notification_start_time
+                if elapsed_time < self.notification_timer:
+                    # Tính toán vị trí giữa màn hình
+                    text_rect = self.notification_surface.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 4))
+                    # Vẽ nền tối mờ cho thông báo
+                    bg_surface = pygame.Surface((text_rect.width + 20, text_rect.height + 10), pygame.SRCALPHA)
+                    bg_surface.fill((0, 0, 0, 180))  # Nền đen mờ
+                    self.screen.blit(bg_surface, (text_rect.x - 10, text_rect.y - 5))
+                    # Vẽ văn bản
+                    self.screen.blit(self.notification_surface, text_rect)
+                else:
+                    self.notification_timer = 0  # Tắt thông báo sau khi hết thời gian
             self.ui.draw()
             pygame.display.flip()
 

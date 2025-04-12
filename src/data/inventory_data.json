@@ -1,11 +1,20 @@
 {
+<<<<<<< HEAD
   "carrot_seed": 20,
+=======
+  "carrot_seed": 21,
+>>>>>>> 3db41c1c594bea49030095a61f6a9b10555aec26
   "cabbage_seed": 0,
   "beetroot_seed": 0,
   "pumpkin_seed": 0,
   "energy_herb_seed": 5,
+<<<<<<< HEAD
   "rare_herb_seed": 5,
   "carrot": 58,
+=======
+  "rare_herb_seed": 4,
+  "carrot": 54,
+>>>>>>> 3db41c1c594bea49030095a61f6a9b10555aec26
   "cabbage": 2,
   "beetroot": 90,
   "pumpkin": 10,
