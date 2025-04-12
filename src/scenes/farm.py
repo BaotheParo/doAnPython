@@ -33,20 +33,9 @@ class FarmScene:
         self.farm_plot_rect = pygame.Rect(3, 358, 300, 200)
         self.bedroom_rect = pygame.Rect(582, 286, 300, 200)
 
-        self.hover_color = (200, 200, 200, 100)
-        self.hover_surface = pygame.Surface((self.farm_plot_rect.width, self.farm_plot_rect.height), pygame.SRCALPHA)
-        self.hover_surface.fill(self.hover_color)
-        self.new_area_hover_surface = pygame.Surface((self.bedroom_rect.width, self.bedroom_rect.height), pygame.SRCALPHA)
-        self.new_area_hover_surface.fill(self.hover_color)
-
         self.font = pygame.font.SysFont(None, 24)
         self.message_font = pygame.font.SysFont("Arial", 48, bold=True)
-
-        # self.fishing_button_rect = pygame.Rect(10, SCREEN_HEIGHT - 50, 150, 40)
-        # self.fishing_button_text = self.font.render("Go to Fishing", True, WHITE)
-        # self.fishing_button_bg = pygame.Surface((150, 40))
-        # self.fishing_button_bg.fill((50, 50, 50))
-        # self.fishing_button_hover = False
+        self.tooltip_font = pygame.font.SysFont("Arial", 20, bold=True)  # Font cho tooltip
 
         self.show_night_message = False
         self.night_message_timer = 0
@@ -62,6 +51,12 @@ class FarmScene:
             self.game_state.time_system.update(delta_time)
 
             mouse_pos = pygame.mouse.get_pos()
+            # Thay đổi con trỏ chuột khi hover
+            if self.farm_plot_rect.collidepoint(mouse_pos) or self.bedroom_rect.collidepoint(mouse_pos):
+                pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_HAND)
+            else:
+                pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_ARROW)
+
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     self.running = False
@@ -70,33 +65,21 @@ class FarmScene:
                     continue
                 ui_handled = self.ui.handle_event(event)
                 if ui_handled:
-                    # Nếu UI đã xử lý hoặc đang bật map => chặn event
                     continue
 
-                # Nếu UI không xử lý => scene xử lý
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     self.handle_click(mouse_pos)
-                    # Kiểm tra Fishing button
-                    # if self.fishing_button_rect.collidepoint(mouse_pos):
-                    #     from src.scenes.fishing import FishingScene
-                    #     print("Chuyển đến FishingScene!")
-                    #     self.running = False
-                    #     fishing_scene = FishingScene(self.game_state, self.screen, self.ui)
-                    #     fishing_scene.run()
-                    #     pygame.display.set_caption("Khu vực nông trại")
-                    #     self.ui = SettingsUI(self.screen, self.game_state)
-                    #     self.running = True
-                
 
             if self.game_state.time_system.is_day():
                 self.screen.blit(self.day_background, (0, 0))
             else:
                 self.screen.blit(self.night_background, (0, 0))
 
+            # Hiển thị tooltip
             if self.farm_plot_rect.collidepoint(mouse_pos):
-                self.screen.blit(self.hover_surface, (self.farm_plot_rect.x, self.farm_plot_rect.y))
-            if self.bedroom_rect.collidepoint(mouse_pos):
-                self.screen.blit(self.new_area_hover_surface, (self.bedroom_rect.x, self.bedroom_rect.y))
+                self.render_tooltip("Farm", mouse_pos)
+            elif self.bedroom_rect.collidepoint(mouse_pos):
+                self.render_tooltip("Bedroom", mouse_pos)
 
             coord_text = self.font.render(f"Mouse: {mouse_pos}", True, WHITE)
             coord_bg = pygame.Surface((150, 25))
@@ -112,12 +95,6 @@ class FarmScene:
             time_bg.fill((50, 50, 50))
             self.screen.blit(time_bg, (10, 40))
             self.screen.blit(time_text, (15, 45))
-
-            # self.fishing_button_hover = self.fishing_button_rect.collidepoint(mouse_pos)
-            # self.fishing_button_bg.fill((100, 100, 100) if self.fishing_button_hover else (50, 50, 50))
-            # self.screen.blit(self.fishing_button_bg, (self.fishing_button_rect.x, self.fishing_button_rect.y))
-            # self.screen.blit(self.fishing_button_text, (self.fishing_button_rect.x + 10, self.fishing_button_rect.y + 10))
-            # pygame.draw.rect(self.screen, WHITE, self.fishing_button_rect, 2)
 
             if self.show_night_message:
                 self.render_night_message()
@@ -161,4 +138,23 @@ class FarmScene:
         self.screen.blit(bg_surface, (bg_x, bg_y))
         self.screen.blit(text_surface, (text_x, text_y))
 
+    def render_tooltip(self, text, mouse_pos):
+        """Hiển thị tooltip với văn bản và vị trí chuột"""
+        text_surface = self.tooltip_font.render(text, True, WHITE)
+        padding = 5
+        bg_width = text_surface.get_width() + padding * 2
+        bg_height = text_surface.get_height() + padding * 2
+        bg_surface = pygame.Surface((bg_width, bg_height), pygame.SRCALPHA)
+        pygame.draw.rect(bg_surface, (50, 50, 50, 200), (0, 0, bg_width, bg_height), border_radius=5)
+        
+        # Đặt vị trí tooltip gần chuột, lệch xuống dưới và sang phải
+        tooltip_x = mouse_pos[0] + 10
+        tooltip_y = mouse_pos[1] + 10
+        # Đảm bảo tooltip không vượt ra ngoài màn hình
+        if tooltip_x + bg_width > SCREEN_WIDTH:
+            tooltip_x = SCREEN_WIDTH - bg_width
+        if tooltip_y + bg_height > SCREEN_HEIGHT:
+            tooltip_y = SCREEN_HEIGHT - bg_height
 
+        self.screen.blit(bg_surface, (tooltip_x, tooltip_y))
+        self.screen.blit(text_surface, (tooltip_x + padding, tooltip_y + padding))

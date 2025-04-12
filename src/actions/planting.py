@@ -361,10 +361,10 @@ class FarmGame:
                 pygame.draw.rect(self.screen, self.BUTTON_COLOR, self.next_button, border_radius=5)
                 prev_text = self.font.render("<", True, self.WHITE)
                 next_text = self.font.render(">", True, self.WHITE)
-                self.screen.blit(prev_text, (self.prev_button.x + 20 * self.SCALE_X, self.prev_button.y + 2 * self.SCALE_Y))
-                self.screen.blit(next_text, (self.next_button.x + 20 * self.SCALE_X, self.next_button.y + 2 * self.SCALE_Y))
+                self.screen.blit(prev_text, (self.prev_button.x + 20 * self.SCALE_X, self.prev_button.y -5 + 2 * self.SCALE_Y))
+                self.screen.blit(next_text, (self.next_button.x + 20 * self.SCALE_X, self.next_button.y -5 + 2 * self.SCALE_Y))
                 page_text = self.font.render(f"Page {self.current_page + 1}/{total_pages}", True, self.WHITE)
-                self.screen.blit(page_text, page_text.get_rect(center=(self.inventory_x + self.inventory_width // 2, self.inventory_y + self.inventory_height - 15 * self.SCALE_Y)))
+                self.screen.blit(page_text, page_text.get_rect(center=(self.inventory_x + self.inventory_width // 2, self.inventory_y + self.inventory_height-5 - 15 * self.SCALE_Y)))
 
     def handle_events(self):
         running = True
