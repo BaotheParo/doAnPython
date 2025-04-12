@@ -22,8 +22,8 @@ item_icons = {
     "cabbage_seed": os.path.join(IMAGE_DIR, "plants", "seed.png"),
     "beetroot_seed": os.path.join(IMAGE_DIR, "plants", "seed.png"),
     "pumpkin_seed": os.path.join(IMAGE_DIR, "plants", "seed.png"),
-    "herb_seed": os.path.join(IMAGE_DIR, "plants", "seed.png"),
-    "rare_seed": os.path.join(IMAGE_DIR, "plants", "seed.png"),
+    "energy_herb_seed": os.path.join(IMAGE_DIR, "plants", "seed.png"),
+    "rare_herb_seed": os.path.join(IMAGE_DIR, "plants", "seed.png"),
     "carrot": os.path.join(IMAGE_DIR, "plants", "carot.png"),
     "cabbage": os.path.join(IMAGE_DIR, "plants", "bapcai.png"),
     "beetroot": os.path.join(IMAGE_DIR, "plants", "cuden.png"),
@@ -40,7 +40,7 @@ item_icons = {
     "silver_rod": os.path.join(IMAGE_DIR, "fish", "caucaubac.png"),
     "gold_rod": os.path.join(IMAGE_DIR, "fish", "cancauvang.png"),
     "diamond_rod": os.path.join(IMAGE_DIR, "fish", "cancaukimcuong.png"),
-    "gold": os.path.join(IMAGE_DIR, "icons", "icon-laban.png")
+    "gold": os.path.join(IMAGE_DIR, "icons", "gold-coin.png")
 }
 
 class SettingsUI:
