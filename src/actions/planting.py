@@ -149,6 +149,16 @@ class FarmGame:
         self.watering_can_cursor = pygame.transform.scale(pygame.image.load(os.path.join(BASE_DIR, "assets", "images", "icons", "watering_can.png")), self.scale_size((60, 60)))
         self.water_can_cursor = pygame.transform.scale(pygame.image.load(os.path.join(BASE_DIR, "assets", "images", "icons", "water-can.png")), self.scale_size((50, 50)))
 
+        # Thêm icon cho cây chết và cây cần thu hoạch
+        self.dead_plant_icon = pygame.transform.scale(
+            pygame.image.load(os.path.join(BASE_DIR, "assets", "images", "icons", "dead_plant.png")),
+            self.scale_size((30, 30))
+        )
+        self.ready_harvest_icon = pygame.transform.scale(
+            pygame.image.load(os.path.join(BASE_DIR, "assets", "images", "icons", "ll.png")),
+            self.scale_size((30, 30))
+        )
+
         self.seed_names = {
             "carrot_seed": "Carrot Seed",
             "cabbage_seed": "Cabbage Seed",
@@ -275,6 +285,14 @@ class FarmGame:
             "life": random.uniform(500, 1000)
         })
 
+    def get_blinking_alpha(self, current_time, period=1000):
+        """
+        Tính toán giá trị alpha (0-255) để tạo hiệu ứng nhấp nháy.
+        period: Chu kỳ nhấp nháy (ms), mặc định 1 giây.
+        """
+        alpha = 255 * (0.5 + 0.5 * math.sin(2 * math.pi * current_time / period))
+        return int(alpha)
+
     def draw(self, current_time):
         self.screen.blit(self.farm_bg, (0, 0))
         garden_slots = self.player.get_garden_slots()
@@ -290,11 +308,33 @@ class FarmGame:
                     img_x = center_pos[0] - image.get_width() // 2
                     img_y = center_pos[1] - image.get_height() // 2
                     self.screen.blit(image, (img_x, img_y))
+
+                    # Hiệu ứng nhấp nháy cho cây cần tưới
                     if stage < 3 and (self.planted_seeds[index]["remaining_upgrade_time"] is None or self.planted_seeds[index]["remaining_death_time"] <= self.WARNING_TIME):
                         if (current_time // 500) % 2 == 0:
                             warning_x = img_x + image.get_width() - self.warning_icon.get_width() // 2
                             warning_y = img_y - self.warning_icon.get_height() // 2
                             self.screen.blit(self.warning_icon, (warning_x, warning_y))
+
+                    # Hiệu ứng nhấp nháy cho cây chết (stage = 4)
+                    if stage == 4:
+                        dead_icon_surface = pygame.Surface(self.dead_plant_icon.get_size(), pygame.SRCALPHA)
+                        alpha = self.get_blinking_alpha(current_time)
+                        dead_icon_surface.blit(self.dead_plant_icon, (0, 0))
+                        dead_icon_surface.set_alpha(alpha)
+                        dead_icon_x = img_x + image.get_width() // 2
+                        dead_icon_y = img_y - self.dead_plant_icon.get_height() // 2
+                        self.screen.blit(dead_icon_surface, (dead_icon_x, dead_icon_y))
+
+                    # Hiệu ứng nhấp nháy cho cây cần thu hoạch (stage = 3)
+                    if stage == 3:
+                        harvest_icon_surface = pygame.Surface(self.ready_harvest_icon.get_size(), pygame.SRCALPHA)
+                        alpha = self.get_blinking_alpha(current_time)
+                        harvest_icon_surface.blit(self.ready_harvest_icon, (0, 0))
+                        harvest_icon_surface.set_alpha(alpha)
+                        harvest_icon_x = img_x + image.get_width() // 2
+                        harvest_icon_y = img_y - self.ready_harvest_icon.get_height() // 2
+                        self.screen.blit(harvest_icon_surface, (harvest_icon_x, harvest_icon_y))
             else:
                 lock_x = plot.centerx - self.lock_icon.get_width() // 2
                 lock_y = plot.centery - self.lock_icon.get_height() // 2
