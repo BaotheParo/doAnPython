@@ -18,6 +18,9 @@ class VillageScene:
         self.ui = ui
         pygame.display.set_caption("Khu vực làng")
 
+        # Tắt bản đồ ngay khi vào VillageScene
+        self.ui.show_map = False  # Đảm bảo bản đồ không hiển thị khi chuyển đến khu vực làng
+
         # Đường dẫn tuyệt đối đến các file background
         self.day_background_path = os.path.join(BASE_DIR, "assets", "images", "backgrounds", "background-ngoilang.png")
         self.night_background_path = os.path.join(BASE_DIR, "assets", "images", "backgrounds", "background-ngoilang-dem.png")
@@ -52,11 +55,14 @@ class VillageScene:
             "cabbage_seed": self.tooltip_font.render("Hạt bắp cải - 3 đồng", True, WHITE),
             "beetroot_seed": self.tooltip_font.render("Hạt củ dền - 5 đồng", True, WHITE),
             "pumpkin_seed": self.tooltip_font.render("Hạt bí đỏ - 6 đồng", True, WHITE),
+            "rare_herb_seed": self.tooltip_font.render("Hạt thảo mộc hiếm - 5 ếch", True, WHITE),
+            "energy_herb_seed": self.tooltip_font.render("Hạt thảo mộc năng lượng - 3 ếch", True, WHITE),
             "carrot_crop": self.tooltip_font.render("Cà rốt - 3 đồng", True, WHITE),
             "cabbage_crop": self.tooltip_font.render("Bắp cải - 4 đồng", True, WHITE),
             "beetroot_crop": self.tooltip_font.render("Củ dền - 7 đồng", True, WHITE),
             "pumpkin_crop": self.tooltip_font.render("Bí đỏ - 9 đồng", True, WHITE),
             "rare_herb": self.tooltip_font.render("Thảo mộc hiếm - 15 đồng", True, WHITE),
+            "energy_herb": self.tooltip_font.render("Thảo mộc năng lượng - 10 đồng", True, WHITE),
             "tilapia": self.tooltip_font.render("Cá rô phi - 5 đồng", True, WHITE),
             "carp": self.tooltip_font.render("Cá chép - 7 đồng", True, WHITE),
             "catfish": self.tooltip_font.render("Cá trê - 10 đồng", True, WHITE),
@@ -105,23 +111,26 @@ class VillageScene:
         # Menu nông trại
         self.buy_seed_rect = pygame.Rect(500, 109, 95, 65)
         self.sell_crop_rect = pygame.Rect(651, 109, 95, 65)
-        self买_farm_rect = pygame.Rect(754, 204, 50, 90)
+        self.buy_farm_rect = pygame.Rect(754, 204, 50, 90)
         # Menu câu cá
         self.sell_fish_rect = pygame.Rect(500, 109, 95, 65)
         self.buy_rod_rect = pygame.Rect(651, 109, 95, 65)
 
         # Định nghĩa các ô vuông cho các loại hạt giống (hiển thị khi ở menubanhat)
-        self.carrot_seed_rect = pygame.Rect(490, 249, 93, 80)
-        self.cabbage_seed_rect = pygame.Rect(577, 249, 93, 80)
-        self.beetroot_seed_rect = pygame.Rect(665, 249, 93, 80)
-        self.pumpkin_seed_rect = pygame.Rect(490, 357, 93, 80)
+        self.cabbage_seed_rect = pygame.Rect(490, 249, 93, 80)  # Bắp cải
+        self.pumpkin_seed_rect = pygame.Rect(577, 249, 93, 80)  # Bí đỏ
+        self.carrot_seed_rect = pygame.Rect(665, 249, 93, 80)   # Cà rốt
+        self.beetroot_seed_rect = pygame.Rect(490, 357, 93, 80) # Củ dền
+        self.rare_herb_seed_rect = pygame.Rect(577, 357, 93, 80)  # Hạt thảo mộc hiếm
+        self.energy_herb_seed_rect = pygame.Rect(665, 357, 93, 80)  # Hạt thảo mộc năng lượng
 
         # Định nghĩa các ô vuông cho các loại nông sản (hiển thị khi ở menubanrau)
-        self.carrot_crop_rect = pygame.Rect(490, 249, 93, 80)
-        self.cabbage_crop_rect = pygame.Rect(577, 249, 93, 80)
-        self.beetroot_crop_rect = pygame.Rect(665, 249, 93, 80)
-        self.pumpkin_crop_rect = pygame.Rect(490, 357, 93, 80)
-        self.rare_herb_rect = pygame.Rect(577, 357, 93, 80)
+        self.cabbage_crop_rect = pygame.Rect(490, 249, 93, 80)  # Bắp cải
+        self.pumpkin_crop_rect = pygame.Rect(577, 249, 93, 80)  # Bí đỏ
+        self.carrot_crop_rect = pygame.Rect(665, 249, 93, 80)   # Cà rốt
+        self.beetroot_crop_rect = pygame.Rect(490, 357, 93, 80) # Củ dền
+        self.rare_herb_rect = pygame.Rect(577, 357, 93, 80)     # Thảo dược hiếm
+        self.energy_herb_rect = pygame.Rect(665, 357, 93, 80)   # Thảo mộc năng lượng
 
         # Định nghĩa các ô vuông cho các loại cá (hiển thị khi ở menubanca)
         self.carophi_rect = pygame.Rect(490, 249, 93, 80)
@@ -247,10 +256,12 @@ class VillageScene:
                             self.screen.blit(self.tooltips[name], (tooltip_x + 5, tooltip_y + 5))
 
                 if self.current_menu == "menubanhat":
-                    for rect, name in [(self.carrot_seed_rect, "carrot_seed"),
-                                       (self.cabbage_seed_rect, "cabbage_seed"),
+                    for rect, name in [(self.cabbage_seed_rect, "cabbage_seed"),
+                                       (self.pumpkin_seed_rect, "pumpkin_seed"),
+                                       (self.carrot_seed_rect, "carrot_seed"),
                                        (self.beetroot_seed_rect, "beetroot_seed"),
-                                       (self.pumpkin_seed_rect, "pumpkin_seed")]:
+                                       (self.rare_herb_seed_rect, "rare_herb_seed"),
+                                       (self.energy_herb_seed_rect, "energy_herb_seed")]:
                         if rect.collidepoint(mouse_pos):
                             tooltip_x = rect.x
                             tooltip_y = rect.y - self.tooltip_bg.get_height() - 5
@@ -258,11 +269,12 @@ class VillageScene:
                             self.screen.blit(self.tooltips[name], (tooltip_x + 5, tooltip_y + 5))
 
                 if self.current_menu == "menubanrau":
-                    for rect, name in [(self.carrot_crop_rect, "carrot_crop"),
-                                       (self.cabbage_crop_rect, "cabbage_crop"),
-                                       (self.beetroot_crop_rect, "beetroot_crop"),
+                    for rect, name in [(self.cabbage_crop_rect, "cabbage_crop"),
                                        (self.pumpkin_crop_rect, "pumpkin_crop"),
-                                       (self.rare_herb_rect, "rare_herb")]:
+                                       (self.carrot_crop_rect, "carrot_crop"),
+                                       (self.beetroot_crop_rect, "beetroot_crop"),
+                                       (self.rare_herb_rect, "rare_herb"),
+                                       (self.energy_herb_rect, "energy_herb")]:
                         if rect.collidepoint(mouse_pos):
                             tooltip_x = rect.x
                             tooltip_y = rect.y - self.tooltip_bg.get_height() - 5
@@ -334,13 +346,6 @@ class VillageScene:
             self.screen.blit(time_bg, (10, 70))
             self.screen.blit(time_text, (15, 75))
 
-            # Vẽ nút "Back to Farm"
-            # self.back_button_hover = self.back_button_rect.collidepoint(mouse_pos)
-            # self.back_button_bg.fill((100, 100, 100) if self.back_button_hover else (50, 50, 50))
-            # self.screen.blit(self.back_button_bg, (self.back_button_rect.x, self.back_button_rect.y))
-            # self.screen.blit(self.back_button_text, (self.back_button_rect.x + 10, self.back_button_rect.y + 10))
-            # pygame.draw.rect(self.screen, WHITE, self.back_button_rect, 2)
-
             # Vẽ UI (map, inventory, v.v.)
             self.ui.draw()
 
@@ -392,24 +397,10 @@ class VillageScene:
 
             # Xử lý nhấp chuột cho các loại hạt giống (chỉ khi ở menubanhat)
             if self.current_menu == "menubanhat":
-                if self.carrot_seed_rect.collidepoint(pos):
-                    if self.game_state.player.spend_money(2):
-                        self.game_state.player.inventory.add_item("carrot_seed", 1)
-                        print("Đã mua hạt cà rốt - 2 đồng")
-                    else:
-                        self.show_message = True
-                        self.message_text = self.tooltip_font.render("Không đủ tiền!", True, WHITE)
-                elif self.cabbage_seed_rect.collidepoint(pos):
+                if self.cabbage_seed_rect.collidepoint(pos):
                     if self.game_state.player.spend_money(3):
                         self.game_state.player.inventory.add_item("cabbage_seed", 1)
                         print("Đã mua hạt bắp cải - 3 đồng")
-                    else:
-                        self.show_message = True
-                        self.message_text = self.tooltip_font.render("Không đủ tiền!", True, WHITE)
-                elif self.beetroot_seed_rect.collidepoint(pos):
-                    if self.game_state.player.spend_money(5):
-                        self.game_state.player.inventory.add_item("beetroot_seed", 1)
-                        print("Đã mua hạt củ dền - 5 đồng")
                     else:
                         self.show_message = True
                         self.message_text = self.tooltip_font.render("Không đủ tiền!", True, WHITE)
@@ -420,18 +411,40 @@ class VillageScene:
                     else:
                         self.show_message = True
                         self.message_text = self.tooltip_font.render("Không đủ tiền!", True, WHITE)
+                elif self.carrot_seed_rect.collidepoint(pos):
+                    if self.game_state.player.spend_money(2):
+                        self.game_state.player.inventory.add_item("carrot_seed", 1)
+                        print("Đã mua hạt cà rốt - 2 đồng")
+                    else:
+                        self.show_message = True
+                        self.message_text = self.tooltip_font.render("Không đủ tiền!", True, WHITE)
+                elif self.beetroot_seed_rect.collidepoint(pos):
+                    if self.game_state.player.spend_money(5):
+                        self.game_state.player.inventory.add_item("beetroot_seed", 1)
+                        print("Đã mua hạt củ dền - 5 đồng")
+                    else:
+                        self.show_message = True
+                        self.message_text = self.tooltip_font.render("Không đủ tiền!", True, WHITE)
+                elif self.rare_herb_seed_rect.collidepoint(pos):
+                    if self.game_state.player.inventory.has_item("frog", 5):
+                        self.game_state.player.inventory.remove_item("frog", 5)
+                        self.game_state.player.inventory.add_item("rare_herb_seed", 1)
+                        print("Đã mua hạt thảo mộc hiếm - 5 ếch")
+                    else:
+                        self.show_message = True
+                        self.message_text = self.tooltip_font.render("Không đủ ếch!", True, WHITE)
+                elif self.energy_herb_seed_rect.collidepoint(pos):
+                    if self.game_state.player.inventory.has_item("frog", 3):
+                        self.game_state.player.inventory.remove_item("frog", 3)
+                        self.game_state.player.inventory.add_item("energy_herb_seed", 1)
+                        print("Đã mua hạt thảo mộc năng lượng - 3 ếch")
+                    else:
+                        self.show_message = True
+                        self.message_text = self.tooltip_font.render("Không đủ ếch!", True, WHITE)
 
             # Xử lý nhấp chuột cho các loại nông sản (chỉ khi ở menubanrau)
             elif self.current_menu == "menubanrau":
-                if self.carrot_crop_rect.collidepoint(pos):
-                    if self.game_state.player.inventory.has_item("carrot", 1):
-                        self.game_state.player.inventory.remove_item("carrot", 1)
-                        self.game_state.player.add_money(3)
-                        print("Đã bán cà rốt, nhận được 3 đồng!")
-                    else:
-                        self.show_message = True
-                        self.message_text = self.tooltip_font.render("Không có cà rốt để bán!", True, WHITE)
-                elif self.cabbage_crop_rect.collidepoint(pos):
+                if self.cabbage_crop_rect.collidepoint(pos):
                     if self.game_state.player.inventory.has_item("cabbage", 1):
                         self.game_state.player.inventory.remove_item("cabbage", 1)
                         self.game_state.player.add_money(4)
@@ -439,14 +452,6 @@ class VillageScene:
                     else:
                         self.show_message = True
                         self.message_text = self.tooltip_font.render("Không có bắp cải để bán!", True, WHITE)
-                elif self.beetroot_crop_rect.collidepoint(pos):
-                    if self.game_state.player.inventory.has_item("beetroot", 1):
-                        self.game_state.player.inventory.remove_item("beetroot", 1)
-                        self.game_state.player.add_money(7)
-                        print("Đã bán củ dền, nhận được 7 đồng!")
-                    else:
-                        self.show_message = True
-                        self.message_text = self.tooltip_font.render("Không có củ dền để bán!", True, WHITE)
                 elif self.pumpkin_crop_rect.collidepoint(pos):
                     if self.game_state.player.inventory.has_item("pumpkin", 1):
                         self.game_state.player.inventory.remove_item("pumpkin", 1)
@@ -455,6 +460,22 @@ class VillageScene:
                     else:
                         self.show_message = True
                         self.message_text = self.tooltip_font.render("Không có bí đỏ để bán!", True, WHITE)
+                elif self.carrot_crop_rect.collidepoint(pos):
+                    if self.game_state.player.inventory.has_item("carrot", 1):
+                        self.game_state.player.inventory.remove_item("carrot", 1)
+                        self.game_state.player.add_money(3)
+                        print("Đã bán cà rốt, nhận được 3 đồng!")
+                    else:
+                        self.show_message = True
+                        self.message_text = self.tooltip_font.render("Không có cà rốt để bán!", True, WHITE)
+                elif self.beetroot_crop_rect.collidepoint(pos):
+                    if self.game_state.player.inventory.has_item("beetroot", 1):
+                        self.game_state.player.inventory.remove_item("beetroot", 1)
+                        self.game_state.player.add_money(7)
+                        print("Đã bán củ dền, nhận được 7 đồng!")
+                    else:
+                        self.show_message = True
+                        self.message_text = self.tooltip_font.render("Không có củ dền để bán!", True, WHITE)
                 elif self.rare_herb_rect.collidepoint(pos):
                     if self.game_state.player.inventory.has_item("rare_herb", 1):
                         self.game_state.player.inventory.remove_item("rare_herb", 1)
@@ -463,6 +484,14 @@ class VillageScene:
                     else:
                         self.show_message = True
                         self.message_text = self.tooltip_font.render("Không có thảo mộc hiếm để bán!", True, WHITE)
+                elif self.energy_herb_rect.collidepoint(pos):
+                    if self.game_state.player.inventory.has_item("energy_herb", 1):
+                        self.game_state.player.inventory.remove_item("energy_herb", 1)
+                        self.game_state.player.add_money(10)
+                        print("Đã bán thảo mộc năng lượng, nhận được 10 đồng!")
+                    else:
+                        self.show_message = True
+                        self.message_text = self.tooltip_font.render("Không có thảo mộc năng lượng để bán!", True, WHITE)
 
             # Xử lý nhấp chuột cho các loại cá (chỉ khi ở menubanca)
             elif self.current_menu == "menubanca":
