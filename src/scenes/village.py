@@ -176,14 +176,21 @@ class VillageScene:
         # Biến để kiểm soát việc hiển thị thông báo
         self.show_message = False
         self.message_text = self.tooltip_font.render("Không đủ tiền!", True, WHITE)
-        self.message_bg = pygame.Surface((200, 100))
-        self.message_bg.fill((50, 50, 50))
+        self.message_bg = pygame.Surface((300, 100))  # Tăng chiều ngang để chứa thông báo dài hơn
+        self.message_bg_color = (50, 50, 50)  # Màu mặc định
+        self.message_bg.fill(self.message_bg_color)
         self.ok_button_rect = pygame.Rect(SCREEN_WIDTH // 2 - 30, SCREEN_HEIGHT // 2 + 20, 60, 30)
         self.ok_button_text = self.tooltip_font.render("OK", True, WHITE)
         self.ok_button_bg = pygame.Surface((60, 30))
         self.ok_button_bg.fill((100, 100, 100))
 
         self.running = True
+
+    def show_notification(self, message, success=True):
+        self.show_message = True
+        self.message_text = self.tooltip_font.render(message, True, WHITE)
+        self.message_bg_color = (50, 200, 50) if success else (200, 50, 50)
+        self.message_bg.fill(self.message_bg_color)
 
     def run(self):
         clock = pygame.time.Clock()
@@ -423,47 +430,41 @@ class VillageScene:
                 if self.cabbage_seed_rect.collidepoint(pos):
                     if self.game_state.player.spend_money(3):
                         self.game_state.player.inventory.add_item("cabbage_seed", 1)
-                        print("Đã mua hạt bắp cải - 3 đồng")
+                        self.show_notification("Đã mua hạt bắp cải - 3 đồng!", success=True)
                     else:
-                        self.show_message = True
-                        self.message_text = self.tooltip_font.render("Không đủ tiền!", True, WHITE)
+                        self.show_notification("Không đủ tiền!", success=False)
                 elif self.pumpkin_seed_rect.collidepoint(pos):
                     if self.game_state.player.spend_money(6):
                         self.game_state.player.inventory.add_item("pumpkin_seed", 1)
-                        print("Đã mua hạt bí đỏ - 6 đồng")
+                        self.show_notification("Đã mua hạt bí đỏ - 6 đồng!", success=True)
                     else:
-                        self.show_message = True
-                        self.message_text = self.tooltip_font.render("Không đủ tiền!", True, WHITE)
+                        self.show_notification("Không đủ tiền!", success=False)
                 elif self.carrot_seed_rect.collidepoint(pos):
                     if self.game_state.player.spend_money(2):
                         self.game_state.player.inventory.add_item("carrot_seed", 1)
-                        print("Đã mua hạt cà rốt - 2 đồng")
+                        self.show_notification("Đã mua hạt cà rốt - 2 đồng!", success=True)
                     else:
-                        self.show_message = True
-                        self.message_text = self.tooltip_font.render("Không đủ tiền!", True, WHITE)
+                        self.show_notification("Không đủ tiền!", success=False)
                 elif self.beetroot_seed_rect.collidepoint(pos):
                     if self.game_state.player.spend_money(5):
                         self.game_state.player.inventory.add_item("beetroot_seed", 1)
-                        print("Đã mua hạt củ dền - 5 đồng")
+                        self.show_notification("Đã mua hạt củ dền - 5 đồng!", success=True)
                     else:
-                        self.show_message = True
-                        self.message_text = self.tooltip_font.render("Không đủ tiền!", True, WHITE)
+                        self.show_notification("Không đủ tiền!", success=False)
                 elif self.rare_herb_seed_rect.collidepoint(pos):
                     if self.game_state.player.inventory.has_item("frog", 5):
                         self.game_state.player.inventory.remove_item("frog", 5)
                         self.game_state.player.inventory.add_item("rare_herb_seed", 1)
-                        print("Đã mua hạt thảo mộc hiếm - 5 ếch")
+                        self.show_notification("Đã mua hạt thảo mộc hiếm - 5 ếch!", success=True)
                     else:
-                        self.show_message = True
-                        self.message_text = self.tooltip_font.render("Không đủ ếch!", True, WHITE)
+                        self.show_notification("Không đủ ếch!", success=False)
                 elif self.energy_herb_seed_rect.collidepoint(pos):
                     if self.game_state.player.inventory.has_item("frog", 3):
                         self.game_state.player.inventory.remove_item("frog", 3)
                         self.game_state.player.inventory.add_item("energy_herb_seed", 1)
-                        print("Đã mua hạt thảo mộc năng lượng - 3 ếch")
+                        self.show_notification("Đã mua hạt thảo mộc năng lượng - 3 ếch!", success=True)
                     else:
-                        self.show_message = True
-                        self.message_text = self.tooltip_font.render("Không đủ ếch!", True, WHITE)
+                        self.show_notification("Không đủ ếch!", success=False)
 
             # Xử lý nhấp chuột cho các loại nông sản (chỉ khi ở menubanrau)
             elif self.current_menu == "menubanrau":
@@ -471,50 +472,44 @@ class VillageScene:
                     if self.game_state.player.inventory.has_item("cabbage", 1):
                         self.game_state.player.inventory.remove_item("cabbage", 1)
                         self.game_state.player.add_money(4)
-                        print("Đã bán bắp cải, nhận được 4 đồng!")
+                        self.show_notification("Đã bán bắp cải, nhận 4 đồng!", success=True)
                     else:
-                        self.show_message = True
-                        self.message_text = self.tooltip_font.render("Không có bắp cải để bán!", True, WHITE)
+                        self.show_notification("Không có bắp cải để bán!", success=False)
                 elif self.pumpkin_crop_rect.collidepoint(pos):
                     if self.game_state.player.inventory.has_item("pumpkin", 1):
                         self.game_state.player.inventory.remove_item("pumpkin", 1)
                         self.game_state.player.add_money(9)
-                        print("Đã bán bí đỏ, nhận được 9 đồng!")
+                        self.show_notification("Đã bán bí đỏ, nhận 9 đồng!", success=True)
                     else:
-                        self.show_message = True
-                        self.message_text = self.tooltip_font.render("Không có bí đỏ để bán!", True, WHITE)
+                        self.show_notification("Không có bí đỏ để bán!", success=False)
                 elif self.carrot_crop_rect.collidepoint(pos):
                     if self.game_state.player.inventory.has_item("carrot", 1):
                         self.game_state.player.inventory.remove_item("carrot", 1)
                         self.game_state.player.add_money(3)
-                        print("Đã bán cà rốt, nhận được 3 đồng!")
+                        self.show_notification("Đã bán cà rốt, nhận 3 đồng!", success=True)
                     else:
-                        self.show_message = True
-                        self.message_text = self.tooltip_font.render("Không có cà rốt để bán!", True, WHITE)
+                        self.show_notification("Không có cà rốt để bán!", success=False)
                 elif self.beetroot_crop_rect.collidepoint(pos):
                     if self.game_state.player.inventory.has_item("beetroot", 1):
                         self.game_state.player.inventory.remove_item("beetroot", 1)
                         self.game_state.player.add_money(7)
-                        print("Đã bán củ dền, nhận được 7 đồng!")
+                        self.show_notification("Đã bán củ dền, nhận 7 đồng!", success=True)
                     else:
-                        self.show_message = True
-                        self.message_text = self.tooltip_font.render("Không có củ dền để bán!", True, WHITE)
+                        self.show_notification("Không có củ dền để bán!", success=False)
                 elif self.rare_herb_rect.collidepoint(pos):
                     if self.game_state.player.inventory.has_item("rare_herb", 1):
                         self.game_state.player.inventory.remove_item("rare_herb", 1)
                         self.game_state.player.add_money(15)
-                        print("Đã bán thảo mộc hiếm, nhận được 15 đồng!")
+                        self.show_notification("Đã bán thảo mộc hiếm, nhận 15 đồng!", success=True)
                     else:
-                        self.show_message = True
-                        self.message_text = self.tooltip_font.render("Không có thảo mộc hiếm để bán!", True, WHITE)
+                        self.show_notification("Không có thảo mộc hiếm để bán!", success=False)
                 elif self.energy_herb_rect.collidepoint(pos):
                     if self.game_state.player.inventory.has_item("energy_herb", 1):
                         self.game_state.player.inventory.remove_item("energy_herb", 1)
                         self.game_state.player.add_money(10)
-                        print("Đã bán thảo mộc năng lượng, nhận được 10 đồng!")
+                        self.show_notification("Đã bán thảo mộc năng lượng, nhận 10 đồng!", success=True)
                     else:
-                        self.show_message = True
-                        self.message_text = self.tooltip_font.render("Không có thảo mộc năng lượng để bán!", True, WHITE)
+                        self.show_notification("Không có thảo mộc năng lượng để bán!", success=False)
 
             # Xử lý nhấp chuột cho các loại cá (chỉ khi ở menubanca)
             elif self.current_menu == "menubanca":
@@ -522,87 +517,95 @@ class VillageScene:
                     if self.game_state.player.inventory.has_item("tilapia", 1):
                         self.game_state.player.inventory.remove_item("tilapia", 1)
                         self.game_state.player.add_money(5)
-                        print("Đã bán cá rô phi, nhận được 5 đồng!")
+                        self.show_notification("Đã bán cá rô phi, nhận 5 đồng!", success=True)
                     else:
-                        self.show_message = True
-                        self.message_text = self.tooltip_font.render("Không có cá rô phi để bán!", True, WHITE)
+                        self.show_notification("Không có cá rô phi để bán!", success=False)
                 elif self.cachep_rect.collidepoint(pos):
                     if self.game_state.player.inventory.has_item("carp", 1):
                         self.game_state.player.inventory.remove_item("carp", 1)
                         self.game_state.player.add_money(7)
-                        print("Đã bán cá chép, nhận được 7 đồng!")
+                        self.show_notification("Đã bán cá chép, nhận 7 đồng!", success=True)
                     else:
-                        self.show_message = True
-                        self.message_text = self.tooltip_font.render("Không có cá chép để bán!", True, WHITE)
+                        self.show_notification("Không có cá chép để bán!", success=False)
                 elif self.catre_rect.collidepoint(pos):
                     if self.game_state.player.inventory.has_item("catfish", 1):
                         self.game_state.player.inventory.remove_item("catfish", 1)
                         self.game_state.player.add_money(10)
-                        print("Đã bán cá trê, nhận được 10 đồng!")
+                        self.show_notification("Đã bán cá trê, nhận 10 đồng!", success=True)
                     else:
-                        self.show_message = True
-                        self.message_text = self.tooltip_font.render("Không có cá trê để bán!", True, WHITE)
+                        self.show_notification("Không có cá trê để bán!", success=False)
                 elif self.cachinh_rect.collidepoint(pos):
                     if self.game_state.player.inventory.has_item("eel", 1):
                         self.game_state.player.inventory.remove_item("eel", 1)
                         self.game_state.player.add_money(15)
-                        print("Đã bán cá chình, nhận được 15 đồng!")
+                        self.show_notification("Đã bán cá chình, nhận 15 đồng!", success=True)
                     else:
-                        self.show_message = True
-                        self.message_text = self.tooltip_font.render("Không có cá chình để bán!", True, WHITE)
+                        self.show_notification("Không có cá chình để bán!", success=False)
                 elif self.cama_rect.collidepoint(pos):
                     if self.game_state.player.inventory.has_item("ghost_fish", 1):
                         self.game_state.player.inventory.remove_item("ghost_fish", 1)
                         self.game_state.player.add_money(20)
-                        print("Đã bán cá ma, nhận được 20 đồng!")
+                        self.show_notification("Đã bán cá ma, nhận 20 đồng!", success=True)
                     else:
-                        self.show_message = True
-                        self.message_text = self.tooltip_font.render("Không có cá ma để bán!", True, WHITE)
+                        self.show_notification("Không có cá ma để bán!", success=False)
 
             # Xử lý nhấp chuột cho các loại cần câu (chỉ khi ở menucancau)
             elif self.current_menu == "menucancau":
                 if self.silver_rod_rect.collidepoint(pos):
-                    if self.game_state.player.spend_money(20):  # Kiểm tra và trừ tiền
-                        self.game_state.player.upgrade_rod("silver")  # Cập nhật rod_level thành "silver"
-                        print("Đã mua cần câu bạc - 20 đồng")
+                    if self.game_state.player.spend_money(20):
+                        self.game_state.player.upgrade_rod("silver")
+                        self.show_notification("Đã mua cần câu bạc - 20 đồng!", success=True)
                     else:
-                        self.show_message = True
-                        self.message_text = self.tooltip_font.render("Không đủ tiền!", True, WHITE)
+                        self.show_notification("Không đủ tiền!", success=False)
                 elif self.gold_rod_rect.collidepoint(pos):
-                    if self.game_state.player.spend_money(50):  # Kiểm tra và trừ tiền
-                        self.game_state.player.upgrade_rod("gold")  # Cập nhật rod_level thành "gold"
-                        print("Đã mua cần câu vàng - 50 đồng")
+                    if self.game_state.player.spend_money(50):
+                        self.game_state.player.upgrade_rod("gold")
+                        self.show_notification("Đã mua cần câu vàng - 50 đồng!", success=True)
                     else:
-                        self.show_message = True
-                        self.message_text = self.tooltip_font.render("Không đủ tiền!", True, WHITE)
+                        self.show_notification("Không đủ tiền!", success=False)
                 elif self.platinum_rod_rect.collidepoint(pos):
-                    if self.game_state.player.spend_money(100):  # Kiểm tra và trừ tiền
-                        self.game_state.player.upgrade_rod("diamond")  # Cập nhật rod_level thành "diamond"
-                        print("Đã mua cần câu bạch kim - 100 đồng")
+                    if self.game_state.player.spend_money(100):
+                        self.game_state.player.upgrade_rod("diamond")
+                        self.show_notification("Đã mua cần câu bạch kim - 100 đồng!", success=True)
                     else:
-                        self.show_message = True
-                        self.message_text = self.tooltip_font.render("Không đủ tiền!", True, WHITE)
+                        self.show_notification("Không đủ tiền!", success=False)
 
             # Xử lý nhấp chuột cho các tùy chọn mua đất (chỉ khi ở menumuadat)
             elif self.current_menu == "menumuadat":
+                current_garden_slots = self.game_state.player.garden_slots  # Lấy số ô đất hiện tại
+
                 if self.expand_2_to_4_rect.collidepoint(pos):
-                    if self.game_state.player.upgrade_garden(4):  # Mở rộng lên 4 ô
-                        print("Đã mở rộng vườn từ 2 ô lên 4 ô - 18 đồng")
+                    if current_garden_slots >= 4:
+                        self.show_notification("Bạn đã có 4 ô đất!", success=False)
+                    elif current_garden_slots != 2:
+                        self.show_notification("Bạn phải có 2 ô đất để mở rộng lên 4 ô!", success=False)
                     else:
-                        self.show_message = True
-                        self.message_text = self.tooltip_font.render("Không đủ tiền!", True, WHITE)
+                        if self.game_state.player.upgrade_garden(4):
+                            self.show_notification("Đã mở rộng vườn lên 4 ô - 18 đồng!", success=True)
+                        else:
+                            self.show_notification("Không đủ tiền!", success=False)
+
                 elif self.expand_4_to_6_rect.collidepoint(pos):
-                    if self.game_state.player.upgrade_garden(6):  # Mở rộng lên 6 ô
-                        print("Đã mở rộng vườn từ 4 ô lên 6 ô - 25 đồng")
+                    if current_garden_slots >= 6:
+                        self.show_notification("Bạn đã có 6 ô đất!", success=False)
+                    elif current_garden_slots != 4:
+                        self.show_notification("Bạn phải mở rộng lên 4 ô trước!", success=False)
                     else:
-                        self.show_message = True
-                        self.message_text = self.tooltip_font.render("Không đủ tiền!", True, WHITE)
+                        if self.game_state.player.upgrade_garden(6):
+                            self.show_notification("Đã mở rộng vườn lên 6 ô - 25 đồng!", success=True)
+                        else:
+                            self.show_notification("Không đủ tiền!", success=False)
+
                 elif self.expand_6_to_8_rect.collidepoint(pos):
-                    if self.game_state.player.upgrade_garden(8):  # Mở rộng lên 8 ô
-                        print("Đã mở rộng vườn từ 6 ô lên 8 ô - 32 đồng")
+                    if current_garden_slots >= 8:
+                        self.show_notification("Bạn đã có 8 ô đất!", success=False)
+                    elif current_garden_slots != 6:
+                        self.show_notification("Bạn phải mở rộng lên 6 ô trước!", success=False)
                     else:
-                        self.show_message = True
-                        self.message_text = self.tooltip_font.render("Không đủ tiền!", True, WHITE)
+                        if self.game_state.player.upgrade_garden(8):
+                            self.show_notification("Đã mở rộng vườn lên 8 ô - 32 đồng!", success=True)
+                        else:
+                            self.show_notification("Không đủ tiền!", success=False)
 
             # Đóng menu khi nhấp ra ngoài
             elif not self.menu_rect.collidepoint(pos):

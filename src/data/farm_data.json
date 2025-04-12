@@ -58,5 +58,25 @@
             345,
             520
         ]
+    },
+    "5": {
+        "seed": "carrot_seed",
+        "stage": 1,
+        "remaining_upgrade_time": 37034,
+        "remaining_death_time": 97034,
+        "center_pos": [
+            567,
+            524
+        ]
+    },
+    "6": {
+        "seed": "rare_herb_seed",
+        "stage": 1,
+        "remaining_upgrade_time": 37983,
+        "remaining_death_time": 97983,
+        "center_pos": [
+            779,
+            520
+        ]
     }
 }
