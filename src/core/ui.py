@@ -273,23 +273,27 @@ class SettingsUI:
         if event.type == pygame.MOUSEBUTTONDOWN:
             # Nếu bấm icon Sound -> bật/tắt âm thanh
             if self.icon_sound_rect.collidepoint(event.pos):
+                self.sound_manager.play_sound('click')
                 self.sound_manager.toggle_sound()
                 print(f"Sound {'enabled' if self.sound_manager.is_sound_enabled else 'disabled'}")
                 return True
             # Nếu bấm icon Settings -> bật/tắt menu Settings
             if self.icon_settings_rect.collidepoint(event.pos):
+                self.sound_manager.play_sound('click')
                 self.show_menu = not self.show_menu
                 self.show_map = False
                 self.show_inventory = False
                 return True
             # Nếu bấm icon Map -> bật/tắt popup Map
             if self.icon_map_rect.collidepoint(event.pos):
+                self.sound_manager.play_sound('click')
                 self.show_map = not self.show_map
                 self.show_menu = False
                 self.show_inventory = False
                 return True
             # Nếu bấm icon Inventory -> bật/tắt popup Inventory
             if self.icon_inventory_rect.collidepoint(event.pos):
+                self.sound_manager.play_sound('click')
                 self.show_inventory = not self.show_inventory
                 self.show_menu = False
                 self.show_map = False
@@ -306,7 +310,7 @@ class SettingsUI:
                     self.village_rect_rel.height
                 )
                 if village_rect.collidepoint(event.pos):
-                    print("Chuyển sang giao diện Làng!")
+                    print("Switching to Village Scene!")
                     self.on_village_click()
                     return True
                 fish_rect = pygame.Rect(
@@ -316,7 +320,7 @@ class SettingsUI:
                     self.fish_rect_rel.height
                 )
                 if fish_rect.collidepoint(event.pos):
-                    print("Chuyển sang giao diện Câu Cá!")
+                    print("Switching to Fishing Scene!")
                     self.on_fish_click()
                     return True
                 farm_rect = pygame.Rect(
@@ -326,7 +330,7 @@ class SettingsUI:
                     self.farm_rect_rel.height
                 )
                 if farm_rect.collidepoint(event.pos):
-                    print("Chuyển sang giao diện Farm!")
+                    print("Switching to Farm Scene!")
                     self.on_farm_click()
                     return True
                 return True
@@ -346,25 +350,25 @@ class SettingsUI:
                                     if self.game_state.player.energy > 100:
                                         self.game_state.player.energy = 100
                                     self.game_state.player.inventory.remove_item("energy_herb", 1)
-                                    print("Đã sử dụng Energy Herb, tăng năng lượng!")
+                                    print("Used Energy Herb, energy increased!")
                                     self.save_game_ui()
                                 else:
-                                    print("Đã đầy năng lượng")
+                                    print("Energy is already full!")
                             elif item == "basic_rod" and count > 0:
                                 self.game_state.player.rod_level = "wood"
-                                print("Đã sử dụng cần câu cơ bản")
+                                print("Equipped Basic Rod!")
                                 self.save_game_ui()
                             elif item == "silver_rod" and count > 0:
                                 self.game_state.player.rod_level = "silver"
-                                print("Đã sử dụng cần câu bạc")
+                                print("Equipped Silver Rod!")
                                 self.save_game_ui()
                             elif item == "gold_rod" and count > 0:
                                 self.game_state.player.rod_level = "gold"
-                                print("Đã sử dụng cần câu vàng")
+                                print("Equipped Gold Rod!")
                                 self.save_game_ui()
                             elif item == "diamond_rod" and count > 0:
                                 self.game_state.player.rod_level = "diamond"
-                                print("Đã sử dụng cần câu kim cương")
+                                print("Equipped Diamond Rod!")
                                 self.save_game_ui()
                             else:
                                 print("click!")
@@ -379,21 +383,24 @@ class SettingsUI:
         return False
 
     def go_to_village_scene(self):
-        print("Yêu cầu chuyển sang giao diện Làng!")
+        self.sound_manager.play_sound('teleport')
+        print("Request to switch to Village Scene!")
         self.running = False
         from src.scenes.village import VillageScene
         village_scene = VillageScene(self.game_state, self.screen, self)
         village_scene.run()
 
     def go_to_fishing_scene(self):
-        print("Yêu cầu chuyển sang giao diện Câu Cá!")
+        self.sound_manager.play_sound('teleport')
+        print("Request to switch to Fishing Scene!")
         self.running = False
         from src.scenes.fishing import FishingScene
         fishing_scene = FishingScene(self.game_state, self.screen, self)
         fishing_scene.run()
 
     def go_to_farm_scene(self):
-        print("Yêu cầu chuyển sang giao diện Farm!")
+        self.sound_manager.play_sound('teleport')
+        print("Request to switch to Farm Scene!")
         self.running = False
         from src.scenes.farm import FarmScene
         farm_scene = FarmScene(self.game_state, self.screen, self)
@@ -401,15 +408,15 @@ class SettingsUI:
 
     def save_game_ui(self):
         self.game_state.save_game()
-        print("Game đã được lưu từ UI!")
+        print("Game saved from UI!")
         self.show_menu = False
 
     def main_menu_ui(self):
-        print("Quay về Main Menu...")
+        print("Returning to Main Menu...")
         self.show_menu = False
 
     def exit_game(self):
-        print("Thoát game!")
+        print("Exiting game!")
         pygame.quit()
         sys.exit()
 

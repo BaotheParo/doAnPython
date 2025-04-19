@@ -38,37 +38,40 @@ class FarmGame:
         self.BLUE = (0, 191, 255)
         self.WHITE = (255, 255, 255)
         self.BLACK = (0, 0, 0)
-        self.INVENTORY_BG = (100, 70, 50)
+        self.INVENTORY_BG = (100, 70, 50, 220)
         self.INVENTORY_CELL_BG = (70, 50, 40)
+        self.INVENTORY_CELL_HOVER = (100, 80, 70)
         self.BUTTON_COLOR = (150, 150, 150)
+        self.BUTTON_HOVER = (180, 180, 180)
         self.GLOW_COLOR = (255, 215, 0, 120)
         self.PARTICLE_COLOR = (255, 255, 0, 180)
-        self.WARNING_COLOR = (255, 0, 0)  # Màu đỏ cho thông báo
+        self.WARNING_COLOR = (255, 0, 0, 200)
 
         # Game constants
         self.ENERGY_COST = 20
-        self.DEATH_TIME = 120000  # 2 minutes
-        self.UPGRADE_TIME = 60000  # 1 minute
-        self.WARNING_TIME = 30000  # 30 seconds
+        self.DEATH_TIME = 120000
+        self.UPGRADE_TIME = 60000
+        self.WARNING_TIME = 30000
         self.WATERING_ANIMATION_DURATION = 500
-        self.MESSAGE_DURATION = 2000  # Thời gian hiển thị thông báo (2 giây)
+        self.MESSAGE_DURATION = 2000
         self.FARM_DATA_FILE = os.path.join(BASE_DIR, "src", "core", "farm_data.json")
 
         # Initialize game objects
         self.player = player if player else Player()
-        if not player:  # Chỉ load nếu không truyền player từ ngoài vào
+        if not player:
             self.player.load_game()
         self.time_system = time_system if time_system else TimeSystem()
-        self.planted_seeds = self.time_system.get_plants()  # Lấy từ TimeSystem
+        self.planted_seeds = self.time_system.get_plants()
         if planted_seeds is not None:
-            self.time_system.load_plants(planted_seeds)  # Nếu có planted_seeds truyền vào, cập nhật vào TimeSystem
+            self.time_system.load_plants(planted_seeds)
 
-        # Khởi tạo danh sách particles
-        self.particles = []  # Danh sách hạt hiệu ứng
+        # Particles
+        self.particles = []
 
         # UI settings
-        self.font = pygame.font.Font(None, int(24 * self.SCALE_X))
-        self.large_font = pygame.font.Font(None, int(48 * self.SCALE_X))
+        self.font = pygame.font.SysFont("Arial", int(24 * self.SCALE_X), bold=True)
+        self.large_font = pygame.font.SysFont("Arial", int(48 * self.SCALE_X), bold=True)
+        self.tooltip_font = pygame.font.SysFont("Arial", int(18 * self.SCALE_X), bold=True)
         self.default_cursor = pygame.SYSTEM_CURSOR_ARROW
         self.hover_cursor = pygame.SYSTEM_CURSOR_HAND
         self.load_images_and_cursors()
@@ -82,25 +85,18 @@ class FarmGame:
         self.current_page = 0
         self.watering_animation = False
         self.watering_animation_start = 0
-        self.message = None  # Thông báo
-        self.message_timer = 0  # Thời gian còn lại để hiển thị thông báo
+        self.message = None
+        self.message_timer = 0
+        self.message_alpha = 200
 
         # Define UI elements
         self.define_plots_and_features()
         self.define_inventory_ui()
 
-        # Sound toggle button
-        self.sound_button = pygame.Rect(self.WIDTH - 60 * self.SCALE_X, 10 * self.SCALE_Y, 40 * self.SCALE_X, 40 * self.SCALE_Y)
-        # self.sound_on_icon = pygame.transform.scale(
-        #     pygame.image.load(os.path.join(BASE_DIR, "assets", "images", "icons", "sound_on.png")),
-        #     self.scale_size((40, 40))
-        # )
-        # self.sound_off_icon = pygame.transform.scale(
-        #     pygame.image.load(os.path.join(BASE_DIR, "assets", "images", "icons", "sound_off.png")),
-        #     self.scale_size((40, 40))
-        # )
+        # Back button
+        self.back_button = pygame.Rect(10 * self.SCALE_X, 10 * self.SCALE_Y, 40 * self.SCALE_X, 40 * self.SCALE_Y)
 
-        # Load initial data if not provided
+        # Load initial data
         if planted_seeds is None:
             self.load_farm_data()
 
@@ -163,16 +159,8 @@ class FarmGame:
         self.sickle_cursor = pygame.transform.scale(pygame.image.load(os.path.join(BASE_DIR, "assets", "images", "icons", "ll.png")), self.scale_size((50, 50)))
         self.watering_can_cursor = pygame.transform.scale(pygame.image.load(os.path.join(BASE_DIR, "assets", "images", "icons", "watering_can.png")), self.scale_size((60, 60)))
         self.water_can_cursor = pygame.transform.scale(pygame.image.load(os.path.join(BASE_DIR, "assets", "images", "icons", "water-can.png")), self.scale_size((50, 50)))
-
-        # Thêm icon cho cây chết và cây cần thu hoạch
-        self.dead_plant_icon = pygame.transform.scale(
-            pygame.image.load(os.path.join(BASE_DIR, "assets", "images", "icons", "dead_plant.png")),
-            self.scale_size((30, 30))
-        )
-        self.ready_harvest_icon = pygame.transform.scale(
-            pygame.image.load(os.path.join(BASE_DIR, "assets", "images", "icons", "ll.png")),
-            self.scale_size((30, 30))
-        )
+        self.dead_plant_icon = pygame.transform.scale(pygame.image.load(os.path.join(BASE_DIR, "assets", "images", "icons", "dead_plant.png")), self.scale_size((30, 30)))
+        self.ready_harvest_icon = pygame.transform.scale(pygame.image.load(os.path.join(BASE_DIR, "assets", "images", "icons", "ll.png")), self.scale_size((30, 30)))
 
         self.seed_names = {
             "carrot_seed": "Carrot Seed",
@@ -194,11 +182,11 @@ class FarmGame:
 
     def define_plots_and_features(self):
         self.plots = [
-            pygame.Rect(176 * self.SCALE_X, 330 * self.SCALE_Y, 120 * self.SCALE_X, 50 * self.SCALE_Y),  # Row 1
+            pygame.Rect(176 * self.SCALE_X, 330 * self.SCALE_Y, 120 * self.SCALE_X, 50 * self.SCALE_Y),
             pygame.Rect(326 * self.SCALE_X, 330 * self.SCALE_Y, 80 * self.SCALE_X, 50 * self.SCALE_Y),
             pygame.Rect(446 * self.SCALE_X, 330 * self.SCALE_Y, 100 * self.SCALE_X, 50 * self.SCALE_Y),
             pygame.Rect(583 * self.SCALE_X, 332 * self.SCALE_Y, 120 * self.SCALE_X, 50 * self.SCALE_Y),
-            pygame.Rect(156 * self.SCALE_X, 409 * self.SCALE_Y, 120 * self.SCALE_X, 50 * self.SCALE_Y),  # Row 2
+            pygame.Rect(156 * self.SCALE_X, 409 * self.SCALE_Y, 120 * self.SCALE_X, 50 * self.SCALE_Y),
             pygame.Rect(312 * self.SCALE_X, 412 * self.SCALE_Y, 85 * self.SCALE_X, 50 * self.SCALE_Y),
             pygame.Rect(437 * self.SCALE_X, 409 * self.SCALE_Y, 100 * self.SCALE_X, 50 * self.SCALE_Y),
             pygame.Rect(588 * self.SCALE_X, 414 * self.SCALE_Y, 90 * self.SCALE_X, 50 * self.SCALE_Y)
@@ -224,7 +212,7 @@ class FarmGame:
         self.inventory_padding = int(10 * self.SCALE_X)
         self.inventory_width = self.inventory_cols * self.inventory_cell_size + self.inventory_padding * 2
         self.inventory_height = self.inventory_rows * self.inventory_cell_size + self.inventory_padding * 2 + int(40 * self.SCALE_Y)
-        self.inventory_x = self.WIDTH // 2 - self.inventory_width // 2
+        self.inventory_x = self.WIDTH // 2 - self.inventory_width //2
         self.inventory_y = self.HEIGHT // 2 - self.inventory_height // 2
         self.total_slots = self.inventory_rows * self.inventory_cols
         self.prev_button = pygame.Rect(self.inventory_x + self.inventory_padding, self.inventory_y + self.inventory_height - int(30 * self.SCALE_Y), int(50 * self.SCALE_X), int(20 * self.SCALE_Y))
@@ -301,18 +289,15 @@ class FarmGame:
         })
 
     def get_blinking_alpha(self, current_time, period=1000):
-        """
-        Tính toán giá trị alpha (0-255) để tạo hiệu ứng nhấp nháy.
-        period: Chu kỳ nhấp nháy (ms), mặc định 1 giây.
-        """
         alpha = 255 * (0.5 + 0.5 * math.sin(2 * math.pi * current_time / period))
         return int(alpha)
 
     def draw(self, current_time):
         self.screen.blit(self.farm_bg, (0, 0))
         garden_slots = self.player.get_garden_slots()
-        self.planted_seeds = self.time_system.get_plants()  # Cập nhật planted_seeds từ TimeSystem
-        
+        self.planted_seeds = self.time_system.get_plants()
+        mouse_pos = pygame.mouse.get_pos()
+
         for index, plot in enumerate(self.plots):
             if index < garden_slots:
                 if index in self.planted_seeds:
@@ -324,14 +309,13 @@ class FarmGame:
                     img_y = center_pos[1] - image.get_height() // 2
                     self.screen.blit(image, (img_x, img_y))
 
-                    # Hiệu ứng nhấp nháy cho cây cần tưới
+                    # Keep original stage indicators
                     if stage < 3 and (self.planted_seeds[index]["remaining_upgrade_time"] is None or self.planted_seeds[index]["remaining_death_time"] <= self.WARNING_TIME):
                         if (current_time // 500) % 2 == 0:
                             warning_x = img_x + image.get_width() - self.warning_icon.get_width() // 2
                             warning_y = img_y - self.warning_icon.get_height() // 2
                             self.screen.blit(self.warning_icon, (warning_x, warning_y))
 
-                    # Hiệu ứng nhấp nháy cho cây chết (stage = 4)
                     if stage == 4:
                         dead_icon_surface = pygame.Surface(self.dead_plant_icon.get_size(), pygame.SRCALPHA)
                         alpha = self.get_blinking_alpha(current_time)
@@ -341,7 +325,6 @@ class FarmGame:
                         dead_icon_y = img_y - self.dead_plant_icon.get_height() // 2
                         self.screen.blit(dead_icon_surface, (dead_icon_x, dead_icon_y))
 
-                    # Hiệu ứng nhấp nháy cho cây cần thu hoạch (stage = 3)
                     if stage == 3:
                         harvest_icon_surface = pygame.Surface(self.ready_harvest_icon.get_size(), pygame.SRCALPHA)
                         alpha = self.get_blinking_alpha(current_time)
@@ -363,41 +346,86 @@ class FarmGame:
                 self.screen.blit(rotated_lock, lock_rect.topleft)
                 if current_time % 200 < self.clock.get_time():
                     self.add_particle(plot.centerx, plot.centery)
-                for particle in self.particles:
-                    pygame.draw.circle(self.screen, self.PARTICLE_COLOR, (int(particle["x"]), int(particle["y"])), 3)
-                    particle["alpha"] = int(255 * (particle["life"] / 1000))
-                    particle_surface = pygame.Surface((6, 6), pygame.SRCALPHA)
-                    pygame.draw.circle(particle_surface, (*self.PARTICLE_COLOR[:3], particle["alpha"]), (3, 3), 3)
-                    self.screen.blit(particle_surface, (int(particle["x"]) - 3, int(particle["y"]) - 3))
 
-        self.screen.blit(self.back_button_image, (self.back_button.x, self.back_button.y))
+        for particle in self.particles:
+            pygame.draw.circle(self.screen, self.PARTICLE_COLOR, (int(particle["x"]), int(particle["y"])), 3)
+            particle["alpha"] = int(255 * (particle["life"] / 1000))
+            particle_surface = pygame.Surface((6, 6), pygame.SRCALPHA)
+            pygame.draw.circle(particle_surface, (*self.PARTICLE_COLOR[:3], particle["alpha"]), (3, 3), 3)
+            self.screen.blit(particle_surface, (int(particle["x"]) - 3, int(particle["y"]) - 3))
 
-        # Draw sound toggle button
-        # self.screen.blit(
-        #     self.sound_on_icon if self.sound_manager.is_sound_enabled else self.sound_off_icon,
-        #     (self.sound_button.x, self.sound_button.y)
-        # )
+        back_button_hover = self.back_button.collidepoint(mouse_pos)
+        back_button_bg = pygame.Surface((self.back_button.width, self.back_button.height), pygame.SRCALPHA)
+        back_color = (80, 80, 80, 220) if back_button_hover else (50, 50, 50, 220)
+        pygame.draw.rect(back_button_bg, back_color, (0, 0, self.back_button.width, self.back_button.height), border_radius=5)
+        pygame.draw.rect(back_button_bg, self.WHITE, (0, 0, self.back_button.width, self.back_button.height), 2, border_radius=5)
+        self.screen.blit(back_button_bg, (self.back_button.x, self.back_button.y))
+        self.screen.blit(self.back_button_image, (self.back_button.x + (self.back_button.width - self.back_button_image.get_width()) // 2, self.back_button.y + (self.back_button.height - self.back_button_image.get_height()) // 2))
+        if back_button_hover and not self.show_inventory:
+            tooltip_text = self.tooltip_font.render("Back to Village", True, self.WHITE)
+            tooltip_w = tooltip_text.get_width() + 16
+            tooltip_h = tooltip_text.get_height() + 16
+            tooltip_bg = pygame.Surface((tooltip_w, tooltip_h), pygame.SRCALPHA)
+            pygame.draw.rect(tooltip_bg, (50, 50, 50, 220), (0, 0, tooltip_w, tooltip_h), border_radius=5)
+            pygame.draw.rect(tooltip_bg, self.WHITE, (0, 0, tooltip_w, tooltip_h), 2, border_radius=5)
+            tooltip_x = self.back_button.x
+            tooltip_y = self.back_button.y - tooltip_h - 5
+            if tooltip_x + tooltip_w > self.WIDTH - 10:
+                tooltip_x = self.WIDTH - tooltip_w - 10
+            if tooltip_y < 10:
+                tooltip_y = self.back_button.y + self.back_button.height + 5
+            self.screen.blit(tooltip_bg, (tooltip_x, tooltip_y))
+            self.screen.blit(tooltip_text, (tooltip_x + 8, tooltip_y + 8))
 
-        # Draw mana bar
-        pygame.draw.rect(self.screen, self.BLACK, (self.MANA_BAR_X - 5, self.MANA_BAR_Y - 5, self.MANA_BAR_WIDTH + 10, self.MANA_BAR_HEIGHT + 10), border_radius=5)
-        pygame.draw.rect(self.screen, self.WHITE, (self.MANA_BAR_X, self.MANA_BAR_Y, self.MANA_BAR_WIDTH, self.MANA_BAR_HEIGHT), border_radius=5)
+        pygame.draw.rect(self.screen, self.BLACK, (self.MANA_BAR_X - 5, self.MANA_BAR_Y - 5, self.MANA_BAR_WIDTH + 10, self.MANA_BAR_HEIGHT + 10), border_radius=8)
+        pygame.draw.rect(self.screen, self.WHITE, (self.MANA_BAR_X, self.MANA_BAR_Y, self.MANA_BAR_WIDTH, self.MANA_BAR_HEIGHT), border_radius=6)
         mana_width = (self.player.get_energy() / self.player.max_energy) * (self.MANA_BAR_WIDTH - 4)
-        pygame.draw.rect(self.screen, self.BLUE, (self.MANA_BAR_X + 2, self.MANA_BAR_Y + 2, mana_width, self.MANA_BAR_HEIGHT - 4), border_radius=5)
+        mana_surface = pygame.Surface((mana_width, self.MANA_BAR_HEIGHT - 4), pygame.SRCALPHA)
+        for i in range(int(mana_width)):
+            color = (0, 100 + int(91 * i / mana_width), 255)
+            pygame.draw.line(mana_surface, color, (i, 0), (i, self.MANA_BAR_HEIGHT - 4))
+        pygame.draw.rect(mana_surface, self.WHITE, (0, 0, mana_width, self.MANA_BAR_HEIGHT - 4), 1, border_radius=5)
+        self.screen.blit(mana_surface, (self.MANA_BAR_X + 2, self.MANA_BAR_Y + 2))
         energy_text = self.font.render(f"MANA: {self.player.get_energy()}/{self.player.max_energy}", True, self.BLACK)
         self.screen.blit(energy_text, (self.MANA_BAR_X + (self.MANA_BAR_WIDTH - energy_text.get_width()) // 2, self.MANA_BAR_Y + (self.MANA_BAR_HEIGHT - energy_text.get_height()) // 2))
 
-        # Draw time info
-        day_text = self.font.render(f"Date: {self.time_system.current_day}", True, self.WHITE)
-        time_text = self.font.render(f"Time: {self.time_system.format_time(self.time_system.get_remaining_time())}", True, self.WHITE)
-        day_night_text = self.font.render(f"Status: {self.time_system.get_time_of_day()}", True, self.WHITE)
-        self.screen.blit(day_text, (self.WIDTH - 150 * self.SCALE_X, 10 * self.SCALE_Y))
-        self.screen.blit(time_text, (self.WIDTH - 150 * self.SCALE_X, 30 * self.SCALE_Y))
-        self.screen.blit(day_night_text, (self.WIDTH - 150 * self.SCALE_X, 50 * self.SCALE_Y))
+        time_texts = [
+            f"Date: {self.time_system.current_day}",
+            f"Time: {self.time_system.format_time(self.time_system.get_remaining_time())}",
+            f"Status: {self.time_system.get_time_of_day()}"
+        ]
+        for i, text in enumerate(time_texts):
+            time_text = self.font.render(text, True, self.WHITE)
+            self.screen.blit(time_text, (self.WIDTH - 150 * self.SCALE_X, 10 * self.SCALE_Y + i * 25 * self.SCALE_Y))
 
-        # Draw message if exists
+        for feature in self.features:
+            if feature["rect"].collidepoint(mouse_pos) and not self.show_inventory and self.time_system.is_day():
+                tooltip_text = self.tooltip_font.render(feature["label"], True, self.WHITE)
+                tooltip_w = tooltip_text.get_width() + 16
+                tooltip_h = tooltip_text.get_height() + 16
+                tooltip_bg = pygame.Surface((tooltip_w, tooltip_h), pygame.SRCALPHA)
+                pygame.draw.rect(tooltip_bg, (50, 50, 50, 220), (0, 0, tooltip_w, tooltip_h), border_radius=5)
+                pygame.draw.rect(tooltip_bg, self.WHITE, (0, 0, tooltip_w, tooltip_h), 2, border_radius=5)
+                tooltip_x = feature["rect"].x
+                tooltip_y = feature["rect"].y - tooltip_h - 5
+                if tooltip_x + tooltip_w > self.WIDTH - 10:
+                    tooltip_x = self.WIDTH - tooltip_w - 10
+                if tooltip_y < 10:
+                    tooltip_y = feature["rect"].y + feature["rect"].height + 5
+                self.screen.blit(tooltip_bg, (tooltip_x, tooltip_y))
+                self.screen.blit(tooltip_text, (tooltip_x + 8, tooltip_y + 8))
+
         if self.message and self.message_timer > 0:
-            message_surface = self.large_font.render(self.message, True, self.WARNING_COLOR)
+            message_surface = self.large_font.render(self.message, True, self.WHITE)
+            message_w = message_surface.get_width() + 20
+            message_h = message_surface.get_height() + 20
+            message_bg = pygame.Surface((message_w, message_h), pygame.SRCALPHA)
+            alpha = int(self.message_alpha * (self.message_timer / self.MESSAGE_DURATION))
+            pygame.draw.rect(message_bg, (*self.WARNING_COLOR[:3], alpha), (0, 0, message_w, message_h), border_radius=10)
+            pygame.draw.rect(message_bg, (*self.WHITE[:3], alpha), (0, 0, message_w, message_h), 2, border_radius=10)
             message_rect = message_surface.get_rect(center=(self.WIDTH // 2, self.HEIGHT // 2 - 50))
+            self.screen.blit(message_bg, (message_rect.x - 10, message_rect.y - 10))
+            message_surface.set_alpha(alpha)
             self.screen.blit(message_surface, message_rect)
 
         if not self.time_system.is_day():
@@ -407,25 +435,58 @@ class FarmGame:
             self.screen.blit(night_overlay, (0, 0))
             night_message = self.large_font.render("It's night, buddy! You can't be here!", True, self.WHITE)
             self.screen.blit(night_message, night_message.get_rect(center=(self.WIDTH // 2, self.HEIGHT // 2)))
-        else:
-            if self.show_inventory:
-                inventory_items, total_pages = self.update_inventory_display()
-                pygame.draw.rect(self.screen, self.INVENTORY_BG, (self.inventory_x, self.inventory_y, self.inventory_width, self.inventory_height), border_radius=10)
-                for item in inventory_items:
-                    pygame.draw.rect(self.screen, self.INVENTORY_CELL_BG, item["rect"], border_radius=5)
-                    pygame.draw.rect(self.screen, self.BLACK, item["rect"], 3, border_radius=5)
-                    if item["image"]:
-                        img_x = item["rect"].x + (self.inventory_cell_size - item["image"].get_width()) // 2
-                        img_y = item["rect"].y + (self.inventory_cell_size - item["image"].get_height()) // 2
-                        self.screen.blit(item["image"], (img_x, img_y))
-                pygame.draw.rect(self.screen, self.BUTTON_COLOR, self.prev_button, border_radius=5)
-                pygame.draw.rect(self.screen, self.BUTTON_COLOR, self.next_button, border_radius=5)
-                prev_text = self.font.render("<", True, self.WHITE)
-                next_text = self.font.render(">", True, self.WHITE)
-                self.screen.blit(prev_text, (self.prev_button.x + 20 * self.SCALE_X, self.prev_button.y -5 + 2 * self.SCALE_Y))
-                self.screen.blit(next_text, (self.next_button.x + 20 * self.SCALE_X, self.next_button.y -5 + 2 * self.SCALE_Y))
-                page_text = self.font.render(f"Page {self.current_page + 1}/{total_pages}", True, self.WHITE)
-                self.screen.blit(page_text, page_text.get_rect(center=(self.inventory_x + self.inventory_width // 2, self.inventory_y + self.inventory_height-5 - 15 * self.SCALE_Y)))
+
+        if self.show_inventory:
+            inventory_items, total_pages = self.update_inventory_display()
+            inventory_bg = pygame.Surface((self.inventory_width, self.inventory_height), pygame.SRCALPHA)
+            pygame.draw.rect(inventory_bg, self.INVENTORY_BG, (0, 0, self.inventory_width, self.inventory_height), border_radius=10)
+            pygame.draw.rect(inventory_bg, self.WHITE, (0, 0, self.inventory_width, self.inventory_height), 2, border_radius=10)
+            self.screen.blit(inventory_bg, (self.inventory_x, self.inventory_y))
+            for item in inventory_items:
+                item_color = self.INVENTORY_CELL_BG
+                item_border = self.BLACK
+                if item["rect"].collidepoint(mouse_pos):
+                    item_color = self.INVENTORY_CELL_HOVER
+                    item_border = (255, 215, 0)
+                    if item["name"]:
+                        tooltip_text = self.tooltip_font.render(self.seed_names[item["name"]], True, self.WHITE)
+                        tooltip_w = tooltip_text.get_width() + 16
+                        tooltip_h = tooltip_text.get_height() + 16
+                        tooltip_bg = pygame.Surface((tooltip_w, tooltip_h), pygame.SRCALPHA)
+                        pygame.draw.rect(tooltip_bg, (50, 50, 50, 220), (0, 0, tooltip_w, tooltip_h), border_radius=5)
+                        pygame.draw.rect(tooltip_bg, self.WHITE, (0, 0, tooltip_w, tooltip_h), 2, border_radius=5)
+                        tooltip_x = item["rect"].x
+                        tooltip_y = item["rect"].y - tooltip_h - 5
+                        if tooltip_x + tooltip_w > self.WIDTH - 10:
+                            tooltip_x = self.WIDTH - tooltip_w - 10
+                        if tooltip_y < 10:
+                            tooltip_y = item["rect"].y + item["rect"].height + 5
+                        self.screen.blit(tooltip_bg, (tooltip_x, tooltip_y))
+                        self.screen.blit(tooltip_text, (tooltip_x + 8, tooltip_y + 8))
+                pygame.draw.rect(self.screen, item_color, item["rect"], border_radius=5)
+                pygame.draw.rect(self.screen, item_border, item["rect"], 2, border_radius=5)
+                if item["image"]:
+                    img_x = item["rect"].x + (self.inventory_cell_size - item["image"].get_width()) // 2
+                    img_y = item["rect"].y + (self.inventory_cell_size - item["image"].get_height()) // 2
+                    self.screen.blit(item["image"], (img_x, img_y))
+            prev_button_hover = self.prev_button.collidepoint(mouse_pos) and self.current_page > 0
+            next_button_hover = self.next_button.collidepoint(mouse_pos) and self.current_page < total_pages - 1
+            prev_button_bg = pygame.Surface((self.prev_button.width, self.prev_button.height), pygame.SRCALPHA)
+            next_button_bg = pygame.Surface((self.next_button.width, self.next_button.height), pygame.SRCALPHA)
+            prev_color = self.BUTTON_HOVER if prev_button_hover else self.BUTTON_COLOR
+            next_color = self.BUTTON_HOVER if next_button_hover else self.BUTTON_COLOR
+            pygame.draw.rect(prev_button_bg, prev_color, (0, 0, self.prev_button.width, self.prev_button.height), border_radius=5)
+            pygame.draw.rect(prev_button_bg, self.WHITE, (0, 0, self.prev_button.width, self.prev_button.height), 2, border_radius=5)
+            pygame.draw.rect(next_button_bg, next_color, (0, 0, self.next_button.width, self.next_button.height), border_radius=5)
+            pygame.draw.rect(next_button_bg, self.WHITE, (0, 0, self.next_button.width, self.next_button.height), 2, border_radius=5)
+            self.screen.blit(prev_button_bg, (self.prev_button.x, self.prev_button.y))
+            self.screen.blit(next_button_bg, (self.next_button.x, self.next_button.y))
+            prev_text = self.font.render("<", True, self.WHITE)
+            next_text = self.font.render(">", True, self.WHITE)
+            self.screen.blit(prev_text, (self.prev_button.x + (self.prev_button.width - prev_text.get_width()) // 2, self.prev_button.y + (self.prev_button.height - prev_text.get_height()) // 2))
+            self.screen.blit(next_text, (self.next_button.x + (self.next_button.width - next_text.get_width()) // 2, self.next_button.y + (self.next_button.height - next_text.get_height()) // 2))
+            page_text = self.font.render(f"Page {self.current_page + 1}/{total_pages}", True, self.WHITE)
+            self.screen.blit(page_text, page_text.get_rect(center=(self.inventory_x + self.inventory_width // 2, self.inventory_y + self.inventory_height - 15 * self.SCALE_Y -10)))
 
     def handle_events(self):
         running = True
@@ -435,10 +496,8 @@ class FarmGame:
             if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                 mouse_pos = event.pos
                 if self.back_button.collidepoint(mouse_pos):
-                    print("Quay lại FarmScene!")
+                    print("Quay lại FarmScene!")  # Note: Should switch to VillageScene
                     running = False
-                if self.sound_button.collidepoint(mouse_pos):
-                    self.sound_manager.toggle_sound()  # Bật/tắt âm thanh
                 if self.time_system.is_day():
                     for index, plot in enumerate(self.plots[:self.player.get_garden_slots()]):
                         if plot.collidepoint(mouse_pos):
@@ -449,7 +508,7 @@ class FarmGame:
                                 self.player.inventory.add_item(product, 1)
                                 del self.planted_seeds[index]
                                 self.time_system.load_plants(self.planted_seeds)
-                                self.sound_manager.play_sound('harvest')  # Phát âm thanh thu hoạch
+                                self.sound_manager.play_sound('harvest')
                             elif self.is_watering and index in self.planted_seeds and self.planted_seeds[index]["stage"] < 4:
                                 plant = self.planted_seeds[index]
                                 if plant["stage"] < 3 and plant["remaining_upgrade_time"] is None:
@@ -458,12 +517,12 @@ class FarmGame:
                                     self.watering_animation = True
                                     self.watering_animation_start = pygame.time.get_ticks()
                                     self.time_system.load_plants(self.planted_seeds)
-                                    self.sound_manager.play_sound('water')  # Phát âm thanh tưới nước
+                                    self.sound_manager.play_sound('water')
                                     print(f"Watered plant at plot {index} in stage {plant['stage']}!")
                             elif self.is_removing and index in self.planted_seeds:
                                 del self.planted_seeds[index]
                                 self.time_system.load_plants(self.planted_seeds)
-                                self.sound_manager.play_sound('remove')  # Phát âm thanh xóa cây
+                                self.sound_manager.play_sound('remove')
                             elif index not in self.planted_seeds and self.selected_seed is not None:
                                 if self.player.get_energy() < self.ENERGY_COST:
                                     self.message = "Not enough mana!"
@@ -483,7 +542,7 @@ class FarmGame:
                                             "center_pos": list(plot.center)
                                         }
                                         self.time_system.load_plants(self.planted_seeds)
-                                        self.sound_manager.play_sound('plant')  # Phát âm thanh trồng cây
+                                        self.sound_manager.play_sound('plant')
                                         print(f"Đã trồng {self.selected_seed} tại ô {index}")
                                         self.selected_seed = None
                     for feature in self.features:
@@ -546,7 +605,7 @@ class FarmGame:
                         pygame.mouse.set_cursor(self.hover_cursor)
                         cursor_changed = True
                         break
-                if self.back_button.collidepoint(mouse_pos) or self.sound_button.collidepoint(mouse_pos):
+                if self.back_button.collidepoint(mouse_pos):
                     pygame.mouse.set_cursor(self.hover_cursor)
                     cursor_changed = True
                 if self.show_inventory:
@@ -569,9 +628,8 @@ class FarmGame:
             delta_time = current_time - self.last_time
             self.last_time = current_time
 
-            self.time_system.update(delta_time)  # Cập nhật thời gian và cây trồng
-            self.planted_seeds = self.time_system.get_plants()  # Lấy trạng thái cây trồng mới nhất
-
+            self.time_system.update(delta_time)
+            self.planted_seeds = self.time_system.get_plants()
             self.update_particles(delta_time)
             self.draw(current_time)
             running = self.handle_events()
@@ -585,7 +643,6 @@ class FarmGame:
             pygame.display.flip()
             self.clock.tick(60)
         
-        # Không lưu tự động khi thoát, chỉ trả về trạng thái hiện tại
         return self.player, self.time_system, self.time_system.get_plants()
 
 if __name__ == "__main__":

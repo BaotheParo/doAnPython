@@ -17,7 +17,10 @@ class SoundManager:
             'harvest': self.load_sound('harvest.wav'),
             'fishing': self.load_sound('fishing.wav'),
             'success': self.load_sound('success.wav'),
-            'fail': self.load_sound('fail.wav')
+            'fail': self.load_sound('fail.wav'),
+            'complete': self.load_sound('complete.wav'),
+            'click': self.load_sound('click.wav'),
+            'teleport': self.load_sound('teleport.wav')
         }
         
         # Thiết lập âm lượng mặc định
