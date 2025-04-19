@@ -1,81 +1,66 @@
+# src/scenes/menu.py
+
 import pygame
+import sys
 import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
+BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))
+IMAGE_DIR = os.path.abspath(os.path.join(BASE_DIR, "assets", "images"))
 
-# Khởi tạo pygame
-pygame.init()
+from src.core.ui import SettingsUI
+from src.utils.constants import SCREEN_WIDTH, SCREEN_HEIGHT
+from src.save_load import SaveLoad
 
-# Định nghĩa đường dẫn đến icon
-ICON_PATH = os.path.join("assets", "images", "icons")
+ASSET_PATH = "assets/images"
+ICON_PATH = os.path.join(ASSET_PATH, "icons")
 
-# Kích thước màn hình
-SCREEN_WIDTH, SCREEN_HEIGHT = 1280, 720
-
-# Tọa độ hiển thị icon thời gian
-TIME_ICON_POS = (SCREEN_WIDTH - 100, 50)
-
-class Menu:
+class MainMenu:
     def __init__(self, screen):
         self.screen = screen
-        self.font = pygame.font.Font(None, 36)
+        self.bg = pygame.image.load(os.path.join(ASSET_PATH, "backgrounds", "mainscreen.png")).convert()
 
-        # Load icon với kiểm tra lỗi
-        self.icons = {}
-        icon_names = ["play", "continue", "quit", "laban", "tuido", "map", "setting", "sang", "trua", "chieu", "toi"]
-        
-        for name in icon_names:
-            path = os.path.join(ICON_PATH, f"{name}.png")
-            if os.path.exists(path):
-                self.icons[name] = pygame.image.load(path)
-            else:
-                print(f"Warning: Icon {name}.png not found!")
-                self.icons[name] = pygame.Surface((50, 50))  # Placeholder nếu thiếu
+        self.play_btn = pygame.image.load(os.path.join(ICON_PATH, "PlayBtn.png")).convert_alpha()
+        self.continue_btn = pygame.image.load(os.path.join(ICON_PATH, "ContinueBtn.png")).convert_alpha()
+        self.exit_btn = pygame.image.load(os.path.join(ICON_PATH, "icon-quaylai.png")).convert_alpha()
 
-        # Định nghĩa nút bấm với icon
-        self.buttons = {
-            "play": pygame.Rect(300, 250, 150, 60),
-            "continue": pygame.Rect(500, 250, 150, 60),
-            "quit": pygame.Rect(700, 250, 150, 60),
-            "laban": pygame.Rect(300, 400, 60, 60),
-            "tuido": pygame.Rect(450, 400, 60, 60),
-            "map": pygame.Rect(600, 400, 60, 60),
-            "setting": pygame.Rect(750, 400, 60, 60),
-        }
+        # Vị trí nút
+        self.play_rect = self.play_btn.get_rect(center=(SCREEN_WIDTH // 2, 300))
+        self.continue_rect = self.continue_btn.get_rect(center=(SCREEN_WIDTH // 2, 400))
+        self.exit_rect = self.exit_btn.get_rect(center=(SCREEN_WIDTH // 2, 500))
 
-        # Vị trí icon thời gian (mặc định là sáng)
-        self.time_status = "sang"
-
-        # Âm thanh click (nếu có file âm thanh)
-        sound_path = os.path.join("assets", "sounds", "click.wav")
-        self.click_sound = pygame.mixer.Sound(sound_path) if os.path.exists(sound_path) else None
+        # Âm thanh
+        self.sound_on = pygame.image.load(os.path.join(ICON_PATH, "sound_on.png")).convert_alpha()
+        self.sound_off = pygame.image.load(os.path.join(ICON_PATH, "sound_off.png")).convert_alpha()
+        self.sound_rect = self.sound_on.get_rect(topleft=(20, 20))
+        self.sound_enabled = True
 
     def draw(self):
-        """Vẽ giao diện menu"""
-        self.screen.fill((50, 50, 50))  # Nền màu xám đậm
-        
-        # Vẽ các nút bấm
-        for key, rect in self.buttons.items():
-            pygame.draw.rect(self.screen, (200, 200, 200), rect, border_radius=10)
-            if key in self.icons:
-                icon = self.icons[key]
-                icon_x = rect.x + (rect.width - icon.get_width()) // 2  # Căn giữa icon
-                icon_y = rect.y + (rect.height - icon.get_height()) // 2
-                self.screen.blit(icon, (icon_x, icon_y))
+        self.screen.blit(self.bg, (0, 0))
+        self.screen.blit(self.play_btn, self.play_rect)
+        self.screen.blit(self.continue_btn, self.continue_rect)
+        self.screen.blit(self.exit_btn, self.exit_rect)
 
-        # Hiển thị icon thời gian
-        time_icon = self.icons.get(self.time_status, pygame.Surface((50, 50)))  # Nếu thiếu, tạo placeholder
-        self.screen.blit(time_icon, TIME_ICON_POS)  # Dùng hằng số
+        # Vẽ biểu tượng âm thanh
+        if self.sound_enabled:
+            self.screen.blit(self.sound_on, self.sound_rect)
+        else:
+            self.screen.blit(self.sound_off, self.sound_rect)
 
-        pygame.display.flip()
-
-    def handle_click(self, pos):
-        """Xử lý khi người chơi nhấn vào nút"""
-        for key, rect in self.buttons.items():
-            if rect.collidepoint(pos):
-                if self.click_sound:
-                    self.click_sound.play()  # Phát âm thanh khi click
-                return key
+    def handle_event(self, event):
+        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+            pos = event.pos
+            if self.play_rect.collidepoint(pos):
+                print("Bắt đầu game mới")  # Thay bằng gọi scene phòng ngủ
+                return "new_game"
+            elif self.continue_rect.collidepoint(pos):
+                print("Hiện danh sách save")  # Thay bằng giao diện chọn file save
+                return "load_game"
+            elif self.exit_rect.collidepoint(pos):
+                pygame.quit()
+                sys.exit()
+            elif self.sound_rect.collidepoint(pos):
+                self.sound_enabled = not self.sound_enabled
         return None
-
     def update_time_status(self, new_status):
         """Cập nhật trạng thái thời gian (sáng, trưa, chiều, tối)"""
         if new_status in self.icons:
