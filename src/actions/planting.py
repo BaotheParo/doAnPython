@@ -12,6 +12,7 @@ sys.path.append(os.path.join(BASE_DIR, "src", "scenes"))
 from inventory import Inventory
 from player import Player
 from time_system import TimeSystem
+from sound_manager import SoundManager
 
 class FarmGame:
     def __init__(self, player=None, time_system=None, planted_seeds=None):
@@ -28,6 +29,9 @@ class FarmGame:
         # Load background
         self.farm_bg = pygame.image.load(os.path.join(BASE_DIR, "assets", "images", "backgrounds", "khuvuon.png")).convert()
         self.farm_bg = pygame.transform.scale(self.farm_bg, (self.WIDTH, self.HEIGHT))
+
+        # Initialize SoundManager
+        self.sound_manager = SoundManager()
 
         # Colors
         self.BROWN = (139, 69, 19)
@@ -84,6 +88,17 @@ class FarmGame:
         # Define UI elements
         self.define_plots_and_features()
         self.define_inventory_ui()
+
+        # Sound toggle button
+        self.sound_button = pygame.Rect(self.WIDTH - 60 * self.SCALE_X, 10 * self.SCALE_Y, 40 * self.SCALE_X, 40 * self.SCALE_Y)
+        # self.sound_on_icon = pygame.transform.scale(
+        #     pygame.image.load(os.path.join(BASE_DIR, "assets", "images", "icons", "sound_on.png")),
+        #     self.scale_size((40, 40))
+        # )
+        # self.sound_off_icon = pygame.transform.scale(
+        #     pygame.image.load(os.path.join(BASE_DIR, "assets", "images", "icons", "sound_off.png")),
+        #     self.scale_size((40, 40))
+        # )
 
         # Load initial data if not provided
         if planted_seeds is None:
@@ -357,6 +372,12 @@ class FarmGame:
 
         self.screen.blit(self.back_button_image, (self.back_button.x, self.back_button.y))
 
+        # Draw sound toggle button
+        # self.screen.blit(
+        #     self.sound_on_icon if self.sound_manager.is_sound_enabled else self.sound_off_icon,
+        #     (self.sound_button.x, self.sound_button.y)
+        # )
+
         # Draw mana bar
         pygame.draw.rect(self.screen, self.BLACK, (self.MANA_BAR_X - 5, self.MANA_BAR_Y - 5, self.MANA_BAR_WIDTH + 10, self.MANA_BAR_HEIGHT + 10), border_radius=5)
         pygame.draw.rect(self.screen, self.WHITE, (self.MANA_BAR_X, self.MANA_BAR_Y, self.MANA_BAR_WIDTH, self.MANA_BAR_HEIGHT), border_radius=5)
@@ -415,17 +436,20 @@ class FarmGame:
                 mouse_pos = event.pos
                 if self.back_button.collidepoint(mouse_pos):
                     print("Quay lại FarmScene!")
-                    running = False  # Thoát khỏi FarmGame để quay lại FarmScene
+                    running = False
+                if self.sound_button.collidepoint(mouse_pos):
+                    self.sound_manager.toggle_sound()  # Bật/tắt âm thanh
                 if self.time_system.is_day():
                     for index, plot in enumerate(self.plots[:self.player.get_garden_slots()]):
                         if plot.collidepoint(mouse_pos):
-                            self.planted_seeds = self.time_system.get_plants()  # Cập nhật planted_seeds trước khi xử lý
+                            self.planted_seeds = self.time_system.get_plants()
                             if self.is_harvesting and index in self.planted_seeds and self.planted_seeds[index]["stage"] == 3:
                                 seed_type = self.planted_seeds[index]["seed"]
                                 product = self.seed_to_product[seed_type]
                                 self.player.inventory.add_item(product, 1)
                                 del self.planted_seeds[index]
                                 self.time_system.load_plants(self.planted_seeds)
+                                self.sound_manager.play_sound('harvest')  # Phát âm thanh thu hoạch
                             elif self.is_watering and index in self.planted_seeds and self.planted_seeds[index]["stage"] < 4:
                                 plant = self.planted_seeds[index]
                                 if plant["stage"] < 3 and plant["remaining_upgrade_time"] is None:
@@ -434,10 +458,12 @@ class FarmGame:
                                     self.watering_animation = True
                                     self.watering_animation_start = pygame.time.get_ticks()
                                     self.time_system.load_plants(self.planted_seeds)
+                                    self.sound_manager.play_sound('water')  # Phát âm thanh tưới nước
                                     print(f"Watered plant at plot {index} in stage {plant['stage']}!")
                             elif self.is_removing and index in self.planted_seeds:
                                 del self.planted_seeds[index]
                                 self.time_system.load_plants(self.planted_seeds)
+                                self.sound_manager.play_sound('remove')  # Phát âm thanh xóa cây
                             elif index not in self.planted_seeds and self.selected_seed is not None:
                                 if self.player.get_energy() < self.ENERGY_COST:
                                     self.message = "Not enough mana!"
@@ -457,6 +483,7 @@ class FarmGame:
                                             "center_pos": list(plot.center)
                                         }
                                         self.time_system.load_plants(self.planted_seeds)
+                                        self.sound_manager.play_sound('plant')  # Phát âm thanh trồng cây
                                         print(f"Đã trồng {self.selected_seed} tại ô {index}")
                                         self.selected_seed = None
                     for feature in self.features:
@@ -519,7 +546,7 @@ class FarmGame:
                         pygame.mouse.set_cursor(self.hover_cursor)
                         cursor_changed = True
                         break
-                if self.back_button.collidepoint(mouse_pos):
+                if self.back_button.collidepoint(mouse_pos) or self.sound_button.collidepoint(mouse_pos):
                     pygame.mouse.set_cursor(self.hover_cursor)
                     cursor_changed = True
                 if self.show_inventory:

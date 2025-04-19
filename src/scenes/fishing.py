@@ -21,10 +21,9 @@ class FishingScene:
 
         self.font = pygame.font.Font(None, 36)
 
-        # Thông báo khi vào làng
         self.notification_text = "Đã di chuyển tới ao cá"
         self.notification_surface = self.font.render(self.notification_text, True, (255, 255, 255))
-        self.notification_timer = 3000  # Hiển thị trong 3 giây (3000ms)
+        self.notification_timer = 3000  
         self.notification_start_time = pygame.time.get_ticks()
 
 
@@ -48,12 +47,6 @@ class FishingScene:
 
         self.font = pygame.font.SysFont(None, 24)
 
-        # self.back_button_rect = pygame.Rect(10, SCREEN_HEIGHT - 50, 150, 40)
-        # self.back_button_text = self.font.render("Back to Farm", True, WHITE)
-        # self.back_button_bg = pygame.Surface((150, 40))
-        # self.back_button_bg.fill((50, 50, 50))
-        # self.back_button_hover = False
-
         self.running = True
         self.ui = SettingsUI(self.screen, self.game_state)
 
@@ -74,12 +67,6 @@ class FishingScene:
                     if not (self.ui.show_map or self.ui.show_inventory):
                         self.handle_click(mouse_pos)
                     self.ui.handle_event(event)
-                    # if self.back_button_rect.collidepoint(mouse_pos):
-                    #     from src.scenes.farm import FarmScene
-                    #     print("Chuyển về FarmScene!")
-                    #     self.running = False
-                    #     farm_scene = FarmScene(self.game_state, self.screen, self.ui)
-                    #     farm_scene.run()
 
             if self.game_state.time_system.is_day():
                 self.screen.blit(self.day_background, (0, 0))
@@ -104,25 +91,18 @@ class FishingScene:
             self.screen.blit(time_bg, (10, 40))
             self.screen.blit(time_text, (15, 45))
 
-            # self.back_button_hover = self.back_button_rect.collidepoint(mouse_pos)
-            # self.back_button_bg.fill((100, 100, 100) if self.back_button_hover else (50, 50, 50))
-            # self.screen.blit(self.back_button_bg, (self.back_button_rect.x, self.back_button_rect.y))
-            # self.screen.blit(self.back_button_text, (self.back_button_rect.x + 10, self.back_button_rect.y + 10))
-            # pygame.draw.rect(self.screen, WHITE, self.back_button_rect, 2)
             if self.notification_timer > 0:
                 current_time = pygame.time.get_ticks()
                 elapsed_time = current_time - self.notification_start_time
                 if elapsed_time < self.notification_timer:
-                    # Tính toán vị trí giữa màn hình
                     text_rect = self.notification_surface.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 4))
-                    # Vẽ nền tối mờ cho thông báo
                     bg_surface = pygame.Surface((text_rect.width + 20, text_rect.height + 10), pygame.SRCALPHA)
-                    bg_surface.fill((0, 0, 0, 180))  # Nền đen mờ
+                    bg_surface.fill((0, 0, 0, 180))  
                     self.screen.blit(bg_surface, (text_rect.x - 10, text_rect.y - 5))
-                    # Vẽ văn bản
+
                     self.screen.blit(self.notification_surface, text_rect)
                 else:
-                    self.notification_timer = 0  # Tắt thông báo sau khi hết thời gian
+                    self.notification_timer = 0  
             self.ui.draw()
             pygame.display.flip()
 
