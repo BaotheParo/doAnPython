@@ -1,6 +1,4 @@
-<<<<<<< HEAD
-{"100": {"seed": "carrot_seed", "stage": 4, "remaining_upgrade_time": null, "remaining_death_time": -8, "center_pos": [377, 426]}}
-=======
+
 {
     "100": {
         "seed": "carrot_seed",
@@ -83,4 +81,4 @@
         ]
     }
 }
->>>>>>> 3db41c1c594bea49030095a61f6a9b10555aec26
+
