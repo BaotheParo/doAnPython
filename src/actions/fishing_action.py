@@ -1,6 +1,7 @@
 import pygame
 import random
-import sys, os
+import sys
+import os
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
 BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))
@@ -11,6 +12,7 @@ from src.utils.constants import (
     FISHING_BAR_WIDTH, FISHING_BAR_HEIGHT, FISHING_FISH_SIZE,
     FISHING_GREEN_ZONE_SIZE, ENERGY_COSTS, FISH_DAY, FISH_NIGHT
 )
+from src.core.sound_manager import SoundManager
 
 TIMER_WIDTH = 30
 TIMER_HEIGHT = 400
@@ -25,6 +27,9 @@ class FishingMinigame:
         self.screen = screen
         self.rod_level = player.get_rod_level()
         self.green_zone_size = FISHING_GREEN_ZONE_SIZE[self.rod_level]
+
+        # Initialize SoundManager
+        self.sound_manager = getattr(self.player, 'sound_manager', SoundManager())
 
         # Load background for minigame
         self.background_path1 = os.path.join(BASE_DIR, "assets", "images", "backgrounds", "animation-cauca1.png")
@@ -261,6 +266,7 @@ class FishingMinigame:
                     elif self.timer <= 0:
                         self.success = False
                         self.result_phase = 1
+                        self.sound_manager.play_sound('fail')  # Phát âm thanh hụt cá
 
                 if self.result_phase == 0:
                     self.screen.blit(self.background, (0, 0))
@@ -353,6 +359,7 @@ class FishingMinigame:
         self.caught_fish_image = pygame.image.load(fish_image_path).convert_alpha()
         self.caught_fish_image = pygame.transform.scale(self.caught_fish_image, (200, 200))
 
+        self.sound_manager.play_sound('success')  # Phát âm thanh chúc mừng
         print(f"You caught a {self.caught_fish}!")
 
 def start_fishing(player, time_of_day, screen):

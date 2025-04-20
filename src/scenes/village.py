@@ -2,34 +2,39 @@ import pygame
 import os
 import sys
 
-# Thêm đường dẫn gốc của dự án vào sys.path
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
-# Lấy đường dẫn tuyệt đối đến thư mục gốc của dự án
 BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))
 
 from src.core.game_state import GameState
 from src.core.ui import SettingsUI
 from src.utils.constants import SCREEN_WIDTH, SCREEN_HEIGHT, WHITE, BLACK
+from src.core.sound_manager import SoundManager
 
 class VillageScene:
     def __init__(self, game_state, screen, ui):
         self.game_state = game_state
         self.screen = screen
         self.ui = ui
-        pygame.display.set_caption("Khu vực làng")
+        pygame.display.set_caption("Village Area")
 
-        # Tắt bản đồ ngay khi vào VillageScene
-        self.ui.show_map = False  # Đảm bảo bản đồ không hiển thị khi chuyển đến khu vực làng
+        # Initialize SoundManager if not present
+        if not hasattr(self.game_state, 'sound_manager'):
+            self.game_state.sound_manager = SoundManager()
 
-        self.font = pygame.font.Font(None, 36)
+        self.ui.show_map = False
 
-        # Thông báo khi vào làng
-        self.notification_text = "Đã di chuyển tới ngôi làng"
-        self.notification_surface = self.font.render(self.notification_text, True, (255, 255, 255))
-        self.notification_timer = 3000  # Hiển thị trong 3 giây (3000ms)
+        # Fonts
+        self.notification_font = pygame.font.SysFont("Arial", 36, bold=True)
+        self.tooltip_font = pygame.font.SysFont("Arial", 24, bold=True)
+        self.message_font = pygame.font.SysFont("Arial", 28, bold=True)
+        self.button_font = pygame.font.SysFont("Arial", 24, bold=True)
+
+        self.notification_text = "Moved to the village"
+        self.notification_surface = self.notification_font.render(self.notification_text, True, WHITE)
+        self.notification_timer = 3000
         self.notification_start_time = pygame.time.get_ticks()
+        self.notification_alpha = 200
 
-        # Đường dẫn tuyệt đối đến các file background
         self.day_background_path = os.path.join(BASE_DIR, "assets", "images", "backgrounds", "background-ngoilang.png")
         self.night_background_path = os.path.join(BASE_DIR, "assets", "images", "backgrounds", "background-ngoilang-dem.png")
 
@@ -39,58 +44,49 @@ class VillageScene:
             self.night_background = pygame.image.load(self.night_background_path).convert()
             self.night_background = pygame.transform.scale(self.night_background, (SCREEN_WIDTH, SCREEN_HEIGHT))
         except FileNotFoundError as e:
-            print(f"Lỗi: Không tìm thấy file - {e}")
+            print(f"Error: File not found - {e}")
             self.day_background = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
             self.day_background.fill((100, 200, 100))
             self.night_background = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
             self.night_background.fill((0, 0, 50))
 
-        # Các khu vực tương tác
-        self.farmer_trader_rect = pygame.Rect(47, 271, 130, 325)  # Thương nhân nông trại
-        self.fisher_trader_rect = pygame.Rect(562, 265, 100, 280)  # Thương nhân câu cá
+        self.farmer_trader_rect = pygame.Rect(47, 271, 130, 325)
+        self.fisher_trader_rect = pygame.Rect(562, 265, 100, 280)
 
-        # Tooltip cho các khu vực tương tác, các ô trong menu, các loại nông sản, và các tùy chọn mua đất
-        self.tooltip_font = pygame.font.SysFont(None, 25)
         self.tooltips = {
-            "farmer_trader": self.tooltip_font.render("Thương nhân nông trại", True, WHITE),
-            "fisher_trader": self.tooltip_font.render("Thương nhân câu cá", True, WHITE),
-            "buy_seed": self.tooltip_font.render("Bán nông sản", True, WHITE),
-            "sell_crop": self.tooltip_font.render("Mua hạt giống", True, WHITE),
-            "buy_farm": self.tooltip_font.render("Mua đất", True, WHITE),
-            "sell_fish": self.tooltip_font.render("Bán cá", True, WHITE),
-            "buy_rod": self.tooltip_font.render("Mua cần câu", True, WHITE),
-            "carrot_seed": self.tooltip_font.render("Hạt cà rốt - 2 đồng", True, WHITE),
-            "cabbage_seed": self.tooltip_font.render("Hạt bắp cải - 3 đồng", True, WHITE),
-            "beetroot_seed": self.tooltip_font.render("Hạt củ dền - 5 đồng", True, WHITE),
-            "pumpkin_seed": self.tooltip_font.render("Hạt bí đỏ - 6 đồng", True, WHITE),
-            "rare_herb_seed": self.tooltip_font.render("Hạt thảo mộc hiếm - 5 ếch", True, WHITE),
-            "energy_herb_seed": self.tooltip_font.render("Hạt thảo mộc năng lượng - 3 ếch", True, WHITE),
-            "carrot_crop": self.tooltip_font.render("Cà rốt - 3 đồng", True, WHITE),
-            "cabbage_crop": self.tooltip_font.render("Bắp cải - 4 đồng", True, WHITE),
-            "beetroot_crop": self.tooltip_font.render("Củ dền - 7 đồng", True, WHITE),
-            "pumpkin_crop": self.tooltip_font.render("Bí đỏ - 9 đồng", True, WHITE),
-            "rare_herb": self.tooltip_font.render("Thảo mộc hiếm - 15 đồng", True, WHITE),
-            "energy_herb": self.tooltip_font.render("Thảo mộc năng lượng - 10 đồng", True, WHITE),
-            "tilapia": self.tooltip_font.render("Cá rô phi - 5 đồng", True, WHITE),
-            "carp": self.tooltip_font.render("Cá chép - 7 đồng", True, WHITE),
-            "catfish": self.tooltip_font.render("Cá trê - 10 đồng", True, WHITE),
-            "eel": self.tooltip_font.render("Cá chình - 15 đồng", True, WHITE),
-            "ghost_fish": self.tooltip_font.render("Cá ma - 20 đồng", True, WHITE),
-            "silver_rod": self.tooltip_font.render("Cần câu bạc - 20 đồng", True, WHITE),
-            "gold_rod": self.tooltip_font.render("Cần câu vàng - 50 đồng", True, WHITE),
-            "platinum_rod": self.tooltip_font.render("Cần câu bạch kim - 100 đồng", True, WHITE),
-            "expand_2_to_4": self.tooltip_font.render("Mở rộng 2 ô -> 4 ô - 18 đồng", True, WHITE),
-            "expand_4_to_6": self.tooltip_font.render("Mở rộng 4 ô -> 6 ô - 25 đồng", True, WHITE),
-            "expand_6_to_8": self.tooltip_font.render("Mở rộng 6 ô -> 8 ô - 32 đồng", True, WHITE),
-            "exit_menu": self.tooltip_font.render("Thoát", True, WHITE),
+            "farmer_trader": self.tooltip_font.render("Farmer Trader", True, WHITE),
+            "fisher_trader": self.tooltip_font.render("Fisher Trader", True, WHITE),
+            "buy_seed": self.tooltip_font.render("Sell Crops", True, WHITE),
+            "sell_crop": self.tooltip_font.render("Buy Seeds", True, WHITE),
+            "buy_farm": self.tooltip_font.render("Buy Land", True, WHITE),
+            "sell_fish": self.tooltip_font.render("Sell Fish", True, WHITE),
+            "buy_rod": self.tooltip_font.render("Buy Fishing Rod", True, WHITE),
+            "carrot_seed": self.tooltip_font.render("Carrot Seed - 2 coins", True, WHITE),
+            "cabbage_seed": self.tooltip_font.render("Cabbage Seed - 3 coins", True, WHITE),
+            "beetroot_seed": self.tooltip_font.render("Beetroot Seed - 5 coins", True, WHITE),
+            "pumpkin_seed": self.tooltip_font.render("Pumpkin Seed - 6 coins", True, WHITE),
+            "rare_herb_seed": self.tooltip_font.render("Rare Herb Seed - 5 frogs", True, WHITE),
+            "energy_herb_seed": self.tooltip_font.render("Energy Herb Seed - 3 frogs", True, WHITE),
+            "carrot_crop": self.tooltip_font.render("Carrot - 3 coins", True, WHITE),
+            "cabbage_crop": self.tooltip_font.render("Cabbage - 4 coins", True, WHITE),
+            "beetroot_crop": self.tooltip_font.render("Beetroot - 7 coins", True, WHITE),
+            "pumpkin_crop": self.tooltip_font.render("Pumpkin - 9 coins", True, WHITE),
+            "rare_herb": self.tooltip_font.render("Rare Herb - 15 coins", True, WHITE),
+            "energy_herb": self.tooltip_font.render("Energy Herb - 10 coins", True, WHITE),
+            "tilapia": self.tooltip_font.render("Tilapia - 5 coins", True, WHITE),
+            "carp": self.tooltip_font.render("Carp - 7 coins", True, WHITE),
+            "catfish": self.tooltip_font.render("Catfish - 10 coins", True, WHITE),
+            "eel": self.tooltip_font.render("Eel - 15 coins", True, WHITE),
+            "ghost_fish": self.tooltip_font.render("Ghost Fish - 20 coins", True, WHITE),
+            "silver_rod": self.tooltip_font.render("Silver Rod - 20 coins", True, WHITE),
+            "gold_rod": self.tooltip_font.render("Gold Rod - 50 coins", True, WHITE),
+            "platinum_rod": self.tooltip_font.render("Platinum Rod - 100 coins", True, WHITE),
+            "expand_2_to_4": self.tooltip_font.render("Expand 2 to 4 slots - 18 coins", True, WHITE),
+            "expand_4_to_6": self.tooltip_font.render("Expand 4 to 6 slots - 25 coins", True, WHITE),
+            "expand_6_to_8": self.tooltip_font.render("Expand 6 to 8 slots - 32 coins", True, WHITE),
+            "exit_menu": self.tooltip_font.render("Exit", True, WHITE),
         }
-        self.tooltip_bg = pygame.Surface((200, 35))
-        self.tooltip_bg.fill((50, 50, 50))
 
-        # Font để hiển thị tọa độ chuột và thời gian
-        self.mouse_pos_font = pygame.font.SysFont(None, 25)
-
-        # Tải các hình ảnh menu (đường dẫn tuyệt đối)
         self.menu_images = {
             "menubanhat": os.path.join(BASE_DIR, "assets", "images", "fish", "menubanhat.png"),
             "menubanrau": os.path.join(BASE_DIR, "assets", "images", "fish", "menubanrau.png"),
@@ -104,100 +100,83 @@ class VillageScene:
             self.menu_image = pygame.image.load(self.menu_images[self.current_menu]).convert_alpha()
             self.menu_image = pygame.transform.scale(self.menu_image, (387, 539))
         except FileNotFoundError:
-            print(f"Lỗi: Không tìm thấy file {self.menu_images[self.current_menu]}")
+            print(f"Error: File not found {self.menu_images[self.current_menu]}")
             self.menu_image = pygame.Surface((387, 539))
             self.menu_image.fill((255, 0, 0))
 
-        # Tính toán vị trí để menu nằm giữa màn hình
         self.menu_x = (SCREEN_WIDTH - self.menu_image.get_width()) // 2
         self.menu_y = (SCREEN_HEIGHT - self.menu_image.get_height()) // 2
-
-        # Định nghĩa khu vực của menu
         self.menu_rect = pygame.Rect(self.menu_x, self.menu_y, self.menu_image.get_width(), self.menu_image.get_height())
 
-        # Định nghĩa các ô vuông trên menu (tọa độ tuyệt đối)
-        # Menu nông trại
         self.buy_seed_rect = pygame.Rect(500, 109, 95, 65)
         self.sell_crop_rect = pygame.Rect(651, 109, 95, 65)
         self.buy_farm_rect = pygame.Rect(754, 204, 50, 90)
-        # Menu câu cá
         self.sell_fish_rect = pygame.Rect(500, 109, 95, 65)
         self.buy_rod_rect = pygame.Rect(651, 109, 95, 65)
 
-        # Định nghĩa các ô vuông cho các loại hạt giống (hiển thị khi ở menubanhat)
-        self.cabbage_seed_rect = pygame.Rect(490, 249, 93, 80)  # Bắp cải
-        self.pumpkin_seed_rect = pygame.Rect(577, 249, 93, 80)  # Bí đỏ
-        self.carrot_seed_rect = pygame.Rect(665, 249, 93, 80)   # Cà rốt
-        self.beetroot_seed_rect = pygame.Rect(490, 357, 93, 80) # Củ dền
-        self.rare_herb_seed_rect = pygame.Rect(577, 357, 93, 80)  # Hạt thảo mộc hiếm
-        self.energy_herb_seed_rect = pygame.Rect(665, 357, 93, 80)  # Hạt thảo mộc năng lượng
+        self.cabbage_seed_rect = pygame.Rect(490, 249, 93, 80)
+        self.pumpkin_seed_rect = pygame.Rect(577, 249, 93, 80)
+        self.carrot_seed_rect = pygame.Rect(665, 249, 93, 80)
+        self.beetroot_seed_rect = pygame.Rect(490, 357, 93, 80)
+        self.rare_herb_seed_rect = pygame.Rect(577, 357, 93, 80)
+        self.energy_herb_seed_rect = pygame.Rect(665, 357, 93, 80)
 
-        # Định nghĩa các ô vuông cho các loại nông sản (hiển thị khi ở menubanrau)
-        self.cabbage_crop_rect = pygame.Rect(490, 249, 93, 80)  # Bắp cải
-        self.pumpkin_crop_rect = pygame.Rect(577, 249, 93, 80)  # Bí đỏ
-        self.carrot_crop_rect = pygame.Rect(665, 249, 93, 80)   # Cà rốt
-        self.beetroot_crop_rect = pygame.Rect(490, 357, 93, 80) # Củ dền
-        self.rare_herb_rect = pygame.Rect(577, 357, 93, 80)     # Thảo dược hiếm
-        self.energy_herb_rect = pygame.Rect(665, 357, 93, 80)   # Thảo mộc năng lượng
+        self.cabbage_crop_rect = pygame.Rect(490, 249, 93, 80)
+        self.pumpkin_crop_rect = pygame.Rect(577, 249, 93, 80)
+        self.carrot_crop_rect = pygame.Rect(665, 249, 93, 80)
+        self.beetroot_crop_rect = pygame.Rect(490, 357, 93, 80)
+        self.rare_herb_rect = pygame.Rect(577, 357, 93, 80)
+        self.energy_herb_rect = pygame.Rect(665, 357, 93, 80)
 
-        # Định nghĩa các ô vuông cho các loại cá (hiển thị khi ở menubanca)
         self.carophi_rect = pygame.Rect(490, 249, 93, 80)
         self.cachep_rect = pygame.Rect(577, 249, 93, 80)
         self.catre_rect = pygame.Rect(665, 249, 93, 80)
         self.cachinh_rect = pygame.Rect(490, 357, 93, 80)
         self.cama_rect = pygame.Rect(577, 357, 93, 80)
 
-        # Định nghĩa các ô vuông cho các loại cần câu (hiển thị khi ở menucancau)
         self.silver_rod_rect = pygame.Rect(490, 249, 93, 80)
         self.gold_rod_rect = pygame.Rect(577, 249, 93, 80)
         self.platinum_rod_rect = pygame.Rect(665, 249, 93, 80)
 
-        # Định nghĩa các ô vuông cho các tùy chọn mua đất (hiển thị khi ở menumuadat)
         self.expand_2_to_4_rect = pygame.Rect(490, 249, 93, 80)
         self.expand_4_to_6_rect = pygame.Rect(577, 249, 93, 80)
         self.expand_6_to_8_rect = pygame.Rect(665, 249, 93, 80)
 
-        # Định nghĩa nút "Thoát" trên menu
-        self.exit_button_rect = pygame.Rect(690, 500, 60, 30)  # Góc dưới bên phải của menu
-        self.exit_button_text = self.tooltip_font.render("Thoát", True, WHITE)
-        self.exit_button_bg = pygame.Surface((60, 30))
-        self.exit_button_bg.fill((100, 100, 100))
+        self.exit_button_rect = pygame.Rect(690, 500, 60, 30)
+        self.exit_button_text = self.button_font.render("Exit", True, WHITE)
+        self.exit_button_hover = False
 
-        # Nút "Back to Farm"
         self.back_button_rect = pygame.Rect(10, SCREEN_HEIGHT - 50, 150, 40)
-        self.back_button_text = self.tooltip_font.render("Back to Farm", True, WHITE)
-        self.back_button_bg = pygame.Surface((150, 40))
-        self.back_button_bg.fill((50, 50, 50))
+        self.back_button_text = self.button_font.render("Back to Farm", True, WHITE)
         self.back_button_hover = False
 
-        # Biến để kiểm soát việc hiển thị menu
         self.show_menu = False
-
-        # Biến để kiểm soát việc hiển thị thông báo
         self.show_message = False
-        self.message_text = self.tooltip_font.render("Không đủ tiền!", True, WHITE)
-        self.message_bg = pygame.Surface((300, 100))  # Tăng chiều ngang để chứa thông báo dài hơn
-        self.message_bg_color = (50, 50, 50)  # Màu mặc định
-        self.message_bg.fill(self.message_bg_color)
-        self.ok_button_rect = pygame.Rect(SCREEN_WIDTH // 2 - 30, SCREEN_HEIGHT // 2 + 20, 60, 30)
-        self.ok_button_text = self.tooltip_font.render("OK", True, WHITE)
-        self.ok_button_bg = pygame.Surface((60, 30))
-        self.ok_button_bg.fill((100, 100, 100))
+        self.message_text = self.message_font.render("Insufficient funds!", True, WHITE)
+        self.ok_button_rect = pygame.Rect(SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT // 2 + 30, 100, 40)
+        self.ok_button_text = self.button_font.render("OK", True, WHITE)
+        self.ok_button_hover = False
 
         self.running = True
 
     def show_notification(self, message, success=True):
         self.show_message = True
-        self.message_text = self.tooltip_font.render(message, True, WHITE)
-        self.message_bg_color = (50, 200, 50) if success else (200, 50, 50)
-        self.message_bg.fill(self.message_bg_color)
+        self.message_text = self.message_font.render(message, True, WHITE)
+        self.message_bg_color = (50, 200, 50, 220) if success else (200, 50, 50, 220)
+        message_w = max(400, self.message_text.get_width() + 20)
+        message_h = 150
+        self.message_bg = pygame.Surface((message_w, message_h), pygame.SRCALPHA)
+        pygame.draw.rect(self.message_bg, self.message_bg_color, (0, 0, message_w, message_h), border_radius=10)
+        pygame.draw.rect(self.message_bg, (255, 255, 255), (0, 0, message_w, message_h), 2, border_radius=10)
+        if success:
+            self.game_state.sound_manager.play_sound('complete')
 
     def run(self):
         clock = pygame.time.Clock()
 
         while self.running:
-            delta_time = clock.tick(60)  # Thời gian trôi qua giữa các khung hình (ms)
-            self.game_state.time_system.update(delta_time)  # Cập nhật thời gian trong game
+            delta_time = clock.tick(60)
+            self.game_state.time_system.update(delta_time)
 
             mouse_pos = pygame.mouse.get_pos()
             for event in pygame.event.get():
@@ -206,428 +185,501 @@ class VillageScene:
                     pygame.quit()
                     sys.exit()
                 elif event.type == pygame.MOUSEBUTTONDOWN:
-                    if not (self.ui.show_map or self.ui.show_inventory):  # Không xử lý click nếu đang hiển thị map hoặc inventory
+                    if not (self.ui.show_map or self.ui.show_inventory):
                         if self.show_message:
                             if self.ok_button_rect.collidepoint(mouse_pos):
                                 self.show_message = False
                         else:
                             self.handle_click(mouse_pos)
-                    self.ui.handle_event(event)  # Xử lý sự kiện cho UI
+                    self.ui.handle_event(event)
                     if self.back_button_rect.collidepoint(mouse_pos):
                         from src.scenes.farm import FarmScene
-                        print("Chuyển về FarmScene!")
+                        print("Switching to FarmScene!")
                         self.running = False
                         farm_scene = FarmScene(self.game_state, self.screen, self.ui)
                         farm_scene.run()
 
-            # Vẽ background dựa trên thời gian
             if self.game_state.time_system.is_day():
                 self.screen.blit(self.day_background, (0, 0))
             else:
                 self.screen.blit(self.night_background, (0, 0))
 
-            # Vẽ menu nếu đang hiển thị
             if self.show_menu:
                 self.screen.blit(self.menu_image, (self.menu_x, self.menu_y))
-                # Vẽ nút "Thoát" trên menu
-                self.screen.blit(self.exit_button_bg, (self.exit_button_rect.x, self.exit_button_rect.y))
-                self.screen.blit(self.exit_button_text, (self.exit_button_rect.x + 5, self.exit_button_rect.y + 5))
+                self.exit_button_hover = self.exit_button_rect.collidepoint(mouse_pos)
+                exit_button_bg = pygame.Surface((60, 30), pygame.SRCALPHA)
+                exit_color = (150, 150, 150) if self.exit_button_hover else (100, 100, 100)
+                pygame.draw.rect(exit_button_bg, exit_color, (0, 0, 60, 30), border_radius=5)
+                pygame.draw.rect(exit_button_bg, (255, 255, 255), (0, 0, 60, 30), 2, border_radius=5)
+                self.screen.blit(exit_button_bg, (self.exit_button_rect.x, self.exit_button_rect.y))
+                exit_text_rect = self.exit_button_text.get_rect(center=self.exit_button_rect.center)
+                self.screen.blit(self.exit_button_text, exit_text_rect)
 
-            # Hiển thị tooltip cho các khu vực tương tác
             if not self.show_menu and not self.show_message and not (self.ui.show_map or self.ui.show_inventory):
-                for rect, name in [(self.farmer_trader_rect, "farmer_trader"),
-                                   (self.fisher_trader_rect, "fisher_trader")]:
+                for rect, name in [(self.farmer_trader_rect, "farmer_trader"), (self.fisher_trader_rect, "fisher_trader")]:
                     if rect.collidepoint(mouse_pos):
+                        tooltip_text = self.tooltips[name]
+                        tooltip_w = tooltip_text.get_width() + 16
+                        tooltip_h = tooltip_text.get_height() + 16
+                        tooltip_bg = pygame.Surface((tooltip_w, tooltip_h), pygame.SRCALPHA)
+                        pygame.draw.rect(tooltip_bg, (50, 50, 50, 220), (0, 0, tooltip_w, tooltip_h), border_radius=5)
+                        pygame.draw.rect(tooltip_bg, (255, 255, 255), (0, 0, tooltip_w, tooltip_h), 2, border_radius=5)
                         tooltip_x = rect.x
-                        tooltip_y = rect.y - self.tooltip_bg.get_height() - 5
-                        self.screen.blit(self.tooltip_bg, (tooltip_x, tooltip_y))
-                        self.screen.blit(self.tooltips[name], (tooltip_x + 5, tooltip_y + 5))
+                        tooltip_y = rect.y - tooltip_h - 5
+                        if tooltip_x + tooltip_w > SCREEN_WIDTH - 10:
+                            tooltip_x = SCREEN_WIDTH - tooltip_w - 10
+                        if tooltip_y < 10:
+                            tooltip_y = rect.y + rect.height + 5
+                        self.screen.blit(tooltip_bg, (tooltip_x, tooltip_y))
+                        self.screen.blit(tooltip_text, (tooltip_x + 8, tooltip_y + 8))
 
-            # Hiển thị tooltip cho các ô vuông trong menu
             if self.show_menu and not self.show_message and not (self.ui.show_map or self.ui.show_inventory):
-                # Tooltip cho nút "Thoát"
                 if self.exit_button_rect.collidepoint(mouse_pos):
+                    tooltip_text = self.tooltips["exit_menu"]
+                    tooltip_w = tooltip_text.get_width() + 16
+                    tooltip_h = tooltip_text.get_height() + 16
+                    tooltip_bg = pygame.Surface((tooltip_w, tooltip_h), pygame.SRCALPHA)
+                    pygame.draw.rect(tooltip_bg, (50, 50, 50, 220), (0, 0, tooltip_w, tooltip_h), border_radius=5)
+                    pygame.draw.rect(tooltip_bg, (255, 255, 255), (0, 0, tooltip_w, tooltip_h), 2, border_radius=5)
                     tooltip_x = self.exit_button_rect.x
-                    tooltip_y = self.exit_button_rect.y - self.tooltip_bg.get_height() - 5
-                    self.screen.blit(self.tooltip_bg, (tooltip_x, tooltip_y))
-                    self.screen.blit(self.tooltips["exit_menu"], (tooltip_x + 5, tooltip_y + 5))
+                    tooltip_y = self.exit_button_rect.y - tooltip_h - 5
+                    if tooltip_x + tooltip_w > SCREEN_WIDTH - 10:
+                        tooltip_x = SCREEN_WIDTH - tooltip_w - 10
+                    if tooltip_y < 10:
+                        tooltip_y = self.exit_button_rect.y + self.exit_button_rect.height + 5
+                    self.screen.blit(tooltip_bg, (tooltip_x, tooltip_y))
+                    self.screen.blit(tooltip_text, (tooltip_x + 8, tooltip_y + 8))
 
                 if self.current_menu in ["menubanhat", "menubanrau", "menumuadat"]:
-                    for rect, name in [(self.buy_seed_rect, "buy_seed"),
-                                       (self.sell_crop_rect, "sell_crop"),
-                                       (self.buy_farm_rect, "buy_farm")]:
+                    for rect, name in [(self.buy_seed_rect, "buy_seed"), (self.sell_crop_rect, "sell_crop"), (self.buy_farm_rect, "buy_farm")]:
                         if rect.collidepoint(mouse_pos):
+                            tooltip_text = self.tooltips[name]
+                            tooltip_w = tooltip_text.get_width() + 16
+                            tooltip_h = tooltip_text.get_height() + 16
+                            tooltip_bg = pygame.Surface((tooltip_w, tooltip_h), pygame.SRCALPHA)
+                            pygame.draw.rect(tooltip_bg, (50, 50, 50, 220), (0, 0, tooltip_w, tooltip_h), border_radius=5)
+                            pygame.draw.rect(tooltip_bg, (255, 255, 255), (0, 0, tooltip_w, tooltip_h), 2, border_radius=5)
                             tooltip_x = rect.x
-                            tooltip_y = rect.y - self.tooltip_bg.get_height() - 5
-                            self.screen.blit(self.tooltip_bg, (tooltip_x, tooltip_y))
-                            self.screen.blit(self.tooltips[name], (tooltip_x + 5, tooltip_y + 5))
+                            tooltip_y = rect.y - tooltip_h - 5
+                            if tooltip_x + tooltip_w > SCREEN_WIDTH - 10:
+                                tooltip_x = SCREEN_WIDTH - tooltip_w - 10
+                            if tooltip_y < 10:
+                                tooltip_y = rect.y + rect.height + 5
+                            self.screen.blit(tooltip_bg, (tooltip_x, tooltip_y))
+                            self.screen.blit(tooltip_text, (tooltip_x + 8, tooltip_y + 8))
+
                 elif self.current_menu in ["menubanca", "menucancau"]:
-                    for rect, name in [(self.sell_fish_rect, "sell_fish"),
-                                       (self.buy_rod_rect, "buy_rod")]:
+                    for rect, name in [(self.sell_fish_rect, "sell_fish"), (self.buy_rod_rect, "buy_rod")]:
                         if rect.collidepoint(mouse_pos):
+                            tooltip_text = self.tooltips[name]
+                            tooltip_w = tooltip_text.get_width() + 16
+                            tooltip_h = tooltip_text.get_height() + 16
+                            tooltip_bg = pygame.Surface((tooltip_w, tooltip_h), pygame.SRCALPHA)
+                            pygame.draw.rect(tooltip_bg, (50, 50, 50, 220), (0, 0, tooltip_w, tooltip_h), border_radius=5)
+                            pygame.draw.rect(tooltip_bg, (255, 255, 255), (0, 0, tooltip_w, tooltip_h), 2, border_radius=5)
                             tooltip_x = rect.x
-                            tooltip_y = rect.y - self.tooltip_bg.get_height() - 5
-                            self.screen.blit(self.tooltip_bg, (tooltip_x, tooltip_y))
-                            self.screen.blit(self.tooltips[name], (tooltip_x + 5, tooltip_y + 5))
+                            tooltip_y = rect.y - tooltip_h - 5
+                            if tooltip_x + tooltip_w > SCREEN_WIDTH - 10:
+                                tooltip_x = SCREEN_WIDTH - tooltip_w - 10
+                            if tooltip_y < 10:
+                                tooltip_y = rect.y + rect.height + 5
+                            self.screen.blit(tooltip_bg, (tooltip_x, tooltip_y))
+                            self.screen.blit(tooltip_text, (tooltip_x + 8, tooltip_y + 8))
 
                 if self.current_menu == "menubanhat":
-                    for rect, name in [(self.cabbage_seed_rect, "cabbage_seed"),
-                                       (self.pumpkin_seed_rect, "pumpkin_seed"),
-                                       (self.carrot_seed_rect, "carrot_seed"),
-                                       (self.beetroot_seed_rect, "beetroot_seed"),
-                                       (self.rare_herb_seed_rect, "rare_herb_seed"),
-                                       (self.energy_herb_seed_rect, "energy_herb_seed")]:
+                    for rect, name in [(self.cabbage_seed_rect, "cabbage_seed"), (self.pumpkin_seed_rect, "pumpkin_seed"),
+                                       (self.carrot_seed_rect, "carrot_seed"), (self.beetroot_seed_rect, "beetroot_seed"),
+                                       (self.rare_herb_seed_rect, "rare_herb_seed"), (self.energy_herb_seed_rect, "energy_herb_seed")]:
                         if rect.collidepoint(mouse_pos):
+                            tooltip_text = self.tooltips[name]
+                            tooltip_w = tooltip_text.get_width() + 16
+                            tooltip_h = tooltip_text.get_height() + 16
+                            tooltip_bg = pygame.Surface((tooltip_w, tooltip_h), pygame.SRCALPHA)
+                            pygame.draw.rect(tooltip_bg, (50, 50, 50, 220), (0, 0, tooltip_w, tooltip_h), border_radius=5)
+                            pygame.draw.rect(tooltip_bg, (255, 255, 255), (0, 0, tooltip_w, tooltip_h), 2, border_radius=5)
                             tooltip_x = rect.x
-                            tooltip_y = rect.y - self.tooltip_bg.get_height() - 5
-                            self.screen.blit(self.tooltip_bg, (tooltip_x, tooltip_y))
-                            self.screen.blit(self.tooltips[name], (tooltip_x + 5, tooltip_y + 5))
+                            tooltip_y = rect.y - tooltip_h - 5
+                            if tooltip_x + tooltip_w > SCREEN_WIDTH - 10:
+                                tooltip_x = SCREEN_WIDTH - tooltip_w - 10
+                            if tooltip_y < 10:
+                                tooltip_y = rect.y + rect.height + 5
+                            self.screen.blit(tooltip_bg, (tooltip_x, tooltip_y))
+                            self.screen.blit(tooltip_text, (tooltip_x + 8, tooltip_y + 8))
 
                 if self.current_menu == "menubanrau":
-                    for rect, name in [(self.cabbage_crop_rect, "cabbage_crop"),
-                                       (self.pumpkin_crop_rect, "pumpkin_crop"),
-                                       (self.carrot_crop_rect, "carrot_crop"),
-                                       (self.beetroot_crop_rect, "beetroot_crop"),
-                                       (self.rare_herb_rect, "rare_herb"),
-                                       (self.energy_herb_rect, "energy_herb")]:
+                    for rect, name in [(self.cabbage_crop_rect, "cabbage_crop"), (self.pumpkin_crop_rect, "pumpkin_crop"),
+                                       (self.carrot_crop_rect, "carrot_crop"), (self.beetroot_crop_rect, "beetroot_crop"),
+                                       (self.rare_herb_rect, "rare_herb"), (self.energy_herb_rect, "energy_herb")]:
                         if rect.collidepoint(mouse_pos):
+                            tooltip_text = self.tooltips[name]
+                            tooltip_w = tooltip_text.get_width() + 16
+                            tooltip_h = tooltip_text.get_height() + 16
+                            tooltip_bg = pygame.Surface((tooltip_w, tooltip_h), pygame.SRCALPHA)
+                            pygame.draw.rect(tooltip_bg, (50, 50, 50, 220), (0, 0, tooltip_w, tooltip_h), border_radius=5)
+                            pygame.draw.rect(tooltip_bg, (255, 255, 255), (0, 0, tooltip_w, tooltip_h), 2, border_radius=5)
                             tooltip_x = rect.x
-                            tooltip_y = rect.y - self.tooltip_bg.get_height() - 5
-                            self.screen.blit(self.tooltip_bg, (tooltip_x, tooltip_y))
-                            self.screen.blit(self.tooltips[name], (tooltip_x + 5, tooltip_y + 5))
+                            tooltip_y = rect.y - tooltip_h - 5
+                            if tooltip_x + tooltip_w > SCREEN_WIDTH - 10:
+                                tooltip_x = SCREEN_WIDTH - tooltip_w - 10
+                            if tooltip_y < 10:
+                                tooltip_y = rect.y + rect.height + 5
+                            self.screen.blit(tooltip_bg, (tooltip_x, tooltip_y))
+                            self.screen.blit(tooltip_text, (tooltip_x + 8, tooltip_y + 8))
 
                 if self.current_menu == "menubanca":
-                    for rect, name in [(self.carophi_rect, "tilapia"),
-                                       (self.cachep_rect, "carp"),
-                                       (self.catre_rect, "catfish"),
-                                       (self.cachinh_rect, "eel"),
-                                       (self.cama_rect, "ghost_fish")]:
+                    for rect, name in [(self.carophi_rect, "tilapia"), (self.cachep_rect, "carp"),
+                                       (self.catre_rect, "catfish"), (self.cachinh_rect, "eel"), (self.cama_rect, "ghost_fish")]:
                         if rect.collidepoint(mouse_pos):
+                            tooltip_text = self.tooltips[name]
+                            tooltip_w = tooltip_text.get_width() + 16
+                            tooltip_h = tooltip_text.get_height() + 16
+                            tooltip_bg = pygame.Surface((tooltip_w, tooltip_h), pygame.SRCALPHA)
+                            pygame.draw.rect(tooltip_bg, (50, 50, 50, 220), (0, 0, tooltip_w, tooltip_h), border_radius=5)
+                            pygame.draw.rect(tooltip_bg, (255, 255, 255), (0, 0, tooltip_w, tooltip_h), 2, border_radius=5)
                             tooltip_x = rect.x
-                            tooltip_y = rect.y - self.tooltip_bg.get_height() - 5
-                            self.screen.blit(self.tooltip_bg, (tooltip_x, tooltip_y))
-                            self.screen.blit(self.tooltips[name], (tooltip_x + 5, tooltip_y + 5))
+                            tooltip_y = rect.y - tooltip_h - 5
+                            if tooltip_x + tooltip_w > SCREEN_WIDTH - 10:
+                                tooltip_x = SCREEN_WIDTH - tooltip_w - 10
+                            if tooltip_y < 10:
+                                tooltip_y = rect.y + rect.height + 5
+                            self.screen.blit(tooltip_bg, (tooltip_x, tooltip_y))
+                            self.screen.blit(tooltip_text, (tooltip_x + 8, tooltip_y + 8))
 
                 if self.current_menu == "menucancau":
-                    for rect, name in [(self.silver_rod_rect, "silver_rod"),
-                                       (self.gold_rod_rect, "gold_rod"),
+                    for rect, name in [(self.silver_rod_rect, "silver_rod"), (self.gold_rod_rect, "gold_rod"),
                                        (self.platinum_rod_rect, "platinum_rod")]:
                         if rect.collidepoint(mouse_pos):
+                            tooltip_text = self.tooltips[name]
+                            tooltip_w = tooltip_text.get_width() + 16
+                            tooltip_h = tooltip_text.get_height() + 16
+                            tooltip_bg = pygame.Surface((tooltip_w, tooltip_h), pygame.SRCALPHA)
+                            pygame.draw.rect(tooltip_bg, (50, 50, 50, 220), (0, 0, tooltip_w, tooltip_h), border_radius=5)
+                            pygame.draw.rect(tooltip_bg, (255, 255, 255), (0, 0, tooltip_w, tooltip_h), 2, border_radius=5)
                             tooltip_x = rect.x
-                            tooltip_y = rect.y - self.tooltip_bg.get_height() - 5
-                            self.screen.blit(self.tooltip_bg, (tooltip_x, tooltip_y))
-                            self.screen.blit(self.tooltips[name], (tooltip_x + 5, tooltip_y + 5))
+                            tooltip_y = rect.y - tooltip_h - 5
+                            if tooltip_x + tooltip_w > SCREEN_WIDTH - 10:
+                                tooltip_x = SCREEN_WIDTH - tooltip_w - 10
+                            if tooltip_y < 10:
+                                tooltip_y = rect.y + rect.height + 5
+                            self.screen.blit(tooltip_bg, (tooltip_x, tooltip_y))
+                            self.screen.blit(tooltip_text, (tooltip_x + 8, tooltip_y + 8))
 
                 if self.current_menu == "menumuadat":
-                    for rect, name in [(self.expand_2_to_4_rect, "expand_2_to_4"),
-                                       (self.expand_4_to_6_rect, "expand_4_to_6"),
+                    for rect, name in [(self.expand_2_to_4_rect, "expand_2_to_4"), (self.expand_4_to_6_rect, "expand_4_to_6"),
                                        (self.expand_6_to_8_rect, "expand_6_to_8")]:
                         if rect.collidepoint(mouse_pos):
+                            tooltip_text = self.tooltips[name]
+                            tooltip_w = tooltip_text.get_width() + 16
+                            tooltip_h = tooltip_text.get_height() + 16
+                            tooltip_bg = pygame.Surface((tooltip_w, tooltip_h), pygame.SRCALPHA)
+                            pygame.draw.rect(tooltip_bg, (50, 50, 50, 220), (0, 0, tooltip_w, tooltip_h), border_radius=5)
+                            pygame.draw.rect(tooltip_bg, (255, 255, 255), (0, 0, tooltip_w, tooltip_h), 2, border_radius=5)
                             tooltip_x = rect.x
-                            tooltip_y = rect.y - self.tooltip_bg.get_height() - 5
-                            self.screen.blit(self.tooltip_bg, (tooltip_x, tooltip_y))
-                            self.screen.blit(self.tooltips[name], (tooltip_x + 5, tooltip_y + 5))
+                            tooltip_y = rect.y - tooltip_h - 5
+                            if tooltip_x + tooltip_w > SCREEN_WIDTH - 10:
+                                tooltip_x = SCREEN_WIDTH - tooltip_w - 10
+                            if tooltip_y < 10:
+                                tooltip_y = rect.y + rect.height + 5
+                            self.screen.blit(tooltip_bg, (tooltip_x, tooltip_y))
+                            self.screen.blit(tooltip_text, (tooltip_x + 8, tooltip_y + 8))
 
-            # Hiển thị thông báo nếu có
             if self.show_message:
-                message_x = SCREEN_WIDTH // 2 - self.message_bg.get_width() // 2
-                message_y = SCREEN_HEIGHT // 2 - self.message_bg.get_height() // 2
+                message_w = max(400, self.message_text.get_width() + 20)
+                message_x = SCREEN_WIDTH // 2 - message_w // 2
+                message_y = SCREEN_HEIGHT // 2 - 150 // 2
                 self.screen.blit(self.message_bg, (message_x, message_y))
-                self.screen.blit(self.message_text, (message_x + 20, message_y + 20))
-                self.screen.blit(self.ok_button_bg, (self.ok_button_rect.x, self.ok_button_rect.y))
-                self.screen.blit(self.ok_button_text, (self.ok_button_rect.x + 15, self.ok_button_rect.y + 5))
+                text_rect = self.message_text.get_rect(center=(message_x + message_w // 2, message_y + 50))
+                self.screen.blit(self.message_text, text_rect)
+                self.ok_button_hover = self.ok_button_rect.collidepoint(mouse_pos)
+                ok_button_bg = pygame.Surface((100, 40), pygame.SRCALPHA)
+                ok_color = (150, 150, 150) if self.ok_button_hover else (100, 100, 100)
+                pygame.draw.rect(ok_button_bg, ok_color, (0, 0, 100, 40), border_radius=5)
+                pygame.draw.rect(ok_button_bg, (255, 255, 255), (0, 0, 100, 40), 2, border_radius=5)
+                self.screen.blit(ok_button_bg, (self.ok_button_rect.x, self.ok_button_rect.y))
+                ok_text_rect = self.ok_button_text.get_rect(center=self.ok_button_rect.center)
+                self.screen.blit(self.ok_button_text, ok_text_rect)
 
             if self.notification_timer > 0:
                 current_time = pygame.time.get_ticks()
                 elapsed_time = current_time - self.notification_start_time
                 if elapsed_time < self.notification_timer:
-                    # Tính toán vị trí giữa màn hình
+                    alpha = max(0, self.notification_alpha * (1 - elapsed_time / self.notification_timer))
                     text_rect = self.notification_surface.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 4))
-                    # Vẽ nền tối mờ cho thông báo
                     bg_surface = pygame.Surface((text_rect.width + 20, text_rect.height + 10), pygame.SRCALPHA)
-                    bg_surface.fill((0, 0, 0, 180))  # Nền đen mờ
+                    pygame.draw.rect(bg_surface, (0, 0, 0, int(alpha)), (0, 0, text_rect.width + 20, text_rect.height + 10), border_radius=5)
+                    pygame.draw.rect(bg_surface, (255, 255, 255, int(alpha)), (0, 0, text_rect.width + 20, text_rect.height + 10), 2, border_radius=5)
                     self.screen.blit(bg_surface, (text_rect.x - 10, text_rect.y - 5))
-                    # Vẽ văn bản
-                    self.screen.blit(self.notification_surface, text_rect)
+                    notification_surface = self.notification_surface.copy()
+                    notification_surface.set_alpha(int(alpha))
+                    self.screen.blit(notification_surface, text_rect)
                 else:
-                    self.notification_timer = 0  # Tắt thông báo sau khi hết thời gian
+                    self.notification_timer = 0
 
-            # Hiển thị tọa độ chuột
-            mouse_pos_text = self.mouse_pos_font.render(f"Mouse: {mouse_pos}", True, WHITE)
-            mouse_pos_bg = pygame.Surface((150, 25))
-            mouse_pos_bg.fill((50, 50, 50))
-            self.screen.blit(mouse_pos_bg, (10, 10))
-            self.screen.blit(mouse_pos_text, (15, 15))
+            self.back_button_hover = self.back_button_rect.collidepoint(mouse_pos)
+            back_button_bg = pygame.Surface((150, 40), pygame.SRCALPHA)
+            back_color = (80, 80, 80, 220) if self.back_button_hover else (50, 50, 50, 220)
+            pygame.draw.rect(back_button_bg, back_color, (0, 0, 150, 40), border_radius=5)
+            pygame.draw.rect(back_button_bg, (255, 255, 255), (0, 0, 150, 40), 2, border_radius=5)
+            self.screen.blit(back_button_bg, (self.back_button_rect.x, self.back_button_rect.y))
+            back_text_rect = self.back_button_text.get_rect(center=self.back_button_rect.center)
+            self.screen.blit(self.back_button_text, back_text_rect)
 
-            # Hiển thị số tiền hiện tại
-            money_text = self.mouse_pos_font.render(f"Money: {self.game_state.player.money}", True, WHITE)
-            money_bg = pygame.Surface((150, 25))
-            money_bg.fill((50, 50, 50))
-            self.screen.blit(money_bg, (10, 40))
-            self.screen.blit(money_text, (15, 45))
+            # Remove mouse position display for cleaner UI
+            money_text = self.button_font.render(f"Money: {self.game_state.player.money}", True, WHITE)
+            money_bg = pygame.Surface((150, 25), pygame.SRCALPHA)
+            pygame.draw.rect(money_bg, (50, 50, 50, 220), (0, 0, 150, 25), border_radius=5)
+            self.screen.blit(money_bg, (10, 10))
+            self.screen.blit(money_text, (15, 15))
 
-            # Hiển thị thời gian hiện tại (ngày/đêm và thời gian còn lại)
-            time_text = self.mouse_pos_font.render(
+            time_text = self.button_font.render(
                 f"Day: {self.game_state.time_system.current_day} | {self.game_state.time_system.get_time_of_day()} | Time Left: {self.game_state.time_system.format_time(self.game_state.time_system.get_remaining_time())}",
                 True, WHITE
             )
-            time_bg = pygame.Surface((300, 25))
-            time_bg.fill((50, 50, 50))
-            self.screen.blit(time_bg, (10, 70))
-            self.screen.blit(time_text, (15, 75))
+            time_bg = pygame.Surface((300, 25), pygame.SRCALPHA)
+            pygame.draw.rect(time_bg, (50, 50, 50, 220), (0, 0, 300, 25), border_radius=5)
+            self.screen.blit(time_bg, (10, 40))
+            self.screen.blit(time_text, (15, 45))
 
-            # Vẽ UI (map, inventory, v.v.)
             self.ui.draw()
-
             pygame.display.flip()
 
     def handle_click(self, pos):
-        # Kiểm tra nhấp vào ô "Thương nhân nông trại" (chỉ khi menu không hiển thị)
         if not self.show_menu and self.farmer_trader_rect.collidepoint(pos):
+            self.game_state.sound_manager.play_sound('click')
             self.show_menu = True
-            self.current_menu = "menubanhat"  # Mở menu mua hạt giống mặc định
+            self.current_menu = "menubanhat"
             self.update_menu_image()
-        # Kiểm tra nhấp vào ô "Thương nhân câu cá" (chỉ khi menu không hiển thị)
+
         elif not self.show_menu and self.fisher_trader_rect.collidepoint(pos):
+            self.game_state.sound_manager.play_sound('click')
             self.show_menu = True
-            self.current_menu = "menubanca"  # Mở menu bán cá mặc định
+            self.current_menu = "menubanca"
             self.update_menu_image()
-        # Nếu menu đang hiển thị, xử lý nhấp chuột trên menu
+
         elif self.show_menu:
-            # Xử lý nhấp vào nút "Thoát"
             if self.exit_button_rect.collidepoint(pos):
                 self.show_menu = False
-                print("Đã thoát menu!")
+                print("Menu closed!")
                 return
 
-            # Xử lý menu nông trại
             if self.current_menu in ["menubanhat", "menubanrau", "menumuadat"]:
                 if self.buy_seed_rect.collidepoint(pos):
-                    print("Bán nông sản")
+                    print("Sell crops")
                     self.current_menu = "menubanrau"
                     self.update_menu_image()
                 elif self.sell_crop_rect.collidepoint(pos):
-                    print("Mua hạt giống")
+                    print("Buy seeds")
                     self.current_menu = "menubanhat"
                     self.update_menu_image()
                 elif self.buy_farm_rect.collidepoint(pos):
-                    print("Mua đất")
+                    print("Buy land")
                     self.current_menu = "menumuadat"
                     self.update_menu_image()
-            # Xử lý menu câu cá
+
             elif self.current_menu in ["menubanca", "menucancau"]:
                 if self.sell_fish_rect.collidepoint(pos):
-                    print("Bán cá")
+                    print("Sell fish")
                     self.current_menu = "menubanca"
                     self.update_menu_image()
                 elif self.buy_rod_rect.collidepoint(pos):
-                    print("Mua cần câu")
+                    print("Buy fishing rod")
                     self.current_menu = "menucancau"
                     self.update_menu_image()
 
-            # Xử lý nhấp chuột cho các loại hạt giống (chỉ khi ở menubanhat)
             if self.current_menu == "menubanhat":
                 if self.cabbage_seed_rect.collidepoint(pos):
                     if self.game_state.player.spend_money(3):
                         self.game_state.player.inventory.add_item("cabbage_seed", 1)
-                        self.show_notification("Đã mua hạt bắp cải - 3 đồng!", success=True)
+                        self.show_notification("Purchased Cabbage Seed - 3 coins!", success=True)
                     else:
-                        self.show_notification("Không đủ tiền!", success=False)
+                        self.show_notification("Insufficient funds!", success=False)
                 elif self.pumpkin_seed_rect.collidepoint(pos):
                     if self.game_state.player.spend_money(6):
                         self.game_state.player.inventory.add_item("pumpkin_seed", 1)
-                        self.show_notification("Đã mua hạt bí đỏ - 6 đồng!", success=True)
+                        self.show_notification("Purchased Pumpkin Seed - 6 coins!", success=True)
                     else:
-                        self.show_notification("Không đủ tiền!", success=False)
+                        self.show_notification("Insufficient funds!", success=False)
                 elif self.carrot_seed_rect.collidepoint(pos):
                     if self.game_state.player.spend_money(2):
                         self.game_state.player.inventory.add_item("carrot_seed", 1)
-                        self.show_notification("Đã mua hạt cà rốt - 2 đồng!", success=True)
+                        self.show_notification("Purchased Carrot Seed - 2 coins!", success=True)
                     else:
-                        self.show_notification("Không đủ tiền!", success=False)
+                        self.show_notification("Insufficient funds!", success=False)
                 elif self.beetroot_seed_rect.collidepoint(pos):
                     if self.game_state.player.spend_money(5):
                         self.game_state.player.inventory.add_item("beetroot_seed", 1)
-                        self.show_notification("Đã mua hạt củ dền - 5 đồng!", success=True)
+                        self.show_notification("Purchased Beetroot Seed - 5 coins!", success=True)
                     else:
-                        self.show_notification("Không đủ tiền!", success=False)
+                        self.show_notification("Insufficient funds!", success=False)
                 elif self.rare_herb_seed_rect.collidepoint(pos):
                     if self.game_state.player.inventory.has_item("frog", 5):
                         self.game_state.player.inventory.remove_item("frog", 5)
                         self.game_state.player.inventory.add_item("rare_herb_seed", 1)
-                        self.show_notification("Đã mua hạt thảo mộc hiếm - 5 ếch!", success=True)
+                        self.show_notification("Purchased Rare Herb Seed - 5 frogs!", success=True)
                     else:
-                        self.show_notification("Không đủ ếch!", success=False)
+                        self.show_notification("Not enough frogs!", success=False)
                 elif self.energy_herb_seed_rect.collidepoint(pos):
                     if self.game_state.player.inventory.has_item("frog", 3):
                         self.game_state.player.inventory.remove_item("frog", 3)
                         self.game_state.player.inventory.add_item("energy_herb_seed", 1)
-                        self.show_notification("Đã mua hạt thảo mộc năng lượng - 3 ếch!", success=True)
+                        self.show_notification("Purchased Energy Herb Seed - 3 frogs!", success=True)
                     else:
-                        self.show_notification("Không đủ ếch!", success=False)
+                        self.show_notification("Not enough frogs!", success=False)
 
-            # Xử lý nhấp chuột cho các loại nông sản (chỉ khi ở menubanrau)
             elif self.current_menu == "menubanrau":
                 if self.cabbage_crop_rect.collidepoint(pos):
                     if self.game_state.player.inventory.has_item("cabbage", 1):
                         self.game_state.player.inventory.remove_item("cabbage", 1)
                         self.game_state.player.add_money(4)
-                        self.show_notification("Đã bán bắp cải, nhận 4 đồng!", success=True)
+                        self.show_notification("Sold Cabbage, received 4 coins!", success=True)
                     else:
-                        self.show_notification("Không có bắp cải để bán!", success=False)
+                        self.show_notification("No Cabbage to sell!", success=False)
                 elif self.pumpkin_crop_rect.collidepoint(pos):
                     if self.game_state.player.inventory.has_item("pumpkin", 1):
                         self.game_state.player.inventory.remove_item("pumpkin", 1)
                         self.game_state.player.add_money(9)
-                        self.show_notification("Đã bán bí đỏ, nhận 9 đồng!", success=True)
+                        self.show_notification("Sold Pumpkin, received 9 coins!", success=True)
                     else:
-                        self.show_notification("Không có bí đỏ để bán!", success=False)
+                        self.show_notification("No Pumpkin to sell!", success=False)
                 elif self.carrot_crop_rect.collidepoint(pos):
                     if self.game_state.player.inventory.has_item("carrot", 1):
                         self.game_state.player.inventory.remove_item("carrot", 1)
                         self.game_state.player.add_money(3)
-                        self.show_notification("Đã bán cà rốt, nhận 3 đồng!", success=True)
+                        self.show_notification("Sold Carrot, received 3 coins!", success=True)
                     else:
-                        self.show_notification("Không có cà rốt để bán!", success=False)
+                        self.show_notification("No Carrot to sell!", success=False)
                 elif self.beetroot_crop_rect.collidepoint(pos):
                     if self.game_state.player.inventory.has_item("beetroot", 1):
                         self.game_state.player.inventory.remove_item("beetroot", 1)
                         self.game_state.player.add_money(7)
-                        self.show_notification("Đã bán củ dền, nhận 7 đồng!", success=True)
+                        self.show_notification("Sold Beetroot, received 7 coins!", success=True)
                     else:
-                        self.show_notification("Không có củ dền để bán!", success=False)
+                        self.show_notification("No Beetroot to sell!", success=False)
                 elif self.rare_herb_rect.collidepoint(pos):
                     if self.game_state.player.inventory.has_item("rare_herb", 1):
                         self.game_state.player.inventory.remove_item("rare_herb", 1)
                         self.game_state.player.add_money(15)
-                        self.show_notification("Đã bán thảo mộc hiếm, nhận 15 đồng!", success=True)
+                        self.show_notification("Sold Rare Herb, received 15 coins!", success=True)
                     else:
-                        self.show_notification("Không có thảo mộc hiếm để bán!", success=False)
+                        self.show_notification("No Rare Herb to sell!", success=False)
                 elif self.energy_herb_rect.collidepoint(pos):
                     if self.game_state.player.inventory.has_item("energy_herb", 1):
                         self.game_state.player.inventory.remove_item("energy_herb", 1)
                         self.game_state.player.add_money(10)
-                        self.show_notification("Đã bán thảo mộc năng lượng, nhận 10 đồng!", success=True)
+                        self.show_notification("Sold Energy Herb, received 10 coins!", success=True)
                     else:
-                        self.show_notification("Không có thảo mộc năng lượng để bán!", success=False)
+                        self.show_notification("No Energy Herb to sell!", success=False)
 
-            # Xử lý nhấp chuột cho các loại cá (chỉ khi ở menubanca)
             elif self.current_menu == "menubanca":
                 if self.carophi_rect.collidepoint(pos):
                     if self.game_state.player.inventory.has_item("tilapia", 1):
                         self.game_state.player.inventory.remove_item("tilapia", 1)
                         self.game_state.player.add_money(5)
-                        self.show_notification("Đã bán cá rô phi, nhận 5 đồng!", success=True)
+                        self.show_notification("Sold Tilapia, received 5 coins!", success=True)
                     else:
-                        self.show_notification("Không có cá rô phi để bán!", success=False)
+                        self.show_notification("No Tilapia to sell!", success=False)
                 elif self.cachep_rect.collidepoint(pos):
                     if self.game_state.player.inventory.has_item("carp", 1):
                         self.game_state.player.inventory.remove_item("carp", 1)
                         self.game_state.player.add_money(7)
-                        self.show_notification("Đã bán cá chép, nhận 7 đồng!", success=True)
+                        self.show_notification("Sold Carp, received 7 coins!", success=True)
                     else:
-                        self.show_notification("Không có cá chép để bán!", success=False)
+                        self.show_notification("No Carp to sell!", success=False)
                 elif self.catre_rect.collidepoint(pos):
                     if self.game_state.player.inventory.has_item("catfish", 1):
                         self.game_state.player.inventory.remove_item("catfish", 1)
                         self.game_state.player.add_money(10)
-                        self.show_notification("Đã bán cá trê, nhận 10 đồng!", success=True)
+                        self.show_notification("Sold Catfish, received 10 coins!", success=True)
                     else:
-                        self.show_notification("Không có cá trê để bán!", success=False)
+                        self.show_notification("No Catfish to sell!", success=False)
                 elif self.cachinh_rect.collidepoint(pos):
                     if self.game_state.player.inventory.has_item("eel", 1):
                         self.game_state.player.inventory.remove_item("eel", 1)
                         self.game_state.player.add_money(15)
-                        self.show_notification("Đã bán cá chình, nhận 15 đồng!", success=True)
+                        self.show_notification("Sold Eel, received 15 coins!", success=True)
                     else:
-                        self.show_notification("Không có cá chình để bán!", success=False)
+                        self.show_notification("No Eel to sell!", success=False)
                 elif self.cama_rect.collidepoint(pos):
                     if self.game_state.player.inventory.has_item("ghost_fish", 1):
                         self.game_state.player.inventory.remove_item("ghost_fish", 1)
                         self.game_state.player.add_money(20)
-                        self.show_notification("Đã bán cá ma, nhận 20 đồng!", success=True)
+                        self.show_notification("Sold Ghost Fish, received 20 coins!", success=True)
                     else:
-                        self.show_notification("Không có cá ma để bán!", success=False)
+                        self.show_notification("No Ghost Fish to sell!", success=False)
 
-            # Xử lý nhấp chuột cho các loại cần câu (chỉ khi ở menucancau)
             elif self.current_menu == "menucancau":
                 if self.silver_rod_rect.collidepoint(pos):
                     if self.game_state.player.spend_money(20):
                         self.game_state.player.upgrade_rod("silver")
-                        self.show_notification("Đã mua cần câu bạc - 20 đồng!", success=True)
+                        self.show_notification("Purchased Silver Rod - 20 coins!", success=True)
                     else:
-                        self.show_notification("Không đủ tiền!", success=False)
+                        self.show_notification("Insufficient funds!", success=False)
                 elif self.gold_rod_rect.collidepoint(pos):
                     if self.game_state.player.spend_money(50):
                         self.game_state.player.upgrade_rod("gold")
-                        self.show_notification("Đã mua cần câu vàng - 50 đồng!", success=True)
+                        self.show_notification("Purchased Gold Rod - 50 coins!", success=True)
                     else:
-                        self.show_notification("Không đủ tiền!", success=False)
+                        self.show_notification("Insufficient funds!", success=False)
                 elif self.platinum_rod_rect.collidepoint(pos):
                     if self.game_state.player.spend_money(100):
                         self.game_state.player.upgrade_rod("diamond")
-                        self.show_notification("Đã mua cần câu bạch kim - 100 đồng!", success=True)
+                        self.show_notification("Purchased Platinum Rod - 100 coins!", success=True)
                     else:
-                        self.show_notification("Không đủ tiền!", success=False)
+                        self.show_notification("Insufficient funds!", success=False)
 
-            # Xử lý nhấp chuột cho các tùy chọn mua đất (chỉ khi ở menumuadat)
             elif self.current_menu == "menumuadat":
-                current_garden_slots = self.game_state.player.garden_slots  # Lấy số ô đất hiện tại
+                current_garden_slots = self.game_state.player.garden_slots
 
                 if self.expand_2_to_4_rect.collidepoint(pos):
                     if current_garden_slots >= 4:
-                        self.show_notification("Bạn đã có 4 ô đất!", success=False)
+                        self.show_notification("You already have 4 slots!", success=False)
                     elif current_garden_slots != 2:
-                        self.show_notification("Bạn phải có 2 ô đất để mở rộng lên 4 ô!", success=False)
+                        self.show_notification("You need 2 slots to expand to 4!", success=False)
                     else:
                         if self.game_state.player.upgrade_garden(4):
-                            self.show_notification("Đã mở rộng vườn lên 4 ô - 18 đồng!", success=True)
+                            self.show_notification("Expanded garden to 4 slots - 18 coins!", success=True)
                         else:
-                            self.show_notification("Không đủ tiền!", success=False)
+                            self.show_notification("Insufficient funds!", success=False)
 
                 elif self.expand_4_to_6_rect.collidepoint(pos):
                     if current_garden_slots >= 6:
-                        self.show_notification("Bạn đã có 6 ô đất!", success=False)
+                        self.show_notification("You already have 6 slots!", success=False)
                     elif current_garden_slots != 4:
-                        self.show_notification("Bạn phải mở rộng lên 4 ô trước!", success=False)
+                        self.show_notification("You need to expand to 4 slots first!", success=False)
                     else:
                         if self.game_state.player.upgrade_garden(6):
-                            self.show_notification("Đã mở rộng vườn lên 6 ô - 25 đồng!", success=True)
+                            self.show_notification("Expanded garden to 6 slots - 25 coins!", success=True)
                         else:
-                            self.show_notification("Không đủ tiền!", success=False)
+                            self.show_notification("Insufficient funds!", success=False)
 
                 elif self.expand_6_to_8_rect.collidepoint(pos):
                     if current_garden_slots >= 8:
-                        self.show_notification("Bạn đã có 8 ô đất!", success=False)
+                        self.show_notification("You already have 8 slots!", success=False)
                     elif current_garden_slots != 6:
-                        self.show_notification("Bạn phải mở rộng lên 6 ô trước!", success=False)
+                        self.show_notification("You need to expand to 6 slots first!", success=False)
                     else:
                         if self.game_state.player.upgrade_garden(8):
-                            self.show_notification("Đã mở rộng vườn lên 8 ô - 32 đồng!", success=True)
+                            self.show_notification("Expanded garden to 8 slots - 32 coins!", success=True)
                         else:
-                            self.show_notification("Không đủ tiền!", success=False)
+                            self.show_notification("Insufficient funds!", success=False)
 
-            # Đóng menu khi nhấp ra ngoài
             elif not self.menu_rect.collidepoint(pos):
                 self.show_menu = False
-                print("Đã thoát menu!")
+                print("Menu closed!")
 
     def update_menu_image(self):
-        """Cập nhật hình ảnh menu dựa trên current_menu."""
         try:
             self.menu_image = pygame.image.load(self.menu_images[self.current_menu]).convert_alpha()
             self.menu_image = pygame.transform.scale(self.menu_image, (387, 539))
         except FileNotFoundError:
-            print(f"Lỗi: Không tìm thấy file {self.menu_images[self.current_menu]}")
+            print(f"Error: File not found {self.menu_images[self.current_menu]}")
             self.menu_image = pygame.Surface((387, 539))
             self.menu_image.fill((255, 0, 0))
 
-        # Cập nhật lại vị trí và khu vực của menu sau khi thay đổi kích thước
         self.menu_x = (SCREEN_WIDTH - self.menu_image.get_width()) // 2
         self.menu_y = (SCREEN_HEIGHT - self.menu_image.get_height()) // 2
         self.menu_rect = pygame.Rect(self.menu_x, self.menu_y, self.menu_image.get_width(), self.menu_image.get_height())
 
-        # Cập nhật lại vị trí các ô vuông trên menu
         self.buy_seed_rect = pygame.Rect(500, 109, 95, 65)
         self.sell_crop_rect = pygame.Rect(651, 109, 95, 65)
         self.buy_farm_rect = pygame.Rect(754, 204, 50, 90)

@@ -8,15 +8,16 @@ BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))
 IMAGE_DIR = os.path.abspath(os.path.join(BASE_DIR, "assets", "images"))
 
 from src.utils.constants import SCREEN_WIDTH, SCREEN_HEIGHT, WHITE, BLACK
+from src.core.sound_manager import SoundManager
 
 # Cấu hình Inventory
 INV_COLS = 6         # Số cột trong kho đồ
 INV_ROWS = 4         # Số hàng trong kho đồ
 SLOT_WIDTH = 80      # Chiều rộng mỗi ô (slot)
 SLOT_HEIGHT = 80     # Chiều cao mỗi ô (slot)
-SLOT_MARGIN = 28      # Khoảng cách giữa các ô
+SLOT_MARGIN = 28     # Khoảng cách giữa các ô
 
-# Dictionary ánh xạ tên vật phẩm sang đường dẫn icon (chỉnh sửa đường dẫn cho phù hợp)
+# Dictionary ánh xạ tên vật phẩm sang đường dẫn icon
 item_icons = {
     "carrot_seed": os.path.join(IMAGE_DIR, "plants", "seed.png"),
     "cabbage_seed": os.path.join(IMAGE_DIR, "plants", "seed.png"),
@@ -52,6 +53,9 @@ class SettingsUI:
         self.show_inventory = False
         self.running = True
 
+        # Initialize SoundManager
+        self.sound_manager = getattr(self.game_state, 'sound_manager', SoundManager())
+
         self.screen_width, self.screen_height = self.screen.get_size()
         self.menu_width = int(self.screen_width * 0.25)
         self.menu_height = int(self.screen_height * 0.3)
@@ -63,8 +67,6 @@ class SettingsUI:
         self.map_x = (self.screen_width - self.map_width) // 2
         self.map_y = (self.screen_height - self.map_height) // 2
 
-        # self.inventory_width = int(SCREEN_WIDTH * 0.4)
-        # self.inventory_height = int(SCREEN_HEIGHT * 0.4)
         self.inventory_width = 672
         self.inventory_height = 576
         self.inventory_x = (SCREEN_WIDTH - self.inventory_width) // 2
@@ -80,6 +82,7 @@ class SettingsUI:
         self.farm_rect_rel = pygame.Rect(154, 225, 120, 100)
         self.on_farm_click = self.go_to_farm_scene
 
+        # Load icons
         self.icon_settings = pygame.image.load(os.path.join(IMAGE_DIR, "icons", "SettingBtn.png")).convert_alpha()
         self.icon_settings = pygame.transform.scale(self.icon_settings, (50, 50))
         self.icon_settings_rect = self.icon_settings.get_rect(topleft=(self.screen_width - 80, 20))
@@ -91,6 +94,12 @@ class SettingsUI:
         self.icon_inventory = pygame.image.load(os.path.join(IMAGE_DIR, "icons", "icon-tuido.png")).convert_alpha()
         self.icon_inventory = pygame.transform.scale(self.icon_inventory, (50, 50))
         self.icon_inventory_rect = self.icon_inventory.get_rect(topleft=(self.screen_width - 220, 20))
+
+        self.icon_sound = pygame.image.load(os.path.join(IMAGE_DIR, "icons", "sound_on.png")).convert_alpha()
+        self.icon_sound = pygame.transform.scale(self.icon_sound, (50, 50))
+        self.icon_sound_off = pygame.image.load(os.path.join(IMAGE_DIR, "icons", "sound_off.png")).convert_alpha()
+        self.icon_sound_off = pygame.transform.scale(self.icon_sound_off, (50, 50))
+        self.icon_sound_rect = self.icon_sound.get_rect(topleft=(self.screen_width - 290, 20))
 
         self.map_image = pygame.image.load(os.path.join(IMAGE_DIR, "backgrounds", "map.png")).convert_alpha()
         self.map_image = pygame.transform.scale(self.map_image, (self.map_width, self.map_height))
@@ -162,44 +171,39 @@ class SettingsUI:
         for slot in self.inventory_slots:
             pygame.draw.rect(self.screen, (80, 80, 80), slot, 2)
             mouse_pos = pygame.mouse.get_pos()
-        # Lấy dữ liệu inventory từ GameState (ví dụ: {"carrot_seed": 23, ...})
+        # Lấy dữ liệu inventory từ GameState
         inv_dict = self.game_state.player.inventory.items
-        # items = sorted(inv_dict.items())  # Sắp xếp theo key (có thể thay đổi thứ tự theo ý bạn)
         items = list(inv_dict.items())
         items.append(("gold", self.game_state.player.money))
         slot_index = 0
         for item, count in items:
-            # Kiểm tra nếu count là kiểu int (để bỏ qua các mục như "rods_owned" nếu là list)
             if isinstance(count, int) and slot_index < len(self.inventory_slots):
                 slot = self.inventory_slots[slot_index]
-                # Vẽ icon nếu có
                 if item in self.item_icons:
                     icon_img = self.item_icons[item]
                     icon_x = slot.x + (slot.width - icon_img.get_width()) // 2
                     icon_y = slot.y + (slot.height - icon_img.get_height()) // 2
                     self.screen.blit(icon_img, (icon_x, icon_y))
-                # Vẽ số lượng (bao gồm cả khi bằng 0)
                 count_text = self.font.render(str(count), True, WHITE)
                 self.screen.blit(count_text, (slot.x + slot.width - count_text.get_width() - 2,
                                               slot.y + slot.height - count_text.get_height() - 2))
                 if slot.collidepoint(mouse_pos):
                     tooltip_text = self.font.render(item, True, WHITE)
-                    # Vẽ tooltip phía trên slot (với một chút padding)
                     tooltip_x = slot.x
                     tooltip_y = slot.y - tooltip_text.get_height() - 4
-                    # Vẽ background cho tooltip
                     tooltip_bg = pygame.Surface((tooltip_text.get_width() + 4, tooltip_text.get_height() + 4))
                     tooltip_bg.fill((0, 0, 0))
                     self.screen.blit(tooltip_bg, (tooltip_x, tooltip_y))
                     self.screen.blit(tooltip_text, (tooltip_x + 2, tooltip_y + 2))
                 slot_index += 1
-            
 
     def draw(self):
-        # Vẽ icon UI: Settings, Map, Inventory
+        # Vẽ icon UI: Settings, Map, Inventory, Sound
         self.screen.blit(self.icon_settings, self.icon_settings_rect)
         self.screen.blit(self.icon_map, self.icon_map_rect)
         self.screen.blit(self.icon_inventory, self.icon_inventory_rect)
+        # Vẽ icon âm thanh dựa trên trạng thái
+        self.screen.blit(self.icon_sound if self.sound_manager.is_sound_enabled else self.icon_sound_off, self.icon_sound_rect)
 
         # Vẽ menu Settings nếu mở
         if self.show_menu:
@@ -232,7 +236,6 @@ class SettingsUI:
             self.back_icon_rect = self.back_icon.get_rect(topright=(self.map_x + self.map_width - 10, self.map_y + 10))
             self.screen.blit(self.back_icon, self.back_icon_rect)
 
-            # Tính toán vùng ngôi làng, ao cá và nông trại trên map
             village_rect = pygame.Rect(
                 self.map_x + self.village_rect_rel.x,
                 self.map_y + self.village_rect_rel.y,
@@ -257,10 +260,6 @@ class SettingsUI:
                 pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_HAND)
             else:
                 pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_ARROW)
-            # (Tuỳ chọn: vẽ viền debug)
-            # pygame.draw.rect(self.screen, (255, 0, 0), village_rect, 1)
-            # pygame.draw.rect(self.screen, (0, 255, 0), fish_rect, 1)
-            # pygame.draw.rect(self.screen, (0, 255, 0), farm_rect, 1)
 
         # Vẽ popup Inventory nếu mở
         if self.show_inventory:
@@ -272,20 +271,29 @@ class SettingsUI:
             pygame.quit()
             sys.exit()
         if event.type == pygame.MOUSEBUTTONDOWN:
+            # Nếu bấm icon Sound -> bật/tắt âm thanh
+            if self.icon_sound_rect.collidepoint(event.pos):
+                self.sound_manager.play_sound('click')
+                self.sound_manager.toggle_sound()
+                print(f"Sound {'enabled' if self.sound_manager.is_sound_enabled else 'disabled'}")
+                return True
             # Nếu bấm icon Settings -> bật/tắt menu Settings
             if self.icon_settings_rect.collidepoint(event.pos):
+                self.sound_manager.play_sound('click')
                 self.show_menu = not self.show_menu
                 self.show_map = False
                 self.show_inventory = False
                 return True
             # Nếu bấm icon Map -> bật/tắt popup Map
             if self.icon_map_rect.collidepoint(event.pos):
+                self.sound_manager.play_sound('click')
                 self.show_map = not self.show_map
                 self.show_menu = False
                 self.show_inventory = False
                 return True
             # Nếu bấm icon Inventory -> bật/tắt popup Inventory
             if self.icon_inventory_rect.collidepoint(event.pos):
+                self.sound_manager.play_sound('click')
                 self.show_inventory = not self.show_inventory
                 self.show_menu = False
                 self.show_map = False
@@ -302,7 +310,7 @@ class SettingsUI:
                     self.village_rect_rel.height
                 )
                 if village_rect.collidepoint(event.pos):
-                    print("Chuyển sang giao diện Làng!")
+                    print("Switching to Village Scene!")
                     self.on_village_click()
                     return True
                 fish_rect = pygame.Rect(
@@ -312,7 +320,7 @@ class SettingsUI:
                     self.fish_rect_rel.height
                 )
                 if fish_rect.collidepoint(event.pos):
-                    print("Chuyển sang giao diện Câu Cá!")
+                    print("Switching to Fishing Scene!")
                     self.on_fish_click()
                     return True
                 farm_rect = pygame.Rect(
@@ -322,7 +330,7 @@ class SettingsUI:
                     self.farm_rect_rel.height
                 )
                 if farm_rect.collidepoint(event.pos):
-                    print("Chuyển sang giao diện Farm!")
+                    print("Switching to Farm Scene!")
                     self.on_farm_click()
                     return True
                 return True
@@ -333,43 +341,38 @@ class SettingsUI:
                     return True
                 for index, slot in enumerate(self.inventory_slots):
                     if slot.collidepoint(event.pos):
-                        # Lấy danh sách các mục trong inventory theo thứ tự (sorted theo key)
                         items = list(self.game_state.player.inventory.items.items())
                         if index < len(items):
                             item, count = items[index]
-                            # Ví dụ: nếu click vào "energy_herb", tăng năng lượng
                             if item == "energy_herb" and count > 0:
-                                if(self.game_state.player.energy < 100):
-                                    self.game_state.player.energy += 20  # Tăng 20 năng lượng (điều chỉnh theo nhu cầu)
-                                    if(self.game_state.player.energy > 100):
+                                if self.game_state.player.energy < 100:
+                                    self.game_state.player.energy += 20
+                                    if self.game_state.player.energy > 100:
                                         self.game_state.player.energy = 100
                                     self.game_state.player.inventory.remove_item("energy_herb", 1)
-                                    print("Đã sử dụng Energy Herb, tăng năng lượng!")
+                                    print("Used Energy Herb, energy increased!")
                                     self.save_game_ui()
                                 else:
-                                    print("Đã đầy năng lượng")
-                            # Bạn có thể mở rộng cho các loại item khác nếu cần
+                                    print("Energy is already full!")
                             elif item == "basic_rod" and count > 0:
                                 self.game_state.player.rod_level = "wood"
-                                print("Đã sử dụng cần câu cơ bản")
+                                print("Equipped Basic Rod!")
                                 self.save_game_ui()
                             elif item == "silver_rod" and count > 0:
                                 self.game_state.player.rod_level = "silver"
-                                print("Đã sử dụng cần câu bạc")
+                                print("Equipped Silver Rod!")
                                 self.save_game_ui()
                             elif item == "gold_rod" and count > 0:
                                 self.game_state.player.rod_level = "gold"
-                                print("Đã sử dụng cần câu vàng")
+                                print("Equipped Gold Rod!")
                                 self.save_game_ui()
                             elif item == "diamond_rod" and count > 0:
                                 self.game_state.player.rod_level = "diamond"
-                                print("Đã sử dụng cần câu kim cương")
+                                print("Equipped Diamond Rod!")
                                 self.save_game_ui()
-
                             else:
                                 print("click!")
                         return True
-                # Xử lý click vào các slot (có thể mở rộng chức năng)
                 return True
             # Nếu menu Settings mở, xử lý các nút
             if self.show_menu:
@@ -380,21 +383,24 @@ class SettingsUI:
         return False
 
     def go_to_village_scene(self):
-        print("Yêu cầu chuyển sang giao diện Làng!")
+        self.sound_manager.play_sound('teleport')
+        print("Request to switch to Village Scene!")
         self.running = False
         from src.scenes.village import VillageScene
         village_scene = VillageScene(self.game_state, self.screen, self)
         village_scene.run()
 
     def go_to_fishing_scene(self):
-        print("Yêu cầu chuyển sang giao diện Câu Cá!")
+        self.sound_manager.play_sound('teleport')
+        print("Request to switch to Fishing Scene!")
         self.running = False
         from src.scenes.fishing import FishingScene
         fishing_scene = FishingScene(self.game_state, self.screen, self)
         fishing_scene.run()
 
     def go_to_farm_scene(self):
-        print("Yêu cầu chuyển sang giao diện Farm!")
+        self.sound_manager.play_sound('teleport')
+        print("Request to switch to Farm Scene!")
         self.running = False
         from src.scenes.farm import FarmScene
         farm_scene = FarmScene(self.game_state, self.screen, self)
@@ -402,15 +408,15 @@ class SettingsUI:
 
     def save_game_ui(self):
         self.game_state.save_game()
-        print("Game đã được lưu từ UI!")
+        print("Game saved from UI!")
         self.show_menu = False
 
     def main_menu_ui(self):
-        print("Quay về Main Menu...")
+        print("Returning to Main Menu...")
         self.show_menu = False
 
     def exit_game(self):
-        print("Thoát game!")
+        print("Exiting game!")
         pygame.quit()
         sys.exit()
 
