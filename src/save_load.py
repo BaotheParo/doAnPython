@@ -8,15 +8,15 @@ SAVE_DIR = "saves"
 class SaveLoad:
     @staticmethod
     def save_game(player):
-        """Lưu trạng thái game. Nếu save1.dat đã tồn tại, tự động tạo save2.dat, save3.dat,..."""
+        """Lưu trạng thái game. Nếu save_data_1.json đã tồn tại, tự động tạo save_data_2.json, save_data_3.json,..."""
         if not os.path.exists(SAVE_DIR):
             os.makedirs(SAVE_DIR)
 
-        existing_saves = [f for f in os.listdir(SAVE_DIR) if f.startswith("save") and f.endswith(".dat")]
+        existing_saves = [f for f in os.listdir(SAVE_DIR) if f.startswith("save_data_") and f.endswith(".json")]
         save_numbers = []
         for filename in existing_saves:
             try:
-                num = int(filename[4:-4])  # cắt 'save' và '.dat'
+                num = int(filename[len("save_data_"):-len(".json")])
                 save_numbers.append(num)
             except ValueError:
                 pass
@@ -26,7 +26,7 @@ class SaveLoad:
         else:
             next_save_number = 1
 
-        save_filename = f"save{next_save_number}.dat"
+        save_filename = f"save_data_{next_save_number}.json"
         save_path = os.path.join(SAVE_DIR, save_filename)
 
         save_data = {
@@ -36,13 +36,13 @@ class SaveLoad:
         }
 
         with open(save_path, "w") as file:
-            json.dump(save_data, file)
+            json.dump(save_data, file, indent=4)
 
         print(f"Game saved to {save_filename}!")
 
     @staticmethod
-    def load_game(filename="save1.dat"):
-        """Load game từ save1.dat hoặc chỉ định file khác."""
+    def load_game(filename="save_data_1.json"):
+        """Load game từ save_data_1.json hoặc file chỉ định khác."""
         save_path = os.path.join(SAVE_DIR, filename)
         if not os.path.exists(save_path):
             print(f"No save file '{filename}' found, creating a new player.")
@@ -60,10 +60,10 @@ class SaveLoad:
 
     @staticmethod
     def list_save_files():
-        """Trả về danh sách file save (*.dat)."""
+        """Trả về danh sách file save (*.json)."""
         if not os.path.exists(SAVE_DIR):
             os.makedirs(SAVE_DIR)
-        return [f for f in os.listdir(SAVE_DIR) if f.endswith(".dat")]
+        return [f for f in os.listdir(SAVE_DIR) if f.endswith(".json")]
 
     @staticmethod
     def load_selected_save(selected_filename):
@@ -85,8 +85,8 @@ class SaveLoad:
 
     @staticmethod
     def is_empty_save():
-        """Kiểm tra save1.dat có trống không."""
-        save_path = os.path.join(SAVE_DIR, "save1.dat")
+        """Kiểm tra save_data_1.json có trống không."""
+        save_path = os.path.join(SAVE_DIR, "save_data_1.json")
         if not os.path.exists(save_path):
             return True
         try:
@@ -96,10 +96,9 @@ class SaveLoad:
         except (json.JSONDecodeError, IOError):
             return True
 
-
     @staticmethod
     def reset_save():
-        """Reset save1.dat về mặc định trống."""
+        """Reset save_data_1.json về mặc định trống."""
         if not os.path.exists(SAVE_DIR):
             os.makedirs(SAVE_DIR)
 
@@ -109,28 +108,28 @@ class SaveLoad:
             "inventory": []
         }
 
-        save_path = os.path.join(SAVE_DIR, "save1.dat")
+        save_path = os.path.join(SAVE_DIR, "save_data_1.json")
         with open(save_path, "w") as file:
-            json.dump(empty_data, file)
+            json.dump(empty_data, file, indent=4)
 
-        print("Save1.dat reset to empty.")
+        print("save_data_1.json reset to empty.")
 
     @staticmethod
     def backup_save():
-        """Sao lưu save1.dat thành save2.dat, save3.dat..."""
+        """Sao lưu save_data_1.json thành save_data_2.json, save_data_3.json..."""
         if not os.path.exists(SAVE_DIR):
             os.makedirs(SAVE_DIR)
 
-        src = os.path.join(SAVE_DIR, "save1.dat")
+        src = os.path.join(SAVE_DIR, "save_data_1.json")
         if not os.path.exists(src):
-            print("No save1.dat to backup.")
+            print("No save_data_1.json to backup.")
             return
 
-        existing_saves = [f for f in os.listdir(SAVE_DIR) if f.startswith("save") and f.endswith(".dat")]
+        existing_saves = [f for f in os.listdir(SAVE_DIR) if f.startswith("save_data_") and f.endswith(".json")]
         save_numbers = []
         for filename in existing_saves:
             try:
-                num = int(filename[4:-4])
+                num = int(filename[len("save_data_"):-len(".json")])
                 save_numbers.append(num)
             except ValueError:
                 pass
@@ -138,10 +137,11 @@ class SaveLoad:
         if save_numbers:
             next_number = max(save_numbers) + 1
         else:
-            next_number = 2  # Backup thì bắt đầu từ save2.dat
+            next_number = 2  # Backup thì bắt đầu từ save_data_2.json
 
-        dst = os.path.join(SAVE_DIR, f"save{next_number}.dat")
-        with open(src, "rb") as f_src, open(dst, "wb") as f_dst:
-            f_dst.write(f_src.read())
+        dst = os.path.join(SAVE_DIR, f"save_data_{next_number}.json")
+        with open(src, "r") as f_src, open(dst, "w") as f_dst:
+            data = json.load(f_src)
+            json.dump(data, f_dst, indent=4)
 
-        print(f"Backed up save1.dat to save{next_number}.dat")
+        print(f"Backed up save_data_1.json to save_data_{next_number}.json")
