@@ -6,28 +6,25 @@ from src.core.inventory import Inventory
 SAVE_DIR = "saves"
 
 class SaveLoad:
+    current_save_file = None  # Theo dõi file save hiện tại
+
     @staticmethod
-    def save_game(player):
-        """Lưu trạng thái game. Nếu save_data_1.json đã tồn tại, tự động tạo save_data_2.json, save_data_3.json,..."""
+    def ensure_save_folder():
         if not os.path.exists(SAVE_DIR):
             os.makedirs(SAVE_DIR)
 
-        existing_saves = [f for f in os.listdir(SAVE_DIR) if f.startswith("save_data_") and f.endswith(".json")]
-        save_numbers = []
-        for filename in existing_saves:
-            try:
-                num = int(filename[len("save_data_"):-len(".json")])
-                save_numbers.append(num)
-            except ValueError:
-                pass
+    @staticmethod
+    def save_game(player, filename=None):
+        """Lưu trạng thái game vào file cụ thể. Nếu không có filename thì lưu vào current_save_file."""
+        SaveLoad.ensure_save_folder()
 
-        if save_numbers:
-            next_save_number = max(save_numbers) + 1
-        else:
-            next_save_number = 1
+        if filename:
+            filename = os.path.basename(filename)  # <<== Fix chỗ này
+            SaveLoad.current_save_file = filename
+        elif SaveLoad.current_save_file is None:
+            SaveLoad.current_save_file = SaveLoad.get_new_save_filename()
 
-        save_filename = f"save_data_{next_save_number}.json"
-        save_path = os.path.join(SAVE_DIR, save_filename)
+        save_path = os.path.join(SAVE_DIR, SaveLoad.current_save_file)
 
         save_data = {
             "energy": player.energy,
@@ -38,69 +35,101 @@ class SaveLoad:
         with open(save_path, "w") as file:
             json.dump(save_data, file, indent=4)
 
-        print(f"Game saved to {save_filename}!")
+        print(f"Game saved to {SaveLoad.current_save_file}!")
+
 
     @staticmethod
-    def load_game(filename="save_data_1.json"):
-        """Load game từ save_data_1.json hoặc file chỉ định khác."""
-        save_path = os.path.join(SAVE_DIR, filename)
+    def load_game(filename=None):
+        """Load trạng thái game từ file cụ thể, nếu không thì từ current_save_file."""
+        SaveLoad.ensure_save_folder()
+
+        if filename:
+            SaveLoad.current_save_file = os.path.basename(filename)
+
+        if SaveLoad.current_save_file is None:
+            print("No save file specified.")
+            return Player()
+
+        save_path = os.path.join(SAVE_DIR, SaveLoad.current_save_file)
+
         if not os.path.exists(save_path):
-            print(f"No save file '{filename}' found, creating a new player.")
+            print(f"No save file '{SaveLoad.current_save_file}' found. Creating new player.")
             return Player()
 
         with open(save_path, "r") as file:
             save_data = json.load(file)
-            player = Player()
-            player.energy = save_data.get("energy", 0)
-            player.money = save_data.get("money", 0)
-            player.inventory = Inventory()
-            player.inventory.items = save_data.get("inventory", [])
-            print(f"Game loaded from {filename}!")
-            return player
+
+        player = Player()
+        player.energy = save_data.get("energy", 0)
+        player.money = save_data.get("money", 0)
+        player.inventory = Inventory()
+        player.inventory.items = save_data.get("inventory", [])
+
+        print(f"Game loaded from {SaveLoad.current_save_file}!")
+        return player
 
     @staticmethod
     def list_save_files():
         """Trả về danh sách file save (*.json)."""
-        if not os.path.exists(SAVE_DIR):
-            os.makedirs(SAVE_DIR)
-        return [f for f in os.listdir(SAVE_DIR) if f.endswith(".json")]
+        SaveLoad.ensure_save_folder()
+        return sorted([f for f in os.listdir(SAVE_DIR) if f.endswith(".json")])
 
     @staticmethod
-    def load_selected_save(selected_filename):
-        """Load từ file save cụ thể."""
-        save_path = os.path.join(SAVE_DIR, selected_filename)
-        if not os.path.exists(save_path):
-            print(f"File {selected_filename} not found.")
+    def load_selected_save(filepath):
+        """Load player từ filepath (đầy đủ đường dẫn)."""
+        if not os.path.isfile(filepath):
+            print(f"File {filepath} not found.")
             return None
 
-        with open(save_path, "r") as file:
+        with open(filepath, "r") as file:
             save_data = json.load(file)
-            player = Player()
-            player.energy = save_data.get("energy", 0)
-            player.money = save_data.get("money", 0)
-            player.inventory = Inventory()
-            player.inventory.items = save_data.get("inventory", [])
-            print(f"Game loaded from {selected_filename}!")
-            return player
+
+        player = Player()
+        player.energy = save_data.get("energy", 0)
+        player.money = save_data.get("money", 0)
+        player.inventory = Inventory()
+        player.inventory.items = save_data.get("inventory", [])
+
+        SaveLoad.current_save_file = os.path.basename(filepath)
+        print(f"Game loaded from {filepath}!")
+        return player
+
+    @staticmethod
+    def get_new_save_filename():
+        """Tìm filename mới dạng save_slot_x.json."""
+        SaveLoad.ensure_save_folder()
+
+        existing_files = SaveLoad.list_save_files()
+        numbers = []
+
+        for filename in existing_files:
+            try:
+                num = int(filename.replace("save_slot_", "").replace(".json", ""))
+                numbers.append(num)
+            except ValueError:
+                pass
+
+        next_num = max(numbers, default=0) + 1
+        return f"save_slot_{next_num}.json"
 
     @staticmethod
     def is_empty_save():
-        """Kiểm tra save_data_1.json có trống không."""
-        save_path = os.path.join(SAVE_DIR, "save_data_1.json")
-        if not os.path.exists(save_path):
-            return True
-        try:
-            with open(save_path, "r") as file:
-                save_data = json.load(file)
-                return all(value == 0 or value == [] for value in save_data.values())
-        except (json.JSONDecodeError, IOError):
-            return True
+        """Kiểm tra thư mục save có file nào không."""
+        SaveLoad.ensure_save_folder()
+        return len(SaveLoad.list_save_files()) == 0
 
     @staticmethod
-    def reset_save():
-        """Reset save_data_1.json về mặc định trống."""
-        if not os.path.exists(SAVE_DIR):
-            os.makedirs(SAVE_DIR)
+    def reset_save(filename=None):
+        """Reset file save chỉ định hoặc file hiện tại."""
+        SaveLoad.ensure_save_folder()
+
+        if filename:
+            target_file = os.path.basename(filename)
+        elif SaveLoad.current_save_file:
+            target_file = SaveLoad.current_save_file
+        else:
+            print("No file specified to reset.")
+            return
 
         empty_data = {
             "energy": 0,
@@ -108,40 +137,35 @@ class SaveLoad:
             "inventory": []
         }
 
-        save_path = os.path.join(SAVE_DIR, "save_data_1.json")
+        save_path = os.path.join(SAVE_DIR, target_file)
         with open(save_path, "w") as file:
             json.dump(empty_data, file, indent=4)
 
-        print("save_data_1.json reset to empty.")
+        print(f"{target_file} reset to empty.")
 
     @staticmethod
-    def backup_save():
-        """Sao lưu save_data_1.json thành save_data_2.json, save_data_3.json..."""
-        if not os.path.exists(SAVE_DIR):
-            os.makedirs(SAVE_DIR)
+    def backup_save(source_filename=None):
+        """Backup file save thành bản copy mới."""
+        SaveLoad.ensure_save_folder()
 
-        src = os.path.join(SAVE_DIR, "save_data_1.json")
-        if not os.path.exists(src):
-            print("No save_data_1.json to backup.")
+        if source_filename:
+            src = os.path.join(SAVE_DIR, os.path.basename(source_filename))
+        elif SaveLoad.current_save_file:
+            src = os.path.join(SAVE_DIR, SaveLoad.current_save_file)
+        else:
+            print("No file specified to backup.")
             return
 
-        existing_saves = [f for f in os.listdir(SAVE_DIR) if f.startswith("save_data_") and f.endswith(".json")]
-        save_numbers = []
-        for filename in existing_saves:
-            try:
-                num = int(filename[len("save_data_"):-len(".json")])
-                save_numbers.append(num)
-            except ValueError:
-                pass
+        if not os.path.isfile(src):
+            print(f"No file {src} to backup.")
+            return
 
-        if save_numbers:
-            next_number = max(save_numbers) + 1
-        else:
-            next_number = 2  # Backup thì bắt đầu từ save_data_2.json
+        backup_filename = SaveLoad.get_new_save_filename()
+        dst = os.path.join(SAVE_DIR, backup_filename)
 
-        dst = os.path.join(SAVE_DIR, f"save_data_{next_number}.json")
         with open(src, "r") as f_src, open(dst, "w") as f_dst:
             data = json.load(f_src)
             json.dump(data, f_dst, indent=4)
 
-        print(f"Backed up save_data_1.json to save_data_{next_number}.json")
+        print(f"Backup {os.path.basename(src)} to {backup_filename}")
+
