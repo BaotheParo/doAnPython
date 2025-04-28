@@ -19,7 +19,7 @@ class SaveLoad:
         SaveLoad.ensure_save_folder()
 
         if filename:
-            filename = os.path.basename(filename)  # <<== Fix chỗ này
+            filename = os.path.basename(filename)  
             SaveLoad.current_save_file = filename
         elif SaveLoad.current_save_file is None:
             SaveLoad.current_save_file = SaveLoad.get_new_save_filename()
