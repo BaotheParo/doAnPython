@@ -136,16 +136,61 @@ class MainMenu:
             return None
 
         selected = 0
+        button_width = 400
+        button_height = 50
+        spacing = 20
+        max_visible = 6
+        scroll_offset = 0
+
+        box_width, box_height = 500, max_visible * (button_height + spacing) + 140
+        box_x = (SCREEN_WIDTH - box_width) // 2
+        box_y = (SCREEN_HEIGHT - box_height) // 2
+
+        back_icon = pygame.image.load(os.path.join(ICON_PATH, "icon-quaylai.png")).convert_alpha()
+        back_icon = pygame.transform.smoothscale(back_icon, (40, 40))
+        back_icon_rect = back_icon.get_rect(topright=(box_x + box_width - 10, box_y + 10))
+
+        clock = pygame.time.Clock()
+
         while True:
             self.draw()
-            y = 100
-            for i, filename in enumerate(files):
-                color = (255, 255, 0) if i == selected else (255, 255, 255)
-                text = font.render(filename, True, color)
-                text.set_alpha(180)
+            pygame.draw.rect(self.screen, (30, 30, 30), (box_x, box_y, box_width, box_height), border_radius=15)
+            pygame.draw.rect(self.screen, (255, 255, 255), (box_x, box_y, box_width, box_height), 3, border_radius=15)
+
+            title = font.render("Chọn file lưu để chơi", True, (255, 255, 255))
+            title_rect = title.get_rect(center=(box_x + box_width // 2, box_y + 30))
+            self.screen.blit(title, title_rect)
+            self.screen.blit(back_icon, back_icon_rect)
+
+            buttons = []
+            visible_files = files[scroll_offset:scroll_offset + max_visible]
+
+            for i, filename in enumerate(visible_files):
+                rect_x = box_x + (box_width - button_width) // 2
+                rect_y = box_y + 70 + i * (button_height + spacing)
+                rect = pygame.Rect(rect_x, rect_y, button_width, button_height)
+                buttons.append((rect, filename))
+
+                is_hovered = rect.collidepoint(pygame.mouse.get_pos())
+                is_selected = (scroll_offset + i) == selected
+                bg_color = (70, 70, 150) if is_hovered or is_selected else (50, 50, 50)
+                border_color = (255, 255, 0) if is_hovered or is_selected else (200, 200, 200)
+
+                pygame.draw.rect(self.screen, bg_color, rect, border_radius=10)
+                pygame.draw.rect(self.screen, border_color, rect, 2, border_radius=10)
+
+                text = font.render(filename, True, (255, 255, 255))
+                text.set_alpha(220)
                 text = text.convert_alpha()
-                self.screen.blit(text, (SCREEN_WIDTH // 2 - 200, y))
-                y += 60
+                text_rect = text.get_rect(center=rect.center)
+                self.screen.blit(text, text_rect)
+
+            # Thanh cuộn
+            if len(files) > max_visible:
+                scrollbar_height = int((box_height - 140) * max_visible / len(files))
+                scrollbar_y = box_y + 70 + int((box_height - 140 - scrollbar_height) * scroll_offset / (len(files) - max_visible))
+                pygame.draw.rect(self.screen, (100, 100, 100), (box_x + box_width - 20, box_y + 70, 10, box_height - 140))
+                pygame.draw.rect(self.screen, (200, 200, 200), (box_x + box_width - 20, scrollbar_y, 10, scrollbar_height))
 
             pygame.display.update()
 
@@ -153,13 +198,47 @@ class MainMenu:
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     sys.exit()
+
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    if event.button == 1:  # Click
+                        if back_icon_rect.collidepoint(event.pos):
+                            return None
+                        for i, (rect, filename) in enumerate(buttons):
+                            if rect.collidepoint(event.pos):
+                                return os.path.join(SAVE_FOLDER, filename)
+
+                    elif event.button == 4:  # Cuộn lên
+                        if scroll_offset > 0:
+                            scroll_offset -= 1
+                            selected = max(selected - 1, 0)
+
+                    elif event.button == 5:  # Cuộn xuống
+                        if scroll_offset + max_visible < len(files):
+                            scroll_offset += 1
+                            selected = min(selected + 1, len(files) - 1)
+
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_UP:
                         selected = (selected - 1) % len(files)
-                    if event.key == pygame.K_DOWN:
+                    elif event.key == pygame.K_DOWN:
                         selected = (selected + 1) % len(files)
-                    if event.key == pygame.K_RETURN:
+                    elif event.key == pygame.K_RETURN:
                         return os.path.join(SAVE_FOLDER, files[selected])
+                    elif event.key == pygame.K_ESCAPE:
+                        return None
+
+                    # Điều chỉnh scroll_offset theo selection
+                    if selected < scroll_offset:
+                        scroll_offset = selected
+                    elif selected >= scroll_offset + max_visible:
+                        scroll_offset = selected - max_visible + 1
+
+            clock.tick(60)
+
+
+
+
+
 
 def show_message(screen, text, duration=2):
     font = pygame.font.SysFont(None, 50)
@@ -236,16 +315,23 @@ if __name__ == "__main__":
                 running = False
 
             elif action == "load_game":
+                files = [f for f in os.listdir(SAVE_FOLDER) if f.endswith(".json")]
+                if not files:
+                    show_message(screen, "Không tìm thấy file lưu!", 2)
+                    continue
+
                 filepath = menu.choose_save_file()
                 if filepath:
                     filename = os.path.basename(filepath)
                     player = SaveLoad.load_game(filename)
                     if player:
+                        SaveLoad.current_save_file = filename
                         player.time_system = TimeSystem()
                         ui = SettingsUI(screen, player)
                         bedroom = Bedroom(player, screen, ui)
                         next_scene = bedroom.run()
                         running = False
+
 
         pygame.display.update()
         clock.tick(60)
