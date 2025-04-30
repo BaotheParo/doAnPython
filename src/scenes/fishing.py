@@ -14,7 +14,7 @@ class FishingScene:
         self.game_state = game_state
         self.screen = screen
         self.ui = ui
-        pygame.display.set_caption("Khu vực câu cá")
+        pygame.display.set_caption("Fishing area")
 
         self.day_background_path = os.path.join(BASE_DIR, "assets", "images", "backgrounds", "background-cauca.png")
         self.night_background_path = os.path.join(BASE_DIR, "assets", "images", "backgrounds",
@@ -22,7 +22,7 @@ class FishingScene:
 
         self.font = pygame.font.Font(None, 36)
 
-        self.notification_text = "Đã di chuyển tới ao cá"
+        self.notification_text = "Moved to the fish pond"
         self.notification_surface = self.font.render(self.notification_text, True, (255, 255, 255))
         self.notification_timer = 3000
         self.notification_start_time = pygame.time.get_ticks()
@@ -107,6 +107,6 @@ class FishingScene:
 
     def handle_click(self, pos):
         if self.lake_rect.collidepoint(pos):
-            print("Bắt đầu câu cá!")
+            print("Start fishing!")
             start_fishing(self.game_state.player, self.screen)  # Chỉ truyền 2 tham số: player và screen
-            print("Quay lại khu vực câu cá!")
+            print("Back to the fishing area!")

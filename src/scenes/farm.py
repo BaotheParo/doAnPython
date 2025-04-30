@@ -8,23 +8,24 @@ from src.core.ui import SettingsUI
 from src.utils.constants import SCREEN_WIDTH, SCREEN_HEIGHT, WHITE, BLACK
 from src.actions.planting import FarmGame
 
+
 class FarmScene:
     def __init__(self, game_state, screen, ui):
         self.game_state = game_state
         self.screen = screen
         self.ui = SettingsUI(self.screen, self.game_state)
-        pygame.display.set_caption("Khu vực nông trại")
+        pygame.display.set_caption("Farm area")
 
         self.day_background_path = os.path.join(BASE_DIR, "assets", "images", "backgrounds", "bangground-nongtrai.png")
-        self.night_background_path = os.path.join(BASE_DIR, "assets", "images", "backgrounds", "background-nongtrai-dem.png")
+        self.night_background_path = os.path.join(BASE_DIR, "assets", "images", "backgrounds",
+                                                  "background-nongtrai-dem.png")
         self.font = pygame.font.Font(None, 36)
 
-        # Thông báo khi vào làng
-        self.notification_text = "Đã di chuyển tới Nông trại"
+        # Thông báo khi vào nông trại
+        self.notification_text = "Moved to Farm"
         self.notification_surface = self.font.render(self.notification_text, True, (255, 255, 255))
         self.notification_timer = 3000  # Hiển thị trong 3 giây (3000ms)
         self.notification_start_time = pygame.time.get_ticks()
-
 
         try:
             self.day_background = pygame.image.load(self.day_background_path).convert()
@@ -70,7 +71,6 @@ class FarmScene:
                     self.running = False
                     pygame.quit()
                     sys.exit()
-                    continue
                 ui_handled = self.ui.handle_event(event)
                 if ui_handled:
                     continue
@@ -111,19 +111,20 @@ class FarmScene:
                     self.show_night_message = False
 
             if self.notification_timer > 0:
-                    current_time = pygame.time.get_ticks()
-                    elapsed_time = current_time - self.notification_start_time
-                    if elapsed_time < self.notification_timer:
-                        # Tính toán vị trí giữa màn hình
-                        text_rect = self.notification_surface.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 4))
-                        # Vẽ nền tối mờ cho thông báo
-                        bg_surface = pygame.Surface((text_rect.width + 20, text_rect.height + 10), pygame.SRCALPHA)
-                        bg_surface.fill((0, 0, 0, 180))  # Nền đen mờ
-                        self.screen.blit(bg_surface, (text_rect.x - 10, text_rect.y - 5))
-                        # Vẽ văn bản
-                        self.screen.blit(self.notification_surface, text_rect)
-                    else:
-                        self.notification_timer = 0  # Tắt thông báo sau khi hết thời gian
+                current_time = pygame.time.get_ticks()
+                elapsed_time = current_time - self.notification_start_time
+                if elapsed_time < self.notification_timer:
+                    # Tính toán vị trí giữa màn hình
+                    text_rect = self.notification_surface.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 4))
+                    # Vẽ nền tối mờ cho thông báo
+                    bg_surface = pygame.Surface((text_rect.width + 20, text_rect.height + 10), pygame.SRCALPHA)
+                    bg_surface.fill((0, 0, 0, 180))  # Nền đen mờ
+                    self.screen.blit(bg_surface, (text_rect.x - 10, text_rect.y - 5))
+                    # Vẽ văn bản
+                    self.screen.blit(self.notification_surface, text_rect)
+                else:
+                    self.notification_timer = 0  # Tắt thông báo sau khi hết thời gian
+
             self.ui.draw()
             pygame.display.flip()
 
@@ -138,11 +139,15 @@ class FarmScene:
                 self.game_state.player, self.game_state.time_system, self.game_state.planted_seeds = farm_game.run()
                 self.game_state.time_system.load_plants(self.game_state.planted_seeds)
                 pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-                pygame.display.set_caption("Khu vực nông trại")
+                pygame.display.set_caption("Farm area")
                 self.ui = SettingsUI(self.screen, self.game_state)
                 print(f"Updated SettingsUI with planted_seeds: {self.game_state.planted_seeds}")
         elif self.bedroom_rect.collidepoint(pos):
-            print("Chuyển đến giường ngủ")
+            from src.scenes.bedroom import Bedroom
+            print("Chuyển đến Bedroom!")
+            self.running = False
+            bedroom_scene = Bedroom(self.game_state, self.screen, self.ui)
+            bedroom_scene.run()
 
     def render_night_message(self):
         message_text = "The moon whispers: 'Rest now, the farm sleeps under starry skies!'"
@@ -168,7 +173,7 @@ class FarmScene:
         bg_height = text_surface.get_height() + padding * 2
         bg_surface = pygame.Surface((bg_width, bg_height), pygame.SRCALPHA)
         pygame.draw.rect(bg_surface, (50, 50, 50, 200), (0, 0, bg_width, bg_height), border_radius=5)
-        
+
         # Đặt vị trí tooltip gần chuột, lệch xuống dưới và sang phải
         tooltip_x = mouse_pos[0] + 10
         tooltip_y = mouse_pos[1] + 10
