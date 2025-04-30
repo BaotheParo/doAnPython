@@ -13,6 +13,7 @@ from src.utils.constants import (
     FISHING_GREEN_ZONE_SIZE, ENERGY_COSTS, FISH_DAY, FISH_NIGHT
 )
 from src.core.sound_manager import SoundManager
+from src.core.time_system import TimeSystem
 
 TIMER_WIDTH = 30
 TIMER_HEIGHT = 400
@@ -21,15 +22,19 @@ TIMER_START = TIMER_MAX // 2
 TIMER_SPEED = 0.5
 
 class FishingMinigame:
-    def __init__(self, player, time_of_day, screen):
+    def __init__(self, player, screen):
         self.player = player
-        self.time_of_day = time_of_day
         self.screen = screen
         self.rod_level = player.get_rod_level()
         self.green_zone_size = FISHING_GREEN_ZONE_SIZE[self.rod_level]
 
+        # Khởi tạo TimeSystem để kiểm tra Ngày/Đêm
+        self.time_system = TimeSystem()
+        self.time_of_day = "Day" if self.time_system.is_day() else "Night"
+
         # Initialize SoundManager
         self.sound_manager = getattr(self.player, 'sound_manager', SoundManager())
+        self.reel_channel = None  # Channel để phát âm thanh reel.mp3 lặp lại
 
         # Load background for minigame
         self.background_path1 = os.path.join(BASE_DIR, "assets", "images", "backgrounds", "animation-cauca1.png")
@@ -99,7 +104,7 @@ class FishingMinigame:
         except FileNotFoundError:
             print(f"Error: File not found - {self.slipped_image_path}")
             self.slipped_image = pygame.Surface((200, 200))
-            self.slipped_image.fill((100, 100, 100))  # Gray fallback
+            self.slipped_image.fill((100, 100, 100))
 
         # Mana bar setup
         self.MANA_BAR_WIDTH = 600
@@ -135,13 +140,19 @@ class FishingMinigame:
         self.replay_button_bg = pygame.Surface((140, 50))
         self.replay_button_bg.fill((50, 150, 50))
 
+        # OK button for energy warning
+        self.ok_button_rect = pygame.Rect(SCREEN_WIDTH // 2 - 70, SCREEN_HEIGHT // 2 + 150, 140, 50)
+        self.ok_button_text = self.button_font.render("OK", True, WHITE)
+        self.ok_button_bg = pygame.Surface((140, 50))
+        self.ok_button_bg.fill((150, 50, 50))
+
         # Initial state
         self.confirmation_phase = True
         self.has_played = False
+        self.show_energy_warning = False
         self.reset_game()
 
     def reset_game(self):
-        """Reset the minigame state to play again."""
         self.bar_x = 85
         self.bar_y = 50
         self.bar_x_border = 28
@@ -160,9 +171,14 @@ class FishingMinigame:
         self.result_timer = 0
         self.caught_fish = None
         self.caught_fish_image = None
+        self.show_energy_warning = False
+
+        # Dừng âm thanh reel nếu đang phát
+        if self.reel_channel:
+            self.reel_channel.stop()
+            self.reel_channel = None
 
     def draw_mana_bar(self):
-        """Draw the energy bar on the screen."""
         pygame.draw.rect(self.screen, BLACK, (self.MANA_BAR_X - 5, self.MANA_BAR_Y - 5, self.MANA_BAR_WIDTH + 10, self.MANA_BAR_HEIGHT + 10), border_radius=5)
         pygame.draw.rect(self.screen, WHITE, (self.MANA_BAR_X, self.MANA_BAR_Y, self.MANA_BAR_WIDTH, self.MANA_BAR_HEIGHT), border_radius=5)
         mana_width = (self.player.get_energy() / self.player.max_energy) * (self.MANA_BAR_WIDTH - 4)
@@ -171,10 +187,8 @@ class FishingMinigame:
         self.screen.blit(energy_text, (self.MANA_BAR_X + (self.MANA_BAR_WIDTH - energy_text.get_width()) // 2, self.MANA_BAR_Y + (self.MANA_BAR_HEIGHT - energy_text.get_height()) // 2))
 
     def draw_confirmation_screen(self):
-        """Draw the confirmation screen before starting the minigame."""
         self.screen.blit(self.background, (0, 0))
 
-        # Draw confirmation message
         confirm_text = self.message_font.render("Would you like to go fishing?", True, WHITE)
         confirm_rect = confirm_text.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 - 30))
         bg_surface = pygame.Surface((confirm_rect.width + 10, confirm_rect.height + 10), pygame.SRCALPHA)
@@ -182,15 +196,28 @@ class FishingMinigame:
         self.screen.blit(bg_surface, (confirm_rect.x - 5, confirm_rect.y - 5))
         self.screen.blit(confirm_text, confirm_rect)
 
-        # Draw Yes button
         self.screen.blit(self.yes_button_bg, (self.yes_button_rect.x, self.yes_button_rect.y))
         yes_text_rect = self.yes_button_text.get_rect(center=self.yes_button_rect.center)
         self.screen.blit(self.yes_button_text, yes_text_rect)
 
-        # Draw back icon
         self.screen.blit(self.back_icon, (self.back_button_rect.x, self.back_button_rect.y))
 
-        # Draw energy bar
+        self.draw_mana_bar()
+
+    def draw_energy_warning(self):
+        self.screen.blit(self.background_complete, (0, 0))
+
+        warning_text = self.message_font.render("Not enough energy to play again!", True, WHITE)
+        warning_rect = warning_text.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 - 30))
+        bg_surface = pygame.Surface((warning_rect.width + 10, warning_rect.height + 10), pygame.SRCALPHA)
+        pygame.draw.rect(bg_surface, (50, 50, 50, 200), (0, 0, warning_rect.width + 10, warning_rect.height + 10), border_radius=10)
+        self.screen.blit(bg_surface, (warning_rect.x - 5, warning_rect.y - 5))
+        self.screen.blit(warning_text, warning_rect)
+
+        self.screen.blit(self.ok_button_bg, (self.ok_button_rect.x, self.ok_button_rect.y))
+        ok_text_rect = self.ok_button_text.get_rect(center=self.ok_button_rect.center)
+        self.screen.blit(self.ok_button_text, ok_text_rect)
+
         self.draw_mana_bar()
 
     def run(self):
@@ -204,11 +231,23 @@ class FishingMinigame:
                 elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                     if self.confirmation_phase:
                         if self.yes_button_rect.collidepoint(mouse_pos):
-                            self.confirmation_phase = False
-                            self.has_played = True
-                            print("Start Fishing Minigame!")
+                            if self.player.get_energy() >= 10:
+                                self.player.reduce_energy(10)
+                                print(f"Deducted 10 energy for starting fishing. Current energy: {self.player.get_energy()}")
+                                self.sound_manager.play_sound('splash')  # Phát âm thanh splash khi bắt đầu câu
+                                self.confirmation_phase = False
+                                self.has_played = True
+                                print("Start Fishing Minigame!")
+                            else:
+                                print("Not enough energy to start fishing!")
+                                self.running = False
                         if self.back_button_rect.collidepoint(mouse_pos):
                             print("Exit Fishing Minigame!")
+                            self.running = False
+                            break
+                    elif self.show_energy_warning:
+                        if self.ok_button_rect.collidepoint(mouse_pos):
+                            print("Returning to fishing scene!")
                             self.running = False
                             break
                     else:
@@ -217,13 +256,14 @@ class FishingMinigame:
                             self.running = False
                             break
                         if self.result_phase == 2 and self.replay_button_rect.collidepoint(mouse_pos):
-                            if self.player.get_energy() >= ENERGY_COSTS["fish"]:
-                                print("Play the fishing mini-game again!")
+                            if self.player.get_energy() >= 10:
+                                self.player.reduce_energy(10)
+                                print(f"Deducted 10 energy for replaying fishing. Current energy: {self.player.get_energy()}")
+                                self.sound_manager.play_sound('splash')  # Phát âm thanh splash khi bắt đầu lại
                                 self.reset_game()
                                 self.has_played = True
                             else:
-                                print("Not enough energy to play again!")
-                                self.running = False
+                                self.show_energy_warning = True
                                 break
                         if self.result_phase == 0:
                             self.green_zone_speed = -5
@@ -233,8 +273,14 @@ class FishingMinigame:
 
             if self.confirmation_phase:
                 self.draw_confirmation_screen()
+            elif self.show_energy_warning:
+                self.draw_energy_warning()
             else:
                 if self.result_phase == 0:
+                    # Phát âm thanh reel.mp3 lặp lại trong lúc câu cá
+                    if not self.reel_channel or not self.reel_channel.get_busy():
+                        self.reel_channel = self.sound_manager.play_sound('reel', loops=-1)
+
                     self.green_zone_pos += self.green_zone_speed
                     self.green_zone_pos = max(self.bar_y, min(self.bar_y + FISHING_BAR_HEIGHT - self.green_zone_size,
                                                               self.green_zone_pos))
@@ -262,11 +308,17 @@ class FishingMinigame:
                     if self.timer >= TIMER_MAX:
                         self.success = True
                         self.result_phase = 1
+                        self.reel_channel.stop()  # Dừng âm thanh reel khi kết thúc minigame
+                        self.reel_channel = None
+                        self.sound_manager.play_sound('splash')  # Phát âm thanh splash khi kết thúc
                         self.catch_fish()
                     elif self.timer <= 0:
                         self.success = False
                         self.result_phase = 1
-                        self.sound_manager.play_sound('fail')  # Phát âm thanh hụt cá
+                        self.reel_channel.stop()  # Dừng âm thanh reel khi kết thúc minigame
+                        self.reel_channel = None
+                        self.sound_manager.play_sound('splash')  # Phát âm thanh splash khi kết thúc
+                        self.sound_manager.play_sound('fail')  # Phát âm thanh fail khi hụt cá
 
                 if self.result_phase == 0:
                     self.screen.blit(self.background, (0, 0))
@@ -313,7 +365,6 @@ class FishingMinigame:
                         self.screen.blit(bg_surface, (text_rect.x - 5, text_rect.y - 5))
                         self.screen.blit(text, text_rect)
                     else:
-                        # Display slipped image
                         slipped_x = (SCREEN_WIDTH - self.slipped_image.get_width()) // 2
                         slipped_y = (SCREEN_HEIGHT - self.slipped_image.get_height()) // 2 - 50
                         self.screen.blit(self.slipped_image, (slipped_x, slipped_y))
@@ -324,7 +375,6 @@ class FishingMinigame:
                         self.screen.blit(bg_surface, (text_rect.x - 5, text_rect.y - 5))
                         self.screen.blit(text, text_rect)
 
-                    # Draw replay button
                     self.screen.blit(self.replay_button_bg, (self.replay_button_rect.x, self.replay_button_rect.y))
                     replay_text_rect = self.replay_button_text.get_rect(center=self.replay_button_rect.center)
                     self.screen.blit(self.replay_button_text, replay_text_rect)
@@ -336,12 +386,12 @@ class FishingMinigame:
             pygame.display.flip()
             clock.tick(60)
 
-        if self.has_played:
-            self.player.reduce_energy(ENERGY_COSTS["fish"])
-            print(f"Deducted {ENERGY_COSTS['fish']} energy. Current energy: {self.player.get_energy()}")
+        # Dừng âm thanh reel khi thoát minigame
+        if self.reel_channel:
+            self.reel_channel.stop()
+            self.reel_channel = None
 
     def catch_fish(self):
-        """Handle catching a fish and updating inventory."""
         fish_list = FISH_DAY if self.time_of_day == "Day" else FISH_NIGHT
         self.caught_fish = random.choice(fish_list)
         self.player.inventory.add_item(self.caught_fish, 1)
@@ -359,12 +409,12 @@ class FishingMinigame:
         self.caught_fish_image = pygame.image.load(fish_image_path).convert_alpha()
         self.caught_fish_image = pygame.transform.scale(self.caught_fish_image, (200, 200))
 
-        self.sound_manager.play_sound('success')  # Phát âm thanh chúc mừng
+        self.sound_manager.play_sound('success')  # Phát âm thanh success sau splash
         print(f"You caught a {self.caught_fish}!")
 
-def start_fishing(player, time_of_day, screen):
-    if player.get_energy() >= ENERGY_COSTS["fish"]:
-        minigame = FishingMinigame(player, time_of_day, screen)
+def start_fishing(player, screen):
+    if player.get_energy() >= 10:
+        minigame = FishingMinigame(player, screen)
         minigame.run()
     else:
         print("Not enough energy to fish!")
@@ -374,5 +424,5 @@ if __name__ == "__main__":
     screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
     player = Player()
     player.energy = 100
-    start_fishing(player, "day", screen)
+    start_fishing(player, screen)
     pygame.quit()

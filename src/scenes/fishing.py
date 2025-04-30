@@ -8,24 +8,24 @@ from src.core.ui import SettingsUI
 from src.actions.fishing_action import start_fishing
 from src.utils.constants import SCREEN_WIDTH, SCREEN_HEIGHT, WHITE, BLACK
 
+
 class FishingScene:
     def __init__(self, game_state, screen, ui):
         self.game_state = game_state
         self.screen = screen
         self.ui = ui
         pygame.display.set_caption("Khu vực câu cá")
-    
 
         self.day_background_path = os.path.join(BASE_DIR, "assets", "images", "backgrounds", "background-cauca.png")
-        self.night_background_path = os.path.join(BASE_DIR, "assets", "images", "backgrounds", "background-cauca-dem.png")
+        self.night_background_path = os.path.join(BASE_DIR, "assets", "images", "backgrounds",
+                                                  "background-cauca-dem.png")
 
         self.font = pygame.font.Font(None, 36)
 
         self.notification_text = "Đã di chuyển tới ao cá"
         self.notification_surface = self.font.render(self.notification_text, True, (255, 255, 255))
-        self.notification_timer = 3000  
+        self.notification_timer = 3000
         self.notification_start_time = pygame.time.get_ticks()
-
 
         try:
             self.day_background = pygame.image.load(self.day_background_path).convert()
@@ -56,7 +56,7 @@ class FishingScene:
         while self.running:
             delta_time = clock.tick(60)
             self.game_state.time_system.update(delta_time)
-            
+
             mouse_pos = pygame.mouse.get_pos()
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -97,17 +97,16 @@ class FishingScene:
                 if elapsed_time < self.notification_timer:
                     text_rect = self.notification_surface.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 4))
                     bg_surface = pygame.Surface((text_rect.width + 20, text_rect.height + 10), pygame.SRCALPHA)
-                    bg_surface.fill((0, 0, 0, 180))  
+                    bg_surface.fill((0, 0, 0, 180))
                     self.screen.blit(bg_surface, (text_rect.x - 10, text_rect.y - 5))
-
                     self.screen.blit(self.notification_surface, text_rect)
                 else:
-                    self.notification_timer = 0  
+                    self.notification_timer = 0
             self.ui.draw()
             pygame.display.flip()
 
     def handle_click(self, pos):
         if self.lake_rect.collidepoint(pos):
             print("Bắt đầu câu cá!")
-            start_fishing(self.game_state.player, self.game_state.time_system.get_time_of_day(), self.screen)
+            start_fishing(self.game_state.player, self.screen)  # Chỉ truyền 2 tham số: player và screen
             print("Quay lại khu vực câu cá!")
