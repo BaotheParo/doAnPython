@@ -125,8 +125,6 @@ class SettingsUI:
         self.buttons = [
             {"text": "Save Game", "action": self.save_game_ui,
              "rect": pygame.Rect(0, 0, self.button_width, self.button_height)},
-            {"text": "Main Menu", "action": self.main_menu_ui,
-             "rect": pygame.Rect(0, 0, self.button_width, self.button_height)},
             {"text": "Exit Game", "action": self.exit_game,
              "rect": pygame.Rect(0, 0, self.button_width, self.button_height)}
         ]
@@ -409,10 +407,6 @@ class SettingsUI:
     def save_game_ui(self):
         self.game_state.save_game()
         print("Game saved from UI!")
-        self.show_menu = False
-
-    def main_menu_ui(self):
-        print("Returning to Main Menu...")
         self.show_menu = False
 
     def exit_game(self):
