@@ -12,6 +12,10 @@ class TimeSystem:
         self.day_duration = 50000  # Ban ngày = 50,000 ms
         self.night_duration = 10000  # Ban đêm = 10,000 ms
         self.day_length = self.day_duration + self.night_duration  # Tổng thời gian của ngày (60,000 ms)
+
+        self.energy_increase_interval = 30000  # 30 giây (30,000 ms)
+        self.last_energy_update = pygame.time.get_ticks()
+
         self.UPGRADE_TIME = 60000  # 60 giây để cây phát triển mỗi giai đoạn
         self.DEATH_TIME = 120000  # 120 giây để cây chết nếu không được tưới
         self.planted_seeds = {}  # Quản lý cây trồng trong TimeSystem
@@ -46,7 +50,7 @@ class TimeSystem:
             json.dump(data, f)
         print(f"Thời gian đã được lưu vào {self.save_file}")
 
-    def update(self, delta_time):
+    def update(self, delta_time, player):
         self.remaining_day_time -= delta_time
         if self.remaining_day_time <= 0:
             if self.is_day_state:
@@ -57,6 +61,15 @@ class TimeSystem:
                 self.remaining_day_time += self.day_duration
                 self.current_day += 1
         self.update_plants(delta_time)
+        self.increase_player_energy(player)
+
+
+    def increase_player_energy(self, player):
+            current_time = pygame.time.get_ticks()
+            if current_time - self.last_energy_update >= self.energy_increase_interval:
+                self.last_energy_update = current_time
+                player.add_energy(20)  # Tăng thêm 20 năng lượng
+                print(f" Năng lượng đã được hồi phục: {player.get_energy()}")
 
     def update_plants(self, delta_time):
         for index in list(self.planted_seeds.keys()):

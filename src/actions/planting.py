@@ -628,7 +628,7 @@ class FarmGame:
             delta_time = current_time - self.last_time
             self.last_time = current_time
 
-            self.time_system.update(delta_time)
+            self.time_system.update(delta_time,self.player)
             self.planted_seeds = self.time_system.get_plants()
             self.update_particles(delta_time)
             self.draw(current_time)
