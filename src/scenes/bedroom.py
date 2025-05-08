@@ -38,7 +38,7 @@ class Bedroom:
 
         while self.running:
             delta_time = clock.tick(60)
-            self.game_state.time_system.update(delta_time)  # Cập nhật thời gian
+            self.game_state.time_system.update(delta_time, self.game_state.player)  
 
             mouse_pos = pygame.mouse.get_pos()
 
