@@ -72,26 +72,26 @@ class Bedroom:
             self.running = False
             farm_scene = FarmScene(self.game_state, self.screen, self.ui)
             farm_scene.run()
-        elif self.bed_rect.collidepoint(pos):
-            print("Day/night state switching!")
-            if self.game_state.time_system.is_day_state:
-                # Ban ngày => chuyển sang ban đêm
-                self.game_state.time_system.is_day_state = False
-                self.game_state.time_system.remaining_day_time = self.game_state.time_system.night_duration
-            else:
-                # Ban đêm => chuyển sang ban ngày, tăng ngày mới
-                self.game_state.time_system.is_day_state = True
-                self.game_state.time_system.remaining_day_time = self.game_state.time_system.day_duration
-                self.game_state.time_system.current_day += 1  # Tăng ngày mới
+        # elif self.bed_rect.collidepoint(pos):
+        #     print("Day/night state switching!")
+        #     if self.game_state.time_system.is_day_state:
+        #         # Ban ngày => chuyển sang ban đêm
+        #         self.game_state.time_system.is_day_state = False
+        #         self.game_state.time_system.remaining_day_time = self.game_state.time_system.night_duration
+        #     else:
+        #         # Ban đêm => chuyển sang ban ngày, tăng ngày mới
+        #         self.game_state.time_system.is_day_state = True
+        #         self.game_state.time_system.remaining_day_time = self.game_state.time_system.day_duration
+        #         self.game_state.time_system.current_day += 1  # Tăng ngày mới
 
     def check_tooltip(self, pos):
         if self.door_rect.collidepoint(pos):
             self.tooltip = "Go to farm"
-        elif self.bed_rect.collidepoint(pos):
-            if self.game_state.time_system.is_day():
-                self.tooltip = "Rest (Switch to night)"
-            else:
-                self.tooltip = "Sleep (Switch to Daytime)"
+        # elif self.bed_rect.collidepoint(pos):
+        #     if self.game_state.time_system.is_day():
+        #         self.tooltip = "Rest (Switch to night)"
+        #     else:
+        #         self.tooltip = "Sleep (Switch to Daytime)"
 
     def draw(self, mouse_pos):
         if self.game_state.time_system.is_day():
