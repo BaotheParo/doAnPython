@@ -1,0 +1,13 @@
+services:
+  game:
+    build: .
+    volumes:
+      - ./saves:/app/saves
+      - /tmp/.X11-unix:/tmp/.X11-unix
+      - /dev/snd:/dev/snd
+    environment:
+      - DISPLAY=${DISPLAY}
+      - PULSE_SERVER=unix:/run/user/1000/pulse/native
+    devices:
+      - /dev/snd:/dev/snd
+    network_mode: host
